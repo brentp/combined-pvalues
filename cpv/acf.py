@@ -8,18 +8,6 @@ import sys
 import numpy as np
 from itertools import groupby, tee, izip
 
-def dist(beda, bedb):
-    # not on same chrom
-    if beda[0] != bedb[0]: return None
-    # beda left-of bedb
-    if beda[1] < bedb[0]:
-        return bedb[0] - beda[1]
-    # bedb left-of beda
-    if bedb[1] < beda[0]:
-        return beda[0] - bedb[1]
-    # overlapping
-    return 0
-
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
