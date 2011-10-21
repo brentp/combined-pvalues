@@ -23,7 +23,7 @@ Example
 
 with data in this repository::
 
-    python cpv/acf.py -d 15:500:50 -c 5 data/pvals.bed >  data/pvalues.adjusted.bed
+    python cpv/acf.py -d 15:500:50 -c 5 data/pvals.bed -a 0.1 >  data/pvalues.adjusted.bed
 
 This takes `this BED file <https://github.com/brentp/combined-pvalues/blob/master/data/pvals.bed>`_ with the p-values in column 5, finds the autocorrelation
 at lags starting at *15* and going up to *500* in steps of *50*.
@@ -63,7 +63,19 @@ If that number is too small, the correlation values may be un-reliable.
 We expect the correlation to decrease with increase lag (unless there is some
 periodicity).
 
-TODO
-----
+Regions
+-------
+We are often interested in entire regions. After running the above example, we
+can find the extent of any regions using::
 
-merge adjacent peaks.
+ $ python cpv/peaks.py --dist 150 \
+                       --seed 0.1 \
+                       -c 7 \
+                       data/pvalues.adjusted.bed > data/pvalues.regions.bed
+
+Where the seed allows a region to start, *-c* indicates where to find the
+p-values to merge, and `--dist` tells the program to merge peaks (in this case
+troughs) within 150 bases of the other.
+
+The cpv/peaks.py script is quite flexibile. Run it without arguments for
+further usage.
