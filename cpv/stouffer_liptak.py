@@ -5,10 +5,9 @@ from numpy.linalg import cholesky as chol
 qnorm = norm.ppf
 pnorm = norm.cdf
 
-# mutiple testing correction implemented in statsmodels: 
+# TODO: mutiple testing correction implemented in statsmodels:
 # https://github.com/statsmodels/statsmodels/blob/master/scikits/statsmodels/sandbox/stats/multicomp.py
 
-# TODO: for each set of p-vals, calculate sigma from the ACF values.
 def stouffer_liptak(pvals, sigma=None):
     """
     The stouffer_liptak correction.
