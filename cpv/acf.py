@@ -25,8 +25,10 @@ def bediter(fname, col_num):
     """
     for l in reader(fname, header=False):
         if l[0][0] == "#": continue
+        p = float(l[col_num])
+        if p == 1: p-= 1e-10 # the stouffer correction doesnt like values == 1
         yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
-                "p": float(l[col_num])} # "stuff": l[3:][:]}
+                "p": p} # "stuff": l[3:][:]}
 
 def acf(fnames, lags, col_num0):
     acfs = {}
@@ -132,8 +134,9 @@ def run(args):
         adjusted.append(row[-1])
         tmp_fh.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
     tmp_fh.close()
-    from scikits.statsmodels.sandbox.stats.multicomp import  multipletests
-    rejected, bh_pvals = multipletests(adjusted, alpha=args.alpha, method='fdr_bh')[:2]
+    from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
+    rejected, bh_pvals = fdrcorrection0(adjusted, alpha=args.alpha,
+            method='indep')[:2]
 
     write_file(tmp_fh.name, rejected, bh_pvals)
 
