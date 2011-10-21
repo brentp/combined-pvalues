@@ -159,8 +159,8 @@ def main():
             type=str, default="15:500:50")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
             " acf", type=int, default=4)
-    p.add_argument("-a", dest="alpha", default=0.05, help="cutoff"
-            " for significance after benjamini hochberg FDR corretion")
+    p.add_argument("-a", dest="alpha", default=0.05, type=float, help="cutoff"
+            " for significance after benjamini hochberg FDR correction")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):

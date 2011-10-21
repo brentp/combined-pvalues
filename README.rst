@@ -68,14 +68,16 @@ Regions
 We are often interested in entire regions. After running the above example, we
 can find the extent of any regions using::
 
- $ python cpv/peaks.py --dist 150 \
-                       --seed 0.1 \
-                       -c 7 \
-                       data/pvalues.adjusted.bed > data/pvalues.regions.bed
+    $ python cpv/peaks.py --dist 150 \
+                          --seed 0.1 \
+                          -c 7 \
+                          data/pvalues.adjusted.bed > data/pvalues.regions.bed
 
 Where the seed allows a region to start, *-c* indicates where to find the
 p-values to merge, and `--dist` tells the program to merge peaks (in this case
 troughs) within 150 bases of the other.
+The output file is a BED file with each region and the lowest (currently)
+p-value in the region.
 
 The cpv/peaks.py script is quite flexibile. Run it without arguments for
 further usage.
