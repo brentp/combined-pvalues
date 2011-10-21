@@ -7,7 +7,10 @@ See
     Generalizing Moving Averages for Tiling
     Arrays Using Combined P-Value Statistics
 
-.. note::
+note
+====
+::
+
    This changes that implementation by allowing lags by *distance* (presumably)
    in bases, rather than by an index offset as is generally done with ACF.
    This makes the implementation quite a bit slower but provides more
