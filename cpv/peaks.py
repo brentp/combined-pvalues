@@ -1,5 +1,5 @@
 """
-find peaks or troughs in bed files
+find peaks or troughs in sorted bed files
 
 for a bedgraph file with pvalues in the 4th column. usage would be:
 
