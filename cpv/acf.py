@@ -3,10 +3,11 @@
    of *distance* lags.
 """
 import argparse
+import heapq
 from toolshed import reader
 import sys
 import numpy as np
-from itertools import groupby, tee, izip
+from itertools import groupby, tee, izip, combinations
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -53,51 +54,51 @@ def get_corr(dist, acfs):
             return corr
     return 0
 
-def adjust_pvals(fnames, col_num0, acfs):
+def walk(chromlist, lag_max):
+    """
+    for each item in chromlist, yield the item and its neighborhood 
+    within lag-max
+    """
+    L = list(chromlist)
+    N = len(L)
+    imin = imax = 0
+    for ithis, xbed in enumerate(L):
+        # move up the bottom of the interval
+        while xbed["start"] - L[imin]["end"] > lag_max:
+            imin += 1
+        if imax == N: imax -= 1
+        while L[imax]["start"] - xbed["end"] < lag_max:
+            imax += 1
+            if imax == N: break
+        assert imin <= ithis <= imax
+        # dont need to add 1 to imax because we got outside of the range above.
+        yield xbed, L[imin: imax]
 
+def gen_matrix(group, acfs, cached={}):
+    a = np.eye(len(group))
+    group = enumerate(group)
+    for (i, ibed), (j, jbed) in combinations(group, 2):
+        # a is always left of b
+        dist = jbed["start"] - ibed["end"]
+        # symmetric.
+        # cached speeds things up a bit...
+        if not dist in cached:
+            cached[dist] = get_corr(dist, acfs)
+        a[j, i] = a[i, j] = cached[dist]
+    return a
+
+def adjust_pvals(fnames, col_num0, acfs):
+    from stouffer_liptak import stouffer_liptak
     lag_max = acfs[-1][0][1]
-    D = len(acfs)
     for fname in fnames:
         for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
-            chromlist = list(chromlist)
-            iymin = 1
-            offset = 95
-            for ix, xbed in enumerate(chromlist[offset:]):
-                print xbed
-                ix += offset
-                sigma = [1.0]
-                pvals = [xbed['p']]
-                dists = [0]
+            for xbed, group in walk(chromlist, lag_max):
 
-                # increment iymin, so don't make unnecessary checks below.
-                while xbed["start"] - chromlist[iymin]["end"] > lag_max:
-                    iymin += 1
-                print "iymin", iymin
-
-                # have to go backward,
-                for iy in xrange(iymin, len(chromlist)):
-                    if ix == iy: continue
-                    ybed = chromlist[iy]
-                    # can be < 0
-                    dist = abs(ybed['start'] - xbed['end']) if ix < iy \
-                      else abs(xbed['start'] - ybed['end'])
-
-                    if dist > lag_max: break
-                    dists.append(dist)
-                    pvals.append(ybed['p'])
-                    sigma.append(get_corr(dist, acfs))
-                # convert sigma to a matrix
-                sigma, pvals, dists = map(np.array, (sigma, pvals, dists))
-                idxs = dists.argsort()
-                print "i", idxs
-
-                print "s", sigma[idxs]
-                print "p", pvals[idxs]
-                print "d", dists[idxs]
-                1/0
-
-
-
+                sigma = gen_matrix(group, acfs)
+                pvals = [g['p'] for g in group]
+                adjusted = stouffer_liptak(pvals, sigma)["p"]
+                print "%s\t%i\t%i\t%.3g\t%.3g" % (xbed["chrom"], xbed["start"],
+                                              xbed["end"], xbed["p"], adjusted)
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
