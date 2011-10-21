@@ -31,9 +31,14 @@ Even if the start is 0, it will not include the self in the autocorrelation.
 
 BED Output
 ----------
-It then adjusts the p-values, and outputs a new BED file with columns:
+It then:
 
-*chrom*, *start*, *end*, *column5-pvalue*, *adjusted-pvalue*
+ + adjusts the p-values by stouffer-liptak with moving average.
+ + performs a Benjamini-Hochberg FDR test, outputs adjusted values and
+   indicates significance.and 
+ + outputs a new BED file with columns:
+
+*chr*, *start*, *end*, *pval*, *stouffer-pval*, *reject_null_after_bh*, *bh_pval*
 
 ACF Output
 ----------
@@ -57,3 +62,8 @@ calculating the autocorrelation.
 If that number is too small, the correlation values may be un-reliable.
 We expect the correlation to decrease with increase lag (unless there is some
 periodicity).
+
+TODO
+----
+
+merge adjacent peaks.

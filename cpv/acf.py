@@ -6,6 +6,8 @@ import argparse
 from toolshed import reader
 from chart import chart
 import sys
+from tempfile import mktemp
+import os
 import numpy as np
 from itertools import groupby, tee, izip, combinations
 
@@ -106,25 +108,10 @@ def adjust_pvals(fnames, col_num0, acfs):
                 sigma = gen_sigma_matrix(xneighbors, acfs)
                 pvals = [g['p'] for g in xneighbors]
                 adjusted = stouffer_liptak(pvals, sigma)["p"]
-                print "%s\t%i\t%i\t%.3g\t%.3g" % (xbed["chrom"], xbed["start"],
-                                              xbed["end"], xbed["p"], adjusted)
+                yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
+                        adjusted)
 
-def main():
-    p = argparse.ArgumentParser(description=__doc__,
-                   formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("-d", dest="d", help="start:stop:stepsize of distance. e.g."
-            " %default means check acf at distances of:"
-            "[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]",
-            type=str, default="15:500:50")
-    p.add_argument("-c", dest="c", help="column number that has the value to take the"
-            " acf", type=int, default=4)
-    p.add_argument("--adjust", dest="adjust", default=False,
-        action="store_true", help="after the acf, adjust the p-values")
-    p.add_argument('files', nargs='+', help='files to process')
-    args = p.parse_args()
-    if (len(args.files) == 0):
-        sys.exit(not p.print_help())
-
+def run(args):
     d = map(int, args.d.split(":"))
     d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
@@ -137,7 +124,45 @@ def main():
 
     # get rid of N, just keep the correlation.
     acf_vals = [(k, v[0]) for k, v in acf_vals]
-    adjust_pvals(args.files, args.c - 1, acf_vals)
+    # use a temp file because we don't want to keep all these in memory
+    # during the FDR calc.
+    tmp_fh = open(mktemp(), "w")
+    adjusted = []
+    for row in adjust_pvals(args.files, args.c - 1, acf_vals):
+        adjusted.append(row[-1])
+        tmp_fh.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
+    tmp_fh.close()
+    from scikits.statsmodels.sandbox.stats.multicomp import  multipletests
+    rejected, bh_pvals = multipletests(adjusted, alpha=args.alpha, method='fdr_bh')[:2]
+
+    write_file(tmp_fh.name, rejected, bh_pvals)
+
+def write_file(fname, rejected, bh_pvals):
+    tmp_fh = open(fname, "r")
+    print "#chrom\tstart\tend\tp_orig\tp_stouffer\trejected\tp_bh"
+    for line, rej, bhp in izip(tmp_fh, rejected, bh_pvals):
+        sys.stdout.write("%s\t%s\t%.4g\n" % (line.rstrip("\r\n"),
+                                       "T" if rej else "F",
+                                       bhp))
+    tmp_fh.close()
+    os.unlink(tmp_fh.name)
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__,
+                   formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("-d", dest="d", help="start:stop:stepsize of distance. e.g."
+            " %default means check acf at distances of:"
+            "[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]",
+            type=str, default="15:500:50")
+    p.add_argument("-c", dest="c", help="column number that has the value to take the"
+            " acf", type=int, default=4)
+    p.add_argument("-a", dest="alpha", default=0.05, help="cutoff"
+            " for significance after benjamini hochberg FDR corretion")
+    p.add_argument('files', nargs='+', help='files to process')
+    args = p.parse_args()
+    if (len(args.files) == 0):
+        sys.exit(not p.print_help())
+    return run(args)
 
 if __name__ == "__main__":
     import doctest
