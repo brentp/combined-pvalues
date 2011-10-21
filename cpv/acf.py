@@ -60,15 +60,28 @@ def adjust_pvals(fnames, col_num0, acfs):
     for fname in fnames:
         for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
             chromlist = list(chromlist)
-            for ix, xbed in enumerate(chromlist):
+            iymin = 1
+            offset = 95
+            for ix, xbed in enumerate(chromlist[offset:]):
+                print xbed
+                ix += offset
                 sigma = [1.0]
                 pvals = [xbed['p']]
                 dists = [0]
+
+                # increment iymin, so don't make unnecessary checks below.
+                while xbed["start"] - chromlist[iymin]["end"] > lag_max:
+                    iymin += 1
+                print "iymin", iymin
+
                 # have to go backward,
-                for iy in xrange(max(ix - 5 * D, 0), len(chromlist)):
+                for iy in xrange(iymin, len(chromlist)):
                     if ix == iy: continue
                     ybed = chromlist[iy]
-                    dist = abs(ybed['start'] - xbed['end']) if ix < iy else abs(xbed['start'] - ybed['end'])
+                    # can be < 0
+                    dist = abs(ybed['start'] - xbed['end']) if ix < iy \
+                      else abs(xbed['start'] - ybed['end'])
+
                     if dist > lag_max: break
                     dists.append(dist)
                     pvals.append(ybed['p'])

@@ -1,4 +1,5 @@
-A library to calculate adjusted p-values from spatially autocorellated tests.
+A library to calculate adjusted p-values from spatially autocorrelated tests.
+This is useful for ChIP-Seq probes and Tiling arrays.
 
 See
 
