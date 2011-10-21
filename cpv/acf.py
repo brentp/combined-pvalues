@@ -25,15 +25,15 @@ def bediter(fname, col_num):
 def acf(fnames, lags, col_num0):
     acfs = {}
     for lag_min, lag_max in pairwise(lags):
-        # groupby chromosome.
-        xs, ys = [], []
+        xs, ys = [], [] # these hold the lagged values.
         for fname in fnames:
+            # groupby chromosome.
             for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
                 chromlist = list(chromlist)
                 for ix, xbed in enumerate(chromlist):
                     for iy in xrange(ix + 1, len(chromlist)):
                         ybed = chromlist[iy]
-                        # y is always > x
+                        # y is always > x so dist calc is simplified.
                         # too close:
                         if ybed['start'] - xbed['end'] < lag_min: continue
                         # too far.
@@ -48,6 +48,8 @@ def acf(fnames, lags, col_num0):
 def get_corr(dist, acfs):
     # it's very close. just give it the next up.
     # TODO: should probably not do this. force them to start at 0.
+    # acfs[0] is like (lag_min, lag_max), corr
+    # so this is checking if it's < smallest lag...
     if dist < acfs[0][0][0]:
         return acfs[0][1]
     for (lag_min, lag_max), corr in acfs:
@@ -57,8 +59,8 @@ def get_corr(dist, acfs):
 
 def walk(chromlist, lag_max):
     """
-    for each item in chromlist, yield the item and its neighborhood 
-    within lag-max
+    for each item in chromlist, yield the item and its neighborhood
+    within lag-max.
     """
     L = list(chromlist)
     N = len(L)
