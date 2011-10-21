@@ -47,6 +47,7 @@ def acf(fnames, lags, col_num0):
 
 def get_corr(dist, acfs):
     # it's very close. just give it the next up.
+    # TODO: should probably not do this. force them to start at 0.
     if dist < acfs[0][0][0]:
         return acfs[0][1]
     for (lag_min, lag_max), corr in acfs:
@@ -120,12 +121,13 @@ def main():
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, args.c - 1)
+    print >>sys.stderr, "lag_min-lag_max\tcorrelation\tN"
+    for k,v in sorted(acf_vals):
+        print >>sys.stderr, "%i-%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
+
     # get rid of N, just keep the correlation.
     acf_vals = [(k, v[0]) for k, v in acf_vals]
-
     adjust_pvals(args.files, args.c - 1, acf_vals)
-    for k,v in sorted(acf_vals):
-        print k, v
 
 if __name__ == "__main__":
     import doctest
