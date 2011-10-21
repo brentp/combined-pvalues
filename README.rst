@@ -7,16 +7,22 @@ See
     Generalizing Moving Averages for Tiling
     Arrays Using Combined P-Value Statistics
 
+.. note::
+   This changes that implementation by allowing lags by *distance* (presumably)
+   in bases, rather than by an index offset as is generally done with ACF.
+   This makes the implementation quite a bit slower but provides more
+   flexibility for probes/p-values that are not evenly spaced.
+
 Example on data in this repository::
 
     python cpv/acf.py -d 15:500:50 -c 5 data/pvals.bed >  data/pvalues.adjusted.bed
 
 This takes `this BED file <https://github.com/brentp/combined-pvalues/blob/master/data/pvals.bed>`_ with the p-values in column 5, finds the autocorrelation
-at lags starting at `15` and going up to `500` in steps of `50`.
+at lags starting at *15* and going up to *500* in steps of *50*.
 Even if the start is 0, it will not include the self in the autocorrelation.
 It then adjusts the p-values, and outputs a new BED file with columns:
 
-`chrom`, `start`, `end`, `column5-pvalue`, `adjusted-pvalue`
+*chrom*, *start*, *end*, *column5-pvalue*, *adjusted-pvalue*
 
 It also outputs someting like::
 
