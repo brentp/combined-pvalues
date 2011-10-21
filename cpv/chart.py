@@ -27,7 +27,6 @@ def chart(acfs, base="https://chart.googleapis.com/chart?cht=bvs&chs=550x250",
     color="224499"):
     values = [float(acf) for kbin, acf in acfs]
     url, numbers = encode(values)
-    print numbers
     url += "&chco=" + color
     xlabels = "|".join("%s-%s" % k for k, v in acfs)
     # draw the x-axis ... and the bin-names
