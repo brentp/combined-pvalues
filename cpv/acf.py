@@ -112,20 +112,21 @@ def adjust_pvals(fnames, col_num0, acfs):
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                    formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("-d", dest="d", help="start:stop:step of distance. e.g."
+    p.add_argument("-d", dest="d", help="start:stop:stepsize of distance. e.g."
             " %default means check acf at distances of:"
             "[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]",
             type=str, default="15:500:50")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
-            " acf", type=int)
+            " acf", type=int, default=4)
     p.add_argument("--adjust", dest="adjust", default=False,
         action="store_true", help="after the acf, adjust the p-values")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
-    if (args.d is None or len(args.files) == 0):
+    if (len(args.files) == 0):
         sys.exit(not p.print_help())
 
     d = map(int, args.d.split(":"))
+    d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, args.c - 1)
