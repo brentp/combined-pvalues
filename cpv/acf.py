@@ -3,8 +3,8 @@
    of *distance* lags.
 """
 import argparse
-import heapq
 from toolshed import reader
+from chart import chart
 import sys
 import numpy as np
 from itertools import groupby, tee, izip, combinations
@@ -16,11 +16,15 @@ def pairwise(iterable):
     return izip(a, b)
 
 def bediter(fname, col_num):
+    """
+    iterate over a bed file. turn col_num into a float
+    and the start, stop column into an int and yield a dict
+    for each row.
+    """
     for l in reader(fname, header=False):
         if l[0][0] == "#": continue
         yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
                 "p": float(l[col_num])} # "stuff": l[3:][:]}
-
 
 def acf(fnames, lags, col_num0):
     acfs = {}
@@ -31,6 +35,7 @@ def acf(fnames, lags, col_num0):
             for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
                 chromlist = list(chromlist)
                 for ix, xbed in enumerate(chromlist):
+                    # find all lines within lag of xbed.
                     for iy in xrange(ix + 1, len(chromlist)):
                         ybed = chromlist[iy]
                         # y is always > x so dist calc is simplified.
@@ -60,7 +65,8 @@ def get_corr(dist, acfs):
 def walk(chromlist, lag_max):
     """
     for each item in chromlist, yield the item and its neighborhood
-    within lag-max.
+    within lag-max. These yielded values are then used to generate
+    the sigma autocorrelation matrix.
     """
     L = list(chromlist)
     N = len(L)
@@ -77,7 +83,7 @@ def walk(chromlist, lag_max):
         # dont need to add 1 to imax because we got outside of the range above.
         yield xbed, L[imin: imax]
 
-def gen_matrix(group, acfs, cached={}):
+def gen_sigma_matrix(group, acfs, cached={}):
     a = np.eye(len(group))
     group = enumerate(group)
     for (i, ibed), (j, jbed) in combinations(group, 2):
@@ -95,10 +101,10 @@ def adjust_pvals(fnames, col_num0, acfs):
     lag_max = acfs[-1][0][1]
     for fname in fnames:
         for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
-            for xbed, group in walk(chromlist, lag_max):
+            for xbed, xneighbors in walk(chromlist, lag_max):
 
-                sigma = gen_matrix(group, acfs)
-                pvals = [g['p'] for g in group]
+                sigma = gen_sigma_matrix(xneighbors, acfs)
+                pvals = [g['p'] for g in xneighbors]
                 adjusted = stouffer_liptak(pvals, sigma)["p"]
                 print "%s\t%i\t%i\t%.3g\t%.3g" % (xbed["chrom"], xbed["start"],
                                               xbed["end"], xbed["p"], adjusted)
@@ -123,7 +129,6 @@ def main():
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, args.c - 1)
-    from chart import chart
     print >>sys.stderr, "#", chart([(k, v[0]) for k, v in acf_vals])
     print >>sys.stderr, "lag_min-lag_max\tcorrelation\tN"
     for k,v in sorted(acf_vals):
@@ -131,7 +136,6 @@ def main():
 
     # get rid of N, just keep the correlation.
     acf_vals = [(k, v[0]) for k, v in acf_vals]
-    print >>sys.stderr, chart(acf_vals)
     adjust_pvals(args.files, args.c - 1, acf_vals)
 
 if __name__ == "__main__":
