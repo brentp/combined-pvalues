@@ -123,12 +123,15 @@ def main():
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, args.c - 1)
+    from chart import chart
+    print >>sys.stderr, "#", chart([(k, v[0]) for k, v in acf_vals])
     print >>sys.stderr, "lag_min-lag_max\tcorrelation\tN"
     for k,v in sorted(acf_vals):
         print >>sys.stderr, "%i-%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
 
     # get rid of N, just keep the correlation.
     acf_vals = [(k, v[0]) for k, v in acf_vals]
+    print >>sys.stderr, chart(acf_vals)
     adjust_pvals(args.files, args.c - 1, acf_vals)
 
 if __name__ == "__main__":
