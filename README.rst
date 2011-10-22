@@ -75,11 +75,11 @@ periodicity).
 The first line of the output is a link to an image of the ACF data represented
 in the table. It looks something like with parameter (-d 1:500:60):
 
-.. image:: http://bit.ly/qovwTN
+.. image:: https://raw.github.com/brentp/combined-pvalues/master/data/1_500_60.png
 
 Or, with more bins (-d 1:500:30)
 
-.. image:: http://goo.gl/4fI5V
+.. image:: https://raw.github.com/brentp/combined-pvalues/master/data/1_500_30.png
 
 That output should be directed to a file for use in later steps.
 
