@@ -36,7 +36,9 @@ class _write_peaks(object):
         # peak_count unused...
         self.peak_count += 1
         peak_start = peaks[0]["start"]
-        peak_end = peaks[-1]["end"]
+        # dont konw the length of the regions and they are only sorted
+        # by start.
+        peak_end = max(p["end"] for p in peaks)
         peak_count = len(peaks)
         # TODO: something better than keep best p-value ?
         pbest = peaks[0]["p"]
@@ -51,7 +53,8 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
     assert(scmp(seed, thresh))
     for key, bedlist in groupby(chromiter, lambda c: c["chrom"]):
         last_start = -1
-        peaks = []
+        # have to track max end because intervals are sorted only by start.
+        max_end, peaks = 0, []
         for b in bedlist:
             assert last_start <= b["start"], ("enforce sorted")
             last_start = b["start"]
@@ -60,16 +63,18 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
                 # we have to add this to peaks.
                 # first check distance.
                 # if distance is too great, we create a new peak
-                if peaks != [] and b["start"] - peaks[-1]["end"] > dist:
+                if peaks != [] and b["start"] - max_end > dist:
                     if out is None:
                        if any(scmp(p, seed) for p in peaks):
                            for p in peaks: yield p
                     else:
                         write_peaks(peaks, seed, out, scmp)
                     peaks = []
+                    max_end = 0
 
                 #add new peak regardless
                 peaks.append(b)
+                max_end = max(b['end'], max_end)
 
         if out is None:
            if any(scmp(p, seed) for p in peaks):
