@@ -101,10 +101,8 @@ if __name__ == "__main__":
     p.add_argument("-c", type=int, help="column number containing the value "
                   "for which to find peaks.", default=4)
     p.add_argument("bed_file")
-    try:
-        args = p.parse_args()
-    except TypeError:
-        sys.exit(not p.print_help())
+
+    args = p.parse_args()
 
     if not(args.dist and args.seed):
         sys.exit(not p.print_help())

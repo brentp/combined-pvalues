@@ -152,7 +152,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                    formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("-d", dest="d", help="start:stop:stepsize of distance. e.g."
-            " %default means check acf at distances of:"
+            " %(default)s means check acf at distances of:"
             "[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]",
             type=str, default="15:500:50")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
