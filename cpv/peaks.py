@@ -93,7 +93,7 @@ if __name__ == "__main__":
                  " large/small in order to seed a region.", type=float)
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
-                 type=float, default=3.0)
+                 type=float)
     p.add_argument("--invert", dest="invert", action="store_true",
             help="by default, the test is for a value less-than seed or"
             " thresh--e.g. for p-values. If this flag is specified, the test"
@@ -111,8 +111,6 @@ if __name__ == "__main__":
 
     if args.threshold is None:
         args.threshold = args.seed
-        print >>sys.stderr, "setting threshold == seed"
-
 
     chromiter = bediter(args.bed_file, args.c - 1)
     scmp = operator.ge if args.invert else operator.le
