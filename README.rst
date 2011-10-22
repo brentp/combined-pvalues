@@ -38,7 +38,7 @@ It then:
    indicates significance.and 
  + outputs a new BED file with columns:
 
-*chr*, *start*, *end*, *pval*, *stouffer-pval*, *reject_null_after_bh*, *bh_pval*
+*chr*, *start*, *end*, *pval*, *stouffer-pval*, *bh_pval*
 
 ACF Output
 ----------
@@ -70,7 +70,7 @@ can find the extent of any regions using::
 
     $ python cpv/peaks.py --dist 150 \
                           --seed 0.1 \
-                          -c 7 \
+                          -c 6 \
                           data/pvalues.adjusted.bed > data/pvalues.regions.bed
 
 Where the seed allows a region to start, *-c* indicates where to find the

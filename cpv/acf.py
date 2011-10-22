@@ -135,18 +135,16 @@ def run(args):
         tmp_fh.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
     tmp_fh.close()
     from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
-    rejected, bh_pvals = fdrcorrection0(adjusted, alpha=args.alpha,
-            method='indep')[:2]
+    bh_pvals = fdrcorrection0(adjusted, alpha=args.alpha,
+            method='indep')[1]
 
-    write_file(tmp_fh.name, rejected, bh_pvals)
+    write_file(tmp_fh.name, bh_pvals)
 
-def write_file(fname, rejected, bh_pvals):
+def write_file(fname, bh_pvals):
     tmp_fh = open(fname, "r")
-    print "#chrom\tstart\tend\tp_orig\tp_stouffer\trejected\tp_bh"
-    for line, rej, bhp in izip(tmp_fh, rejected, bh_pvals):
-        sys.stdout.write("%s\t%s\t%.4g\n" % (line.rstrip("\r\n"),
-                                       "T" if rej else "F",
-                                       bhp))
+    print "#chrom\tstart\tend\tp_orig\tp_stouffer\tp_bh"
+    for line, bhp in izip(tmp_fh, bh_pvals):
+        sys.stdout.write("%s\t%.4g\n" % (line.rstrip("\r\n"), bhp))
     tmp_fh.close()
     os.unlink(tmp_fh.name)
 
