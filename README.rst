@@ -29,35 +29,43 @@ This takes `this BED file <https://github.com/brentp/combined-pvalues/blob/maste
 at lags starting at *15* and going up to *500* in steps of *50*.
 Even if the start is 0, it will not include the self in the autocorrelation.
 
-BED Output
-----------
-It then:
+Pipeline
+========
 
- + adjusts the p-values by stouffer-liptak with moving average.
- + performs a Benjamini-Hochberg FDR test, outputs adjusted values and
-   indicates significance.and 
- + outputs a new BED file with columns:
+The default steps are to:
 
-*chr*, *start*, *end*, *pval*, *stouffer-pval*, *bh_pval*
+ 1) calculate the ACF
+ 2) use the ACF to do the Stouffer-Liptak correction
+ 3) do the Benjamini-Hochberg FDR correction
+ 4) find regions from the adjusted p-values.
+
+Inputs and outputs to each step are BED files.
+
+Note that any of these steps can be run independently, e.g. to do multiple
+testing correction on a BED file with p-values, just call the fdr.py script.
 
 ACF
 ---
+To calclulate autocorrelation from 1 to 500 bases with a stepsize of 50
+on the p-values in column 5, the command would look something like:
 
-The ACF step outputs someting like::
+    $ python cpv/acf.py -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
+
+The ACF step something like::
 
     # {link}
-    lag_min-lag_max correlation N
-    15-65   0.06377 4374
-    65-115  0.03168 2638
-    115-165 0.04158 3689
-    165-215 0.0176  2679
-    215-265 0.01616 3064
-    265-315 0.01906 2880
-    315-365 0.05305 2491
-    365-415 0.04555 3097
-    415-465 0.03252 2460
+    lag_min lag_max correlation N
+    1   51  0.06853 2982
+    51  101 0.04583 4182
+    101 151 0.02719 2623
+    151 201 0.0365  3564
+    201 251 0.0005302   2676
+    251 301 0.02595 3066
+    301 351 0.04935 2773
+    351 401 0.04592 2505
+    401 451 0.03923 2972
 
-To STDERR, where the first column indicates the lag-bin, the second is the
+Where the first column indicates the lag-bin, the second is the
 autocorrelation at that lag, and the last is the number of pairs used in
 calculating the autocorrelation.
 If that number is too small, the correlation values may be un-reliable.
@@ -73,42 +81,57 @@ Or, with more bins (-d 1:500:30)
 
 .. image:: http://goo.gl/4fI5V
 
+That output should be directed to a file for use in later steps.
+
+Combine P-values with Stouffer-Liptak correction
+------------------------------------------------
+
+The ACF output is then used to do the Stouffer-Liptak correction.
+A call like::
+
+    $ python cpv/combine.py --acf data/acf.txt -c 5 data/pvals.bed > data/pvals.acf.bed
+
+ + adjusts the p-values by stouffer-liptak with values from the autocorrelation
+   in the step above.
+ + outputs a new BED file with columns:
+
+*chr*, *start*, *end*, *pval*, *stouffer-pval*
+
+Benjamini-HochBerg Correction
+-----------------------------
+
+This performas BH FDR correction on the pvalues. A call looks like::
+
+    $ python cpv/fdr.py --alpha 0.05 data/pvals.acf.bed > data/pvals.adjusted.bed
+
+where the new file has one a additional column that is the corrected p-value.
+By default, it uses the last column as the p-value, but another column can
+be used by specifying *-c*.
+
 Regions
 -------
 We are often interested in entire regions. After running the above example, we
 can find the extent of any regions using::
 
-    $ python cpv/peaks.py --dist 150 \
-                          --seed 0.1 \
-                          -c 6 \
-                          data/pvalues.adjusted.bed > data/pvalues.regions.bed
+    $ python cpv/peaks.py --dist 500 --seed 0.1 \
+                     data/pvals.adjusted.bed > data/pvals.regions.bed
 
-Where the seed allows a region to start, *-c* indicates where to find the
-p-values to merge, and `--dist` tells the program to merge peaks (in this case
+where the seed inidicates a minimum value that must be see to start a region.
+Again, *-c* can be used to indicate the column containing the p-values
+(defaults to last column)`--dist` tells the program to merge peaks (in this case
 troughs) within 150 bases of the other.
 The output file is a BED file with each region and the lowest (currently)
 p-value in the region.
 
-The cpv/peaks.py script is quite flexibile. Run it without arguments for
+The cpv/peaks.py script is quite flexible. Run it without arguments for
 further usage.
 
 TODO
 ====
 
-1. Separate into component steps. acf.py does too much. We may just want to check
-   the ACF for various step sizes before continuing on.
+1. meta script to run steps with sensible defaults.
 
-   The pipeline shoud look like::
-
-    $ python acf.py -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
-    $ python combine.py --acf data/acf.txt -c 5 data/pvals.bed > data/pvals.acf.bed
-
-    # for fdr_correct and peaks.py -c could default to last_column.
-    $ python fdr.py -a 0.05 -c 6 data/pvals.acf.bed > data/pvals.adjusted.bed
-    $ python peaks.py --dist 500 --seed 0.05 -c 7 \
-                     data/pvals.adjusted.bed > data/pvals.regions.bed
-
-   so with an executable comb-p, all steps together look like::
+   create executable comb-p, all steps together look like::
 
     comb-p -d 1:500:50 -c 5 -a 0.05 data/pvals.bed -o data/prefix
 
