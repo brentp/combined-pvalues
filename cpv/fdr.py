@@ -6,13 +6,13 @@ import argparse
 import os
 from _common import bediter
 from itertools import izip
+import sys
+from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
 
 def run(args):
     # get rid of N, just keep the correlation.
-
-    col_num = args.c if args.c < -1 else (args.c - 1)
+    col_num = args.c if args.c < 0 else (args.c - 1)
     pvals = [b["p"] for b in bediter(args.bed_file, col_num)]
-    from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
     bh_pvals = fdrcorrection0(pvals, alpha=args.alpha,
             method='indep')[1]
     for bh, l in izip(bh_pvals, open(args.bed_file)):
@@ -23,7 +23,7 @@ def main():
                    formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("-c", dest="c", help="column number of the pvalues",
                    type=int, default=-1)
-    p.add_argument("-a", dest="alpha", default=0.05, type=float, help="cutoff"
+    p.add_argument("--alpha", dest="alpha", default=0.05, type=float, help="cutoff"
             " for significance after benjamini hochberg FDR correction")
     p.add_argument('bed_file', help='bed file to correct')
     args = p.parse_args()

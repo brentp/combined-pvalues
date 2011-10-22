@@ -14,12 +14,8 @@ from toolshed import reader
 import argparse
 import sys
 
+# don't use _common because I want this to be stand-alone.
 def bediter(fname, col_num):
-    """
-    iterate over a bed file. turn col_num into a float
-    and the start, stop column into an int and yield a dict
-    for each row.
-    """
     for l in reader(fname, header=False):
         if l[0][0] == "#": continue
         yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
@@ -99,7 +95,7 @@ if __name__ == "__main__":
             " thresh--e.g. for p-values. If this flag is specified, the test"
             " is for greater-than--e.g. for scores or -log10(p-values)")
     p.add_argument("-c", type=int, help="column number containing the value "
-                  "for which to find peaks.", default=4)
+                  "for which to find peaks.", default=-1)
     p.add_argument("bed_file")
 
     args = p.parse_args()
@@ -110,7 +106,8 @@ if __name__ == "__main__":
     if args.threshold is None:
         args.threshold = args.seed
 
-    chromiter = bediter(args.bed_file, args.c - 1)
+    col_num = args.c if args.c < 0 else args.c - 1
+    chromiter = bediter(args.bed_file, col_num)
     scmp = operator.ge if args.invert else operator.le
     assert scmp(args.seed, args.threshold)
     # call list because the walk function is an iterator.
