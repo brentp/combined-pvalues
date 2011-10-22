@@ -42,10 +42,10 @@ def run(args):
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, args.c - 1)
-    print >>sys.stderr, "#", chart([(k, v[0]) for k, v in acf_vals])
-    print >>sys.stderr, "lag_min\tlag_max\tcorrelation\tN"
+    print "#", chart([(k, v[0]) for k, v in acf_vals])
+    print "lag_min\tlag_max\tcorrelation\tN"
     for k,v in sorted(acf_vals):
-        print >>sys.stderr, "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
+        print "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
