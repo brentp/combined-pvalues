@@ -1,6 +1,5 @@
 """
-   calculate the autocorrelation of a *sorted* bed file with a set
-   of *distance* lags.
+perform Benjamini-Hochberg FDR correction on a BED file with p-values.
 """
 import argparse
 import os
