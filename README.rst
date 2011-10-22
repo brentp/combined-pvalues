@@ -18,16 +18,32 @@ note
    This makes the implementation quite a bit slower but provides more
    flexibility for probes/p-values that are not evenly spaced.
 
-Example
-=======
+Examples
+========
 
-with data in this repository::
+ + Compute the `ACF`_ of any BED file with a range of values between *15* and
+   *500* in steps of *50* (with p-values or numerical data in column 5)::
 
-    python cpv/acf.py -d 15:500:50 -c 5 data/pvals.bed -a 0.1 >  data/pvalues.adjusted.bed
+     python cpv/acf.py -d 15:500:50 -c 5 data/pvals.bed > data/acf.txt
 
-This takes `this BED file <https://github.com/brentp/combined-pvalues/blob/master/data/pvals.bed>`_ with the p-values in column 5, finds the autocorrelation
-at lags starting at *15* and going up to *500* in steps of *50*.
-Even if the start is 0, it will not include the self in the autocorrelation.
+   This can be done for any BED file with numerical data in one column. It will
+   create an image as below showing the autocorrelation at each lag.
+
+ + Find and merge peaks/troughs within a bed file::
+
+     python cpv/peaks.py --seed 0.05 --dist 1000 data/pvals.bed > data/pvals.peaks.bed
+
+   This will seed peaks with values < 0.05 and merge any adjacent values
+   within 1KB. The output is a BED file containing the extent of the troughs.
+   If the argument `--invert` is specified, the program will find look for
+   values larger than the seed.
+
+ + See below, or run::
+
+       python cpv/comb-p.py
+
+    to see the available programs.
+
 
 Pipeline
 ========
@@ -83,13 +99,13 @@ Or, with more bins (-d 1:500:30)
 
 That output should be directed to a file for use in later steps.
 
-Combine P-values with Stouffer-Liptak correction
-------------------------------------------------
+Combine P-values with Stouffer-Liptak-Kechris correction
+--------------------------------------------------------
 
-The ACF output is then used to do the Stouffer-Liptak correction.
+The ACF output is then used to do the Stouffer-Liptak-Kechris correction.
 A call like::
 
-    $ python cpv/combine.py --acf data/acf.txt -c 5 data/pvals.bed > data/pvals.acf.bed
+    $ python cpv/slk.py --acf data/acf.txt -c 5 data/pvals.bed > data/pvals.acf.bed
 
  + adjusts the p-values by stouffer-liptak with values from the autocorrelation
    in the step above.
@@ -97,7 +113,7 @@ A call like::
 
 *chr*, *start*, *end*, *pval*, *stouffer-pval*
 
-Benjamini-HochBerg Correction
+Benjamini-Hochberg Correction
 -----------------------------
 
 This performas BH FDR correction on the pvalues. A call looks like::
@@ -146,7 +162,7 @@ TODO
    each individual step and be run as::
 
     comb-p acf
-    comb-p combine
+    comb-p slk
     comb-p fdr
     comb-p peaks
 
@@ -167,4 +183,4 @@ TODO
 
    Where --pvals is the file used to generated --peaks. But, if comb-p peaks
    (optionally) output all p-values in a region, we wouldn't need --pvals
-   Then could have --acf and mirror comb-p combine...
+   Then could have --acf as an argument. and mirror comb-p combine...

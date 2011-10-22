@@ -3,10 +3,8 @@
    of *distance* lags.
 """
 import argparse
-from toolshed import reader
 from chart import chart
 import sys
-from tempfile import mktemp
 import os
 import numpy as np
 from itertools import groupby, combinations
