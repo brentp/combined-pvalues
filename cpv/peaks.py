@@ -101,6 +101,9 @@ if __name__ == "__main__":
     except TypeError:
         sys.exit(not p.print_help())
 
+    if not(args.dist and args.seed):
+        sys.exit(not p.print_help())
+
     if args.threshold is None:
         args.threshold = args.seed
         print >>sys.stderr, "setting threshold == seed"
@@ -108,6 +111,7 @@ if __name__ == "__main__":
 
     chromiter = bediter(args.bed_file, args.c - 1)
     scmp = operator.ge if args.invert else operator.le
+    assert scmp(args.seed, args.threshold)
     # call list because the walk function is an iterator.
     list(walk(chromiter, args.threshold, args.seed, args.dist, sys.stdout))
 
