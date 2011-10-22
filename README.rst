@@ -67,7 +67,7 @@ periodicity).
 The first line of the output is a link to an image of the ACF data represented
 in the table. It looks something like with parameter (-d 1:500:60):
 
-.. image:: http://goo.gl/uYBkN
+.. image:: http://bit.ly/qovwTN
 
 Or, with more bins (-d 1:500:30)
 
