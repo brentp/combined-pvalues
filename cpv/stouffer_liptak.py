@@ -5,9 +5,6 @@ from numpy.linalg import cholesky as chol
 qnorm = norm.ppf
 pnorm = norm.cdf
 
-# TODO: mutiple testing correction implemented in statsmodels:
-# https://github.com/statsmodels/statsmodels/blob/master/scikits/statsmodels/sandbox/stats/multicomp.py
-
 def stouffer_liptak(pvals, sigma=None):
     """
     The stouffer_liptak correction.
