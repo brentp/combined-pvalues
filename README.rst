@@ -40,11 +40,12 @@ It then:
 
 *chr*, *start*, *end*, *pval*, *stouffer-pval*, *bh_pval*
 
-ACF Output
-----------
+ACF
+---
 
-It also outputs someting like::
+The ACF step outputs someting like::
 
+    # {link}
     lag_min-lag_max correlation N
     15-65   0.06377 4374
     65-115  0.03168 2638
@@ -62,6 +63,15 @@ calculating the autocorrelation.
 If that number is too small, the correlation values may be un-reliable.
 We expect the correlation to decrease with increase lag (unless there is some
 periodicity).
+
+The first line of the output is a link to an image of the ACF data represented
+in the table. It looks something like with parameter (-d 1:500:60):
+
+.. image:: https://chart.googleapis.com/chart?cht=bvs&&chd=t:0.165,0.136,0.116,0.092,0.076,0.065,0.056,0.049&chs=424x250&chco=224499&chxt=x,y&chxl=0:|1-61|61-121|121-181|181-241|241-301|301-361|361-421|421-481&chxr=1,0,0.18&chm=N,000000,0,-1,12&chbh=42,6,12&chds=a
+
+Or, with more bins (-d 1:500:30)
+
+.. image:: https://chart.googleapis.com/chart?cht=bvs&&chd=t:0.175,0.154,0.139,0.130,0.123,0.109,0.097,0.087,0.079,0.072,0.068,0.063,0.059,0.053,0.051,0.048&chs=824x250&chco=224499&chxt=x,y&chxl=0:|1-31|31-61|61-91|91-121|121-151|151-181|181-211|211-241|241-271|271-301|301-331|331-361|361-391|391-421|421-451|451-481&chxr=1,0,0.20&chm=N,000000,0,-1,12&chbh=42,6,12&chds=a
 
 Regions
 -------
