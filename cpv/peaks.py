@@ -58,9 +58,9 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
             # this comparison gets both thresh and seed.
             if scmp(b["p"], thresh):
                 # we have to add this to peaks.
-                # first check distance. 
+                # first check distance.
                 # if distance is too great, we create a new peak
-                if peaks != [] and b["end"] - peaks[-1]["start"] > dist:
+                if peaks != [] and b["start"] - peaks[-1]["end"] > dist:
                     if out is None:
                        if any(scmp(p, seed) for p in peaks):
                            for p in peaks: yield p
@@ -68,7 +68,7 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
                         write_peaks(peaks, seed, out, scmp)
                     peaks = []
 
-                #add new peak regardless 
+                #add new peak regardless
                 peaks.append(b)
 
         if out is None:
