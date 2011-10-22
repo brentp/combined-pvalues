@@ -67,11 +67,11 @@ periodicity).
 The first line of the output is a link to an image of the ACF data represented
 in the table. It looks something like with parameter (-d 1:500:60):
 
-.. image:: https://chart.googleapis.com/chart?cht=bvs&&chd=t:0.165,0.136,0.116,0.092,0.076,0.065,0.056,0.049&chs=424x250&chco=224499&chxt=x,y&chxl=0:|1-61|61-121|121-181|181-241|241-301|301-361|361-421|421-481&chxr=1,0,0.18&chm=N,000000,0,-1,12&chbh=42,6,12&chds=a
+.. image:: http://goo.gl/uYBkN
 
 Or, with more bins (-d 1:500:30)
 
-.. image:: https://chart.googleapis.com/chart?cht=bvs&&chd=t:0.175,0.154,0.139,0.130,0.123,0.109,0.097,0.087,0.079,0.072,0.068,0.063,0.059,0.053,0.051,0.048&chs=824x250&chco=224499&chxt=x,y&chxl=0:|1-31|31-61|61-91|91-121|121-151|151-181|181-211|211-241|241-271|271-301|301-331|331-361|361-391|391-421|421-451|451-481&chxr=1,0,0.20&chm=N,000000,0,-1,12&chbh=42,6,12&chds=a
+.. image:: http://goo.gl/4fI5V
 
 Regions
 -------
@@ -91,3 +91,57 @@ p-value in the region.
 
 The cpv/peaks.py script is quite flexibile. Run it without arguments for
 further usage.
+
+TODO
+====
+
+1. Separate into component steps. acf.py does too much. We may just want to check
+   the ACF for various step sizes before continuing on.
+
+   The pipeline shoud look like::
+
+    $ python acf.py -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
+    $ python combine.py --acf data/acf.txt -c 5 data/pvals.bed > data/pvals.acf.bed
+
+    # for fdr_correct and peaks.py -c could default to last_column.
+    $ python fdr.py -a 0.05 -c 6 data/pvals.acf.bed > data/pvals.adjusted.bed
+    $ python peaks.py --dist 500 --seed 0.05 -c 7 \
+                     data/pvals.adjusted.bed > data/pvals.regions.bed
+
+   so with an executable comb-p, all steps together look like::
+
+    comb-p -d 1:500:50 -c 5 -a 0.05 data/pvals.bed -o data/prefix
+
+   this will run set --seed = -a and --dist == 500 (though these can also be
+   specified explicitly) and will create::
+
+    data/prefix.acf.txt # the acf correlations.
+    data/prefix.acf.bed # the acf corrected bed
+    data/prefix.adj.bed # the acf + fdr corrected bed
+    data/prefix.regions.bed # the regions that have been run.
+
+   each individual step and be run as::
+
+    comb-p acf
+    comb-p combine
+    comb-p fdr
+    comb-p peaks
+
+2. **Rigorous p-values for regions**.
+   Since we have the stouffer-liptak for combined p-values, it should be used
+   to do a correction for all p-values in a peak-region.
+   This will require calculating the ACF on the input so it should be optional.
+   Probably go out a given distance and then fit with a function so dont have
+   to actually calculate the ACF for the full set of lags (can have very large
+   regions).
+   This will require keep the non-significant p-values for a region as well.
+   Maybe this should be a seperate step.::
+
+    comb-p region-correct --peaks data/prefix.regions.bed \
+                          --pvals data/prefix.adj.bed \
+                          -c 6 \
+                          -d 1:500:50 > data/prefix.regions.pvals.ped
+
+   Where --pvals is the file used to generated --peaks. But, if comb-p peaks
+   (optionally) output all p-values in a region, we wouldn't need --pvals
+   Then could have --acf and mirror comb-p combine...
