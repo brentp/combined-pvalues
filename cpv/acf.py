@@ -23,7 +23,7 @@ except ImportError:
     def dw(xs, ys): return None
     HAS_DW = False
 
-def acf(fnames, lags, col_num0):
+def acf(fnames, lags, col_num0, partial=False):
     acfs = {}
     for lag_min, lag_max in pairwise(lags):
         xs, ys = [], [] # these hold the lagged values.
@@ -36,8 +36,9 @@ def acf(fnames, lags, col_num0):
                     for iy in xrange(ix + 1, len(chromlist)):
                         ybed = chromlist[iy]
                         # y is always > x so dist calc is simplified.
-                        # too close:
-                        if ybed['start'] - xbed['end'] < lag_min: continue
+                        if partial:
+                            # too close:
+                            if ybed['start'] - xbed['end'] < lag_min: continue
                         # too far.
                         if ybed['start'] - xbed['end'] > lag_max: break
 
@@ -53,7 +54,7 @@ def run(args):
     d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
     lags = range(*d)
-    acf_vals = acf(args.files, lags, args.c - 1)
+    acf_vals = acf(args.files, lags, args.c - 1, args.partial)
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print "#", chart(values, xlabels)
@@ -71,8 +72,11 @@ def main():
             " %(default)s means check acf at distances of:"
             "[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]",
             type=str, default="15:500:50")
-    p.add_argument("-c", dest="c", help="column number that has the value to take the"
-            " acf", type=int, default=4)
+    p.add_argument("-c", dest="c", help="column number that has the value to"
+                   "take the  acf", type=int, default=4)
+    p.add_argument("--partial", dest="partial", action="store_true",
+                   default=False, help="do partial autocorrelation (default"
+                   " is full")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):
