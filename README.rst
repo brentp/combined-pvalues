@@ -1,22 +1,53 @@
 A library to calculate adjusted p-values from spatially autocorrelated tests.
 This is useful for ChIP-Seq probes and Tiling arrays.
 
+Invocation
+==========
+When the program is run with::
 
-See
-===
+   $ ./cpv/comb-p.py
 
-    Kechris et al. 2010:
-    Generalizing Moving Averages for Tiling
-    Arrays Using Combined P-Value Statistics
+This message is displayed::
 
-note
-====
-::
+    To run, indicate one of:
 
-   This changes that implementation by allowing lags by *distance* (presumably)
-   in bases, rather than by an index offset as is generally done with ACF.
-   This makes the implementation quite a bit slower but provides more
-   flexibility for probes/p-values that are not evenly spaced.
+       acf   - calculate autocorrelation within BED file
+       slk   - Stouffer-Liptak-Kechris correction of spatially correlated p-values
+       fdr   - Benjamini-Hochberg correction of p-values
+       peaks - find peaks in a BED file.
+       rpsim - generate p-values for a region (of p-values) by simulation.**
+       hist  - plot a histogram of a column and check for uniformity.
+
+    NOTE: most of these assume *sorted* BED files.
+
+
+Where each of the listed modules indicates an available program.
+Running any of the above will result in a more detailed help message. e.g.::
+
+    $ cpv/comb-p.py acf -h
+
+Gives::
+
+    usage: comb-p.py [-h] [-d D] [-c C] files [files ...]
+
+       calculate the autocorrelation of a *sorted* bed file with a set
+       of *distance* lags.
+
+    positional arguments:
+      files       files to process
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      -d D        start:stop:stepsize of distance. e.g. 15:500:50 means check acf
+                  at distances of:[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]
+      -c C        column number that has the value to take the acf
+
+
+Indicating that it can be run as::
+
+    $ ./cpv/comb-p.py acf -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
+
+Each module is described in detail below.
 
 Examples
 ========
@@ -102,6 +133,21 @@ That output should be directed to a file for use in later steps.
 Combine P-values with Stouffer-Liptak-Kechris correction
 --------------------------------------------------------
 
+See
++++
+
+    Kechris et al. 2010:
+    Generalizing Moving Averages for Tiling
+    Arrays Using Combined P-Value Statistics
+
+    This changes that implementation by allowing lags by *distance* (presumably)
+    in bases, rather than by an index offset as is generally done with ACF.
+    This makes the implementation quite a bit slower but provides more
+    flexibility for probes/p-values that are not evenly spaced.
+
+Usage
++++++
+
 The ACF output is then used to do the Stouffer-Liptak-Kechris correction.
 A call like::
 
@@ -141,6 +187,31 @@ p-value in the region.
 
 The cpv/peaks.py script is quite flexible. Run it without arguments for
 further usage.
+
+Region Sims
+-----------
+
+Given a region we want to generate, by simulation a *p-value* for the entire
+region. To do this, we do the following for each region:
+
+ + sort the p-values
+ + set S = the sum of their ranks (or the sum of the actual p-vals).
+ + set RL = number of probes in the region
+ + set P = number of probes in the original input file.
+ + N times, do:
+
+   - generate RL numbers between 1 and P
+   - store the sum of those RL values (and the sum of the p-values at those indexes)
+ + p = [report the number of times the simulated ranks or sums is < RL)/ N
+
+This adds a column for a p-value based on the ranks and a column for a p-value
+based on actual p's to the BED file. (NOT DONE).::
+
+   $ python cpv/rpsim.py -r data/pvals.regions.bed \
+                         -p data/pvals.bed \
+                         -c 4 \
+                         -N 10000 > data/region-ps.bed
+
 
 TODO
 ====
