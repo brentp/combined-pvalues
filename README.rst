@@ -58,10 +58,10 @@ Find and merge peaks/troughs within a bed file
 
      python cpv/peaks.py --seed 0.05 --dist 1000 data/pvals.bed > data/pvals.peaks.bed
 
-  This will seed peaks with values < 0.05 and merge any adjacent values
-  within 1KB. The output is a BED file containing the extent of the troughs.
-  If the argument `--invert` is specified, the program will find look for
-  values larger than the seed.
+This will seed peaks with values < 0.05 and merge any adjacent values
+within 1KB. The output is a BED file containing the extent of the troughs.
+If the argument `--invert` is specified, the program will find look for
+values larger than the seed.
 
 Pipeline
 ========
