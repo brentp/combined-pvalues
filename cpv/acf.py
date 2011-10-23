@@ -40,7 +40,9 @@ def run(args):
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, args.c - 1)
-    print "#", chart([(k, v[0]) for k, v in acf_vals])
+    values = [float(v[0]) for k, v in acf_vals]
+    xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
+    print "#", chart(values, xlabels)
     print "lag_min\tlag_max\tcorrelation\tN"
     for k,v in sorted(acf_vals):
         print "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])

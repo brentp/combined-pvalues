@@ -8,14 +8,12 @@ def encode(numbers):
     return "&chd=t:%s" % ','.join(["%.3f" % n for n in numbers])
 
 
-def chart(acfs, base="https://chart.googleapis.com/chart?cht=bvs&",
+def chart(values, xlabels, base="https://chart.googleapis.com/chart?cht=bvs&",
     color="224499"):
-    values = [float(acf) for kbin, acf in acfs]
     url = encode(values)
     chart_width = min(1000, 24 + 50 * len(values))
     url += "&chs=%ix250" % chart_width
     url += "&chco=" + color
-    xlabels = "|".join("%s-%s" % k for k, v in acfs)
     # draw the x-axis ... and the bin-names
     url += "&chxt=x,y&chxl=0:|" + xlabels
 
