@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import sys
-__actions = ("acf", "slk", "fdr", "peaks", "rpsim")
+__actions = ("acf", "slk", "fdr", "peaks", "rpsim", "hist")
 
 def main():
     if len(sys.argv) == 1 or sys.argv[1] in ("-h", "--help"):
         print >>sys.stderr,"""
 Tools for adjusting p-values in BED files.
-        Contact: Brent Pedersen - bpederse@gmail.com
-        License: BSD
+   Contact: Brent Pedersen - bpederse@gmail.com
+   License: BSD
 
 To run, indicate one of:
 
@@ -15,7 +15,8 @@ To run, indicate one of:
    slk   - Stouffer-Liptak-Kechris correction of spatially correlated p-values
    fdr   - Benjamini-Hochberg correction of p-values
    peaks - find peaks in a BED file.
-   rpsim - generate p-values for a region (of p-values) by simulation.
+   rpsim - generate p-values for a region (of p-values) by simulation.**
+   hist  - plot a histogram of a column and check for uniformity.
 
 NOTE: all of these assume *sorted* BED files.
     """
