@@ -5,7 +5,8 @@ __actions = ("acf", "slk", "fdr", "peaks", "rpsim", "hist")
 def main():
     if len(sys.argv) == 1 or sys.argv[1] in ("-h", "--help"):
         print >>sys.stderr,"""
-Tools for adjusting p-values in BED files.
+Tools for viewing and adjusting p-values in BED files.
+
    Contact: Brent Pedersen - bpederse@gmail.com
    License: BSD
 
