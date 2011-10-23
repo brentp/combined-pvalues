@@ -49,32 +49,19 @@ Indicating that it can be run as::
 
 Each module is described in detail below.
 
-Examples
-========
+Example
+=======
 
- + Compute the `ACF`_ of any BED file with a range of values between *15* and
-   *500* in steps of *50* (with p-values or numerical data in column 5)::
-
-     python cpv/acf.py -d 15:500:50 -c 5 data/pvals.bed > data/acf.txt
-
-   This can be done for any BED file with numerical data in one column. It will
-   create an image as below showing the autocorrelation at each lag.
-
- + Find and merge peaks/troughs within a bed file::
+Find and merge peaks/troughs within a bed file
+----------------------------------------------
+::
 
      python cpv/peaks.py --seed 0.05 --dist 1000 data/pvals.bed > data/pvals.peaks.bed
 
-   This will seed peaks with values < 0.05 and merge any adjacent values
-   within 1KB. The output is a BED file containing the extent of the troughs.
-   If the argument `--invert` is specified, the program will find look for
-   values larger than the seed.
-
- + See below, or run::
-
-       python cpv/comb-p.py
-
-    to see the available programs.
-
+  This will seed peaks with values < 0.05 and merge any adjacent values
+  within 1KB. The output is a BED file containing the extent of the troughs.
+  If the argument `--invert` is specified, the program will find look for
+  values larger than the seed.
 
 Pipeline
 ========
