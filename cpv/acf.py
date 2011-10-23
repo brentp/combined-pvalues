@@ -10,6 +10,19 @@ import numpy as np
 from itertools import groupby, combinations
 from _common import bediter, pairwise
 
+try:
+    import scikits.statsmodels.api as sm
+    from scikits.statsmodels.stats.stattools import durbin_watson
+
+    def dw(xs, ys):
+        model = sm.OLS(xs, ys)
+        r = model.fit()
+        return durbin_watson(r.resid)
+    HAS_DW = False # leave for now, not working.
+except ImportError:
+    def dw(xs, ys): return None
+    HAS_DW = False
+
 def acf(fnames, lags, col_num0):
     acfs = {}
     for lag_min, lag_max in pairwise(lags):
@@ -30,8 +43,9 @@ def acf(fnames, lags, col_num0):
 
                         xs.append(xbed['p'])
                         ys.append(ybed['p'])
-
-        acfs[(lag_min, lag_max)] = (np.corrcoef(xs, ys)[0, 1], len(xs))
+        xs, ys = np.array(xs), np.array(ys)
+        acfs[(lag_min, lag_max)] = (np.corrcoef(xs, ys)[0, 1], len(xs),
+                                    dw(xs, ys))
     return sorted(acfs.items())
 
 def run(args):
@@ -43,9 +57,12 @@ def run(args):
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print "#", chart(values, xlabels)
-    print "lag_min\tlag_max\tcorrelation\tN"
+    print "lag_min\tlag_max\tcorrelation\tN" + \
+                      ("\tdurbin-watson" if HAS_DW else "")
     for k,v in sorted(acf_vals):
-        print "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
+        line = "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
+        if HAS_DW: line += "\t%.2f" % v[2]
+        print line
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
