@@ -8,7 +8,7 @@ from _common import bediter
 import numpy as np
 from itertools import chain
 
-def sim(all_ps, this_ps, N):
+class sim_runner(object):
     """
     N times: take len(this_ps) random p-values
              from all_ps.
@@ -16,11 +16,23 @@ def sim(all_ps, this_ps, N):
     values are less than the values in this_ps
     by rank, and by actual value
     """
-    all_rank = np.arange(len(all_ps))
+    def __init__(self, all_ps):
+        self.all_ps = all_ps
+        self.all_order = all_ps.argsort()
+        self.all_sorted = all_ps[this.all_rank]
+
+    def __call_(self, this_ps, N):
+        T = len(this_ps)
+        tsum = this_ps.sum()
+        trank_sum = this
+
+
 
 def run(args):
     col_num = args.c if args.c < 0 else (args.c - 1)
     all_ps = np.array([b["p"] for b in bediter(args.pvals, col_num)])
+
+    sim = sim_runner(all_ps)
 
     piter = chain(bediter(args.pvals, col_num), [None])
     prow = piter.next()
