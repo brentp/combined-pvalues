@@ -19,7 +19,7 @@ To run, indicate one of:
    rpsim - generate p-values for a region (of p-values) by simulation.**
    hist  - plot a histogram of a column and check for uniformity.
 
-NOTE: all of these assume *sorted* BED files.
+NOTE: most of these assume *sorted* BED files.
     """
         sys.exit()
     if not sys.argv[1] in __actions:
