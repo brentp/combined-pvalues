@@ -1,9 +1,11 @@
-A library to calculate adjusted p-values from spatially autocorrelated tests.
-This is useful for ChIP-Seq probes and Tiling arrays.
+A library to calculate, adjust, manipulate and adjust p-values in BED files.
+Unique tools involve correction for spatial autocorrelation tests.
+This is useful for ChIP-Seq probes and Tiling arrays, or any data with spatial
+correlation.
 
 Invocation
 ==========
-When the program is run with::
+The program is run with::
 
    $ ./cpv/comb-p.py
 
