@@ -3,7 +3,7 @@
 import argparse
 import sys
 import numpy as np
-from _common import read_acf, bediter
+from _common import read_acf, bediter, get_col_num
 from itertools import groupby, combinations
 
 
@@ -70,11 +70,9 @@ def adjust_pvals(fnames, col_num0, acfs):
                             (xbed["chrom"], xbed["start"], xbed["end"])
 
 def run(args):
-    # get rid of N, just keep the correlation.
     acf_vals = read_acf(args.acf)
-    # during the FDR calc.
     adjusted = []
-    col_num = args.c if args.c < 0 else (args.c - 1)
+    col_num = get_col_num(args.c)
     for row in adjust_pvals(args.files, col_num, acf_vals):
         adjusted.append(row[-1])
         sys.stdout.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
