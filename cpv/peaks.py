@@ -79,7 +79,7 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
             write_peaks(peaks, seed, out, scmp)
 
 
-if __name__ == "__main__":
+def main():
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--dist", dest="dist", help="Maximum dist to skip before "
              " finding a seed/thresh value. If this number is exceeded, the"
@@ -112,4 +112,10 @@ if __name__ == "__main__":
     assert scmp(args.seed, args.threshold)
     # call list because the walk function is an iterator.
     list(walk(chromiter, args.threshold, args.seed, args.dist, sys.stdout))
+
+if __name__ == "__main__":
+    import doctest
+    if doctest.testmod(optionflags=doctest.ELLIPSIS |\
+                                   doctest.NORMALIZE_WHITESPACE).failed == 0:
+        main()
 
