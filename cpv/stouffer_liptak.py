@@ -9,8 +9,8 @@ pnorm = norm.cdf
 def stouffer_liptak(pvals, sigma=None):
     """
     The stouffer_liptak correction.
-    >>> stouffer_liptak([0.1, 0.2, 0.8,0.12, 0.11])
-    {'p': 0.0497..., 'C': -1.647...}
+    >>> stouffer_liptak([0.1, 0.2, 0.8, 0.12, 0.11])
+    {'p': 0.0497..., 'C': -1.647..., 'OK': True}
     """
     L = len(pvals)
     qvals = qnorm(pvals, loc=0, scale=1).reshape(L, 1)
