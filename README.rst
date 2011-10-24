@@ -153,8 +153,8 @@ This performas BH FDR correction on the pvalues. A call looks like::
 
     $ python cpv/fdr.py --alpha 0.05 data/pvals.acf.bed > data/pvals.adjusted.bed
 
-where the new file has one a additional column that is the corrected p-value.
-By default, it uses the last column as the p-value, but another column can
+where the new file has one additional column, the corrected p-value. By
+default, it uses the last column as the p-value input, but another column can
 be used by specifying *-c*.
 
 Regions
