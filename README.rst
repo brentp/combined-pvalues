@@ -262,3 +262,9 @@ TODO
    Where --pvals is the file used to generated --peaks. But, if comb-p peaks
    (optionally) output all p-values in a region, we wouldn't need --pvals
    Then could have --acf as an argument. and mirror comb-p combine...
+
+   # See Zaykin: Truncated Product method for combinign p-values
+   # convert uniform to normal: 
+     1 - pnorm(cholesky(sigma) * qnorm(1 - pvalues))
+
+3. Handle outliers?
