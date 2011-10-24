@@ -1,9 +1,7 @@
 
 def encode(numbers):
     """
-    do extended encoding on a list of numbers for the google chart api
-    >>> encode([1690, 90,1000])
-    'chd=e:aaBaPo'
+    encode a list of numbers for the google chart api
     """
     return "&chd=t:%s" % ','.join(["%.3f" % n for n in numbers])
 

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# doctests
+python cpv/stouffer_liptak.py
+python cpv/_common.py
+
 ##################################################################
 python cpv/peaks.py --dist 50 --seed 0.02 data/close_peaks.bed > t
 
