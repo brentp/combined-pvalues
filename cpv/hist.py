@@ -5,16 +5,15 @@ and check for uniformity with the chisq test.
 import argparse
 import numpy as np
 from chart import chart
-from _common import pairwise
+from _common import pairwise, get_col_num
 
 def run(args):
-    # get rid of N, just keep the correlation.
-    col_num = args.c if args.c < 0 else (args.c - 1)
+    col_num = get_col_num(args.c)
     file_iter =  (l.rstrip("\r\n").split("\t")
                   for l in open(args.file) if l[0] != "#")
 
     pvals = np.array([float(b[col_num]) for b in file_iter])
-    kwargs = {"bins": args.n } if args.n else {}
+    kwargs = {"bins": args.n} if args.n else {}
     hist, bins = np.histogram(pvals, normed=True, **kwargs)
     xlabels = "|".join("%.2f-%.2f" % b for b in pairwise(bins))
     print "#", chart(hist, xlabels)

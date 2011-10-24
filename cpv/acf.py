@@ -8,7 +8,7 @@ import sys
 import os
 import numpy as np
 from itertools import groupby, combinations
-from _common import bediter, pairwise
+from _common import bediter, pairwise, get_col_num
 
 try:
     import scikits.statsmodels.api as sm
@@ -54,7 +54,7 @@ def run(args):
     d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
     lags = range(*d)
-    acf_vals = acf(args.files, lags, args.c - 1, args.partial)
+    acf_vals = acf(args.files, lags, get_col_num(args.c), args.partial)
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print "#", chart(values, xlabels)

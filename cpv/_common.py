@@ -1,6 +1,17 @@
 from toolshed import reader
 from itertools import tee, izip
 
+def get_col_num(c):
+    """
+    adjust the col number so it does intutive stuff
+    for command-line interface
+    >>> get_col_num(4)
+    3
+    >>> get_col_num(-1)
+    -1
+    """
+    return c if c < 0 else (c - 1)
+
 def bediter(fname, col_num):
     """
     iterate over a bed file. turn col_num into a float
@@ -28,3 +39,7 @@ def read_acf(acf_file):
         if row[0] == "lag_min": continue
         acf_vals[(int(row[0]), int(row[1]))] = float(row[2])
     return sorted(acf_vals.items())
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod(optionflags=doctest.ELLIPSIS)

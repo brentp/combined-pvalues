@@ -7,10 +7,11 @@ from _common import bediter
 from itertools import izip
 import sys
 from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
+from _common import get_col_num
 
 def run(args):
     # get rid of N, just keep the correlation.
-    col_num = args.c if args.c < 0 else (args.c - 1)
+    col_num = get_col_num(args.c)
     pvals = [b["p"] for b in bediter(args.bed_file, col_num)]
     bh_pvals = fdrcorrection0(pvals, alpha=args.alpha,
             method='indep')[1]
