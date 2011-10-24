@@ -1,9 +1,7 @@
 """
 """
 import argparse
-from toolshed import reader
 import sys
-import os
 import numpy as np
 from _common import read_acf, bediter
 from itertools import groupby, combinations
@@ -64,9 +62,12 @@ def adjust_pvals(fnames, col_num0, acfs):
 
                 sigma = gen_sigma_matrix(xneighbors, acfs)
                 pvals = [g['p'] for g in xneighbors]
-                adjusted = stouffer_liptak(pvals, sigma)["p"]
+                r = stouffer_liptak(pvals, sigma)
                 yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
-                        adjusted)
+                        r["p"])
+                if not r["OK"]:
+                    print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
+                            (xbed["chrom"], xbed["start"], xbed["end"])
 
 def run(args):
     # get rid of N, just keep the correlation.
