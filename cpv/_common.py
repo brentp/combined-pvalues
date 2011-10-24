@@ -1,6 +1,18 @@
 from toolshed import reader
 from itertools import tee, izip
 
+def get_col_nums(c):
+    """
+    >>> get_col_nums(4)
+    [3]
+    >>> get_col_nums("4,5")
+    [3, 4]
+    >>> get_col_nums("4,-1")
+    [3, -1]
+    """
+    if isinstance(c, int): return [get_col_num(c)]
+    return [get_col_num(int(n)) for n in c.rstrip().split(",")]
+
 def get_col_num(c):
     """
     adjust the col number so it does intutive stuff

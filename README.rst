@@ -17,6 +17,7 @@ This message is displayed::
        peaks - find peaks in a BED file.
        rpsim - generate p-values for a region (of p-values) by simulation.**
        hist  - plot a histogram of a column and check for uniformity.
+       splot - a scatter plot of column(s) in a bed file for a given region.
 
     NOTE: most of these assume *sorted* BED files.
 
@@ -174,6 +175,23 @@ p-value in the region.
 
 The cpv/peaks.py script is quite flexible. Run it without arguments for
 further usage.
+
+ScatterPlot (splot)
+-------------------
+
+The command::
+
+    ./cpv/comb-p.py splot -c 5,6 data/pvals.adjusted.bed \
+                                -r chrY:2717613-2728613 \
+                                --labels original,adjusted
+
+will plot columns 5 and 6 from the region `-r`, resulting in
+
+.. image:: https://raw.github.com/brentp/combined-pvalues/master/data/scatter.png
+
+larger regions will automatically be plotted as points.
+You may specify any number of columns to plot.
+
 
 Region Sims
 -----------

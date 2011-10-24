@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-__actions = ("acf", "slk", "fdr", "peaks", "rpsim", "hist")
+__actions = ("acf", "slk", "fdr", "peaks", "rpsim", "hist", "splot")
 
 def main():
     if len(sys.argv) == 1 or sys.argv[1] in ("-h", "--help"):
@@ -18,8 +18,10 @@ To run, indicate one of:
    peaks - find peaks in a BED file.
    rpsim - generate p-values for a region (of p-values) by simulation.**
    hist  - plot a histogram of a column and check for uniformity.
+   splot - a scatter plot of column(s) in a bed file for a given region.
 
 NOTE: most of these assume *sorted* BED files.
+SEE: https://github.com/brentp/combined-pvalues for documentation
     """
         sys.exit()
     if not sys.argv[1] in __actions:
