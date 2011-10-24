@@ -33,6 +33,7 @@ def run(args):
 
 def plot(col_nums, ps, labels, lines, colors=cycle("bkrgyc")):
     from matplotlib import pyplot as plt
+    plt.figure(figsize=(8, 3))
     # choose the symbol based on the number of points.
     sym = '' if lines else \
                     ('o' if len(ps[col_nums[0]]) < 600 else \
