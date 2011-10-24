@@ -5,9 +5,8 @@
 import argparse
 from chart import chart
 import sys
-import os
 import numpy as np
-from itertools import groupby, combinations
+from itertools import groupby
 from _common import bediter, pairwise, get_col_num
 
 try:
@@ -24,30 +23,41 @@ except ImportError:
     HAS_DW = False
 
 def acf(fnames, lags, col_num0, partial=False):
-    acfs = {}
+    acfs = []
     for lag_min, lag_max in pairwise(lags):
-        xs, ys = [], [] # these hold the lagged values.
-        for fname in fnames:
-            # groupby chromosome.
-            for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
-                chromlist = list(chromlist)
-                for ix, xbed in enumerate(chromlist):
-                    # find all lines within lag of xbed.
-                    for iy in xrange(ix + 1, len(chromlist)):
-                        ybed = chromlist[iy]
-                        # y is always > x so dist calc is simplified.
-                        if partial:
-                            # too close:
-                            if ybed['start'] - xbed['end'] < lag_min: continue
-                        # too far.
-                        if ybed['start'] - xbed['end'] > lag_max: break
+        acfs.append((lag_min, lag_max, {"x": [], "y": [] }))
 
-                        xs.append(xbed['p'])
-                        ys.append(ybed['p'])
-        xs, ys = np.array(xs), np.array(ys)
-        acfs[(lag_min, lag_max)] = (np.corrcoef(xs, ys)[0, 1], len(xs),
+    max_lag = max(a[1] for a in acfs)
+
+    for fname in fnames:
+        # groupby chromosome.
+        for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
+            chromlist = list(chromlist)
+            for ix, xbed in enumerate(chromlist):
+                # find all lines within lag of xbed.
+                for iy in xrange(ix + 1, len(chromlist)):
+                    ybed = chromlist[iy]
+                    # y is always > x so dist calc is simplified.
+                    dist = ybed['start'] - xbed['end']
+                    if dist > max_lag: break
+
+                    # could reverse this (acfs[::-1]) and break when > lag_max
+                    for lag_min, lag_max, xys in acfs:
+                        if partial: # must be between:
+                            if lag_min <= dist <= lag_max:
+                                xys["x"].append(xbed['p'])
+                                xys["y"].append(ybed['p'])
+                        else: # must be <= lag_max
+                            if dist <= lag_max:
+                                xys["x"].append(xbed['p'])
+                                xys["y"].append(ybed['p'])
+
+    acf_res = {}
+    for lmin, lmax, xys in acfs:
+        xs, ys = np.array(xys["x"]), np.array(xys["y"])
+        acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs),
                                     dw(xs, ys))
-    return sorted(acfs.items())
+    return sorted(acf_res.items())
 
 def run(args):
     d = map(int, args.d.split(":"))
