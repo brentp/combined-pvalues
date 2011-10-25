@@ -22,10 +22,12 @@ except ImportError:
     def dw(xs, ys): return None
     HAS_DW = False
 
-def acf(fnames, lags, col_num0, partial=False, simple=True):
+def acf(fnames, lags, col_num0, partial=False, simple=False):
     acfs = []
     for lag_min, lag_max in pairwise(lags):
         acfs.append((lag_min, lag_max, {"x": [], "y": [] }))
+    # reversing allows optimization below.
+    acfs = acfs[::-1]
 
     max_lag = max(a[1] for a in acfs)
 
@@ -41,8 +43,9 @@ def acf(fnames, lags, col_num0, partial=False, simple=True):
                     dist = ybed['start'] - xbed['end']
                     if dist > max_lag: break
 
-                    # could reverse this (acfs[::-1]) and break when > lag_max
                     for lag_min, lag_max, xys in acfs:
+                        # can break because we reverse-sorted acfs above.
+                        if dist > lag_max: break
                         if partial: # must be between:
                             if lag_min <= dist <= lag_max:
                                 xys["x"].append(xbed['p'])
@@ -51,7 +54,6 @@ def acf(fnames, lags, col_num0, partial=False, simple=True):
                             if dist <= lag_max:
                                 xys["x"].append(xbed['p'])
                                 xys["y"].append(ybed['p'])
-
     acf_res = {}
     for lmin, lmax, xys in acfs:
         xs, ys = np.array(xys["x"]), np.array(xys["y"])
