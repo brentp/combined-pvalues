@@ -54,7 +54,9 @@ def _gen_acf(region_info, fpvals, col_num, step):
     if len(lags) > 100:
         print >>sys.stderr, "# !! this could take a looong time"
         print >>sys.stderr, "# !!!! consider using a larger step size (-s)"
-    return acf(fpvals, lags, col_num, simple=True)
+    acfs = acf(fpvals, lags, col_num, simple=True)
+    print >>sys.stderr, "# Done with one-time ACF calculation"
+    return acfs
 
 def rpsim(fpvals, fregions, col_num, nsims, tau, step):
     piter = chain(bediter(fpvals, col_num), [None])
