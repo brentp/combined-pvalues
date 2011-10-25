@@ -22,28 +22,22 @@ def bediter(fname, col_num):
                 "p": float(l[col_num])} # "stuff": l[3:][:]}
 
 # use class to keep track of written peaks.
-class _write_peaks(object):
-    def __init__(self):
-        self.peak_count = 0
-    def __call__(self, peaks, seed, out, scmp):
-        # could have a list with only those passing the threshold.
-        if not any(scmp(p["p"], seed) for p in peaks): return None
-        if len(peaks) == 0: return None
-        # peak_count unused...
-        self.peak_count += 1
-        peak_start = peaks[0]["start"]
-        # dont konw the length of the regions and they are only sorted
-        # by start.
-        peak_end = max(p["end"] for p in peaks)
-        peak_count = len(peaks)
-        # TODO: something better than keep best p-value ?
-        pbest = peaks[0]["p"]
-        for p in peaks:
-            if scmp(p["p"], pbest): pbest = p["p"]
-        out.write("%s\t%i\t%i\t%.4g\t%i\n" % (
-            peaks[0]["chrom"], peak_start, peak_end, pbest, peak_count))
-
-write_peaks = _write_peaks()
+def write_peaks(peaks, seed, out, scmp):
+    # could have a list with only those passing the threshold.
+    if not any(scmp(p["p"], seed) for p in peaks): return None
+    if len(peaks) == 0: return None
+    # peak_count unused...
+    peak_start = peaks[0]["start"]
+    # dont konw the length of the regions and they are only sorted
+    # by start.
+    peak_end = max(p["end"] for p in peaks)
+    peak_count = len(peaks)
+    # TODO: something better than keep best p-value ?
+    pbest = peaks[0]["p"]
+    for p in peaks:
+        if scmp(p["p"], pbest): pbest = p["p"]
+    out.write("%s\t%i\t%i\t%.4g\t%i\n" % (
+        peaks[0]["chrom"], peak_start, peak_end, pbest, peak_count))
 
 def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
     assert(scmp(seed, thresh))
@@ -78,6 +72,19 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
         else:
             write_peaks(peaks, seed, out, scmp)
 
+def peaks(fbedfile, col_num, threshold, seed, dist, fout, scmp):
+    chromiter = bediter(fbedfile, col_num)
+    # TODO: make this yield...
+    list(walk(chromiter, threshold, seed, dist, fout, scmp))
+
+def run(args):
+    col_num = args.c if args.c < 0 else args.c - 1
+    chromiter = bediter(args.bed_file, col_num)
+    scmp = operator.ge if args.invert else operator.le
+    assert scmp(args.seed, args.threshold)
+    # call list because the walk function is an iterator.
+    peaks(args.bed_file, col_num, args.threshold, args.seed, args.dist,
+          sys.stdout, scmp)
 
 def main():
     p = argparse.ArgumentParser(__doc__)
@@ -105,13 +112,7 @@ def main():
 
     if args.threshold is None:
         args.threshold = args.seed
-
-    col_num = args.c if args.c < 0 else args.c - 1
-    chromiter = bediter(args.bed_file, col_num)
-    scmp = operator.ge if args.invert else operator.le
-    assert scmp(args.seed, args.threshold)
-    # call list because the walk function is an iterator.
-    list(walk(chromiter, args.threshold, args.seed, args.dist, sys.stdout))
+    run(args)
 
 if __name__ == "__main__":
     import doctest
