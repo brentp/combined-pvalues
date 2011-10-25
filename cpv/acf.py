@@ -33,7 +33,6 @@ def acf(fnames, lags, col_num0, partial=False, simple=False):
     acfs = acfs[::-1]
 
     max_lag = max(a[1] for a in acfs)
-
     for fname in fnames:
         # groupby chromosome.
         for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
@@ -47,20 +46,25 @@ def acf(fnames, lags, col_num0, partial=False, simple=False):
                     if dist > max_lag: break
 
                     for lag_min, lag_max, xys in acfs:
-                        # can break because we reverse-sorted acfs above.
-                        if dist > lag_max: break
-                        if partial: # must be between:
-                            if lag_min <= dist <= lag_max:
-                                xys["x"].append(xbed['p'])
-                                xys["y"].append(ybed['p'])
-                        else: # must be <= lag_max
-                            if dist <= lag_max:
-                                xys["x"].append(xbed['p'])
-                                xys["y"].append(ybed['p'])
+                        # can break out of loop because we reverse-sorted acfs
+                        # above. this is partial, but we merge below if needed.
+                        if lag_min <= dist < lag_max:
+                            xys["x"].append(xbed['p'])
+                            xys["y"].append(ybed['p'])
+                        elif dist > lag_max:
+                            break
     acf_res = {}
-    for lmin, lmax, xys in acfs:
-        xs, ys = np.array(xys["x"]), np.array(xys["y"])
-        # dont need the extra stuff...
+    xs = np.array([], dtype='f')
+    ys = np.array([], dtype='f')
+    # iterate over it backwards and remove to reduce memory.
+    while len(acfs):
+        lmin, lmax, xys = acfs.pop()
+        if partial:
+            xs, ys = np.array(xys["x"]), np.array(xys["y"])
+        else:
+            # add the inner layers as we move out.
+            xs = np.hstack((xs, xys["x"]))
+            ys = np.hstack((ys, xys["y"]))
         if simple:
             acf_res[(lmin, lmax)] = np.corrcoef(xs, ys)[0, 1]
         else:
