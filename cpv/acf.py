@@ -3,6 +3,7 @@
    of *distance* lags.
 """
 import argparse
+from array import array
 from chart import chart
 import sys
 import numpy as np
@@ -25,7 +26,9 @@ except ImportError:
 def acf(fnames, lags, col_num0, partial=False, simple=False):
     acfs = []
     for lag_min, lag_max in pairwise(lags):
-        acfs.append((lag_min, lag_max, {"x": [], "y": [] }))
+        acfs.append((lag_min, lag_max,
+            # array uses less memory than list.
+            {"x": array("f"), "y": array("f") }))
     # reversing allows optimization below.
     acfs = acfs[::-1]
 
