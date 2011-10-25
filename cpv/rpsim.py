@@ -51,6 +51,9 @@ def _gen_acf(region_info, fpvals, col_num, step):
     lags = range(1, max_len, step)
     if lags[-1] < max_len: lags.append(lags[-1] + step)
     print >>sys.stderr, "# with lags: %s" % lags
+    if len(lags) > 100:
+        print >>sys.stderr, "# !! this could take a looong time"
+        print >>sys.stderr, "# !!!! consider using a larger step size (-s)"
     return acf(fpvals, lags, col_num, simple=True)
 
 def rpsim(fpvals, fregions, col_num, nsims, tau, step):
@@ -101,7 +104,7 @@ def main():
     p.add_argument("-N", dest="N", help="number of simulations to perform",
                    type=int, default=1000)
     p.add_argument("-c", dest="c", help="column number containing the p-value"
-                   " of interest", type=int, default=1)
+                   " of interest", type=int, default=-1)
     args = p.parse_args()
     if not (args.regions and args.pvals):
         import sys
