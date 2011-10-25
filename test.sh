@@ -26,5 +26,13 @@ done
 
 ./cpv/comb-p.py hist -c 5 data/pvals.bed > t
 
+# the sum of the partials should add up the the final number in
+# the non-partial
+psum=$(python cpv/acf.py data/pvals.bed -c 5 -d 1:500:50 --partial \
+    | awk '(NR > 2){ s += $4; }END{ print s}')
+npsum=$(python cpv/acf.py data/pvals.bed -c 5 -d 1:500:50 \
+    | awk '{ s=$4 }END{ print s }')
+
+test $psum -ne $npsum && echo "ERROR in ACF"
 
 rm t
