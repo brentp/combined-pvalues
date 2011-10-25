@@ -22,7 +22,7 @@ except ImportError:
     def dw(xs, ys): return None
     HAS_DW = False
 
-def acf(fnames, lags, col_num0, partial=False):
+def acf(fnames, lags, col_num0, partial=False, simple=True):
     acfs = []
     for lag_min, lag_max in pairwise(lags):
         acfs.append((lag_min, lag_max, {"x": [], "y": [] }))
@@ -55,7 +55,11 @@ def acf(fnames, lags, col_num0, partial=False):
     acf_res = {}
     for lmin, lmax, xys in acfs:
         xs, ys = np.array(xys["x"]), np.array(xys["y"])
-        acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs),
+        # dont need the extra stuff...
+        if simple:
+            acf_res[(lmin, lmax)] = np.corrcoef(xs, ys)[0, 1]
+        else:
+            acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs),
                                     dw(xs, ys))
     return sorted(acf_res.items())
 

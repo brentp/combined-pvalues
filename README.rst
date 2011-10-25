@@ -195,53 +195,36 @@ larger regions will automatically be plotted as points.
 You may specify any number of columns to plot.
 
 
-Region Sims
------------
+Region Sims (rpsim)
+-------------------
 
 Given a region we want to generate, by simulation a *p-value* for the entire
-region. To do this, we do the following for each region:
+region. Zaykin et al. (2002. Truncated Product Method for Combining p-values
+indicates a Monte-Carlo simulation strategy implement in rpsim. The procedure
+for each region is to::
 
- + sort the p-values
- + set S = the sum of their ranks (or the sum of the actual p-vals).
- + set RL = number of probes in the region
- + set P = number of probes in the original input file.
- + N times, do:
+ + set Wo = product(p for p in region if p <= tau)
+ + N times do:
+   - generate len(region) uniform random numbers, R*
+   - convert R* to a correlated set of values, R using the correlation matrix
+     (eqn 4 from Zaykin)
+   - set w = product(p for p in R if p <= tau)
+   - if w <= Wo, A += 1
+ + report A / N as the p-value
 
-   - generate RL numbers between 1 and P
-   - store the sum of those RL values (and the sum of the p-values at those indexes)
- + p = [report the number of times the simulated ranks or sums is < RL)/ N
+This adds a column for a Zaykin p-value. An invocation::
 
-This adds a column for a p-value based on the ranks and a column for a p-value
-based on actual p's to the BED file. (NOT DONE).::
+   $ python cpv/rpsim.py -p data/pvals.bed \
+                         -r data/regions.bed \
+                         -t 0.1 \
+                         -s 50 \
+                         -N 100 -c 5 > data/regions.sig.bed
 
-   $ python cpv/rpsim.py -r data/pvals.regions.bed \
-                         -p data/pvals.bed \
-                         -c 4 \
-                         -N 10000 > data/region-ps.bed
-
+Will extract p-values from column 5 of pvals.bed for lines within regions in
+regions.bed. It will set tau to (-t) 0.1, use a step-size of 50 for the ACF
+calculation, perform 1000 monte-carlo simulations.
 
 TODO
 ====
 
-1. **Rigorous p-values for regions**. (in progress in rpsim)
-   Since we have the stouffer-liptak for combined p-values, it should be used
-   to do a correction for all p-values in a peak-region.
-   This will require calculating the ACF on the input so it should be optional.
-   Probably go out a given distance and then fit with a function so dont have
-   to actually calculate the ACF for the full set of lags (can have very large
-   regions).
-   This will require keep the non-significant p-values for a region as well.
-   Maybe this should be a seperate step.::
-
-    comb-p rpsim -r data/prefix.regions.bed \
-                 -p data/prefix.adj.bed \
-                 -c 6 \
-                 -d 1:500:50 > data/prefix.regions.pvals.ped
-
-   Where -p is the file used to generated -r.
-
-   # See Zaykin: Truncated Product method for combining p-values
-   # convert uniform to normal:
-     pnorm(cholesky(sigma) * qnorm(pvalues))
-
-2. Handle outliers?
+1. Handle outliers in ACF calc...?
