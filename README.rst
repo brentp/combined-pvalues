@@ -223,28 +223,7 @@ based on actual p's to the BED file. (NOT DONE).::
 TODO
 ====
 
-1. meta script to run steps with sensible defaults.
-
-   create executable comb-p, all steps together look like::
-
-    comb-p -d 1:500:50 -c 5 -a 0.05 data/pvals.bed -o data/prefix
-
-   this will run set --seed = -a and --dist == 500 (though these can also be
-   specified explicitly) and will create::
-
-    data/prefix.acf.txt # the acf correlations.
-    data/prefix.acf.bed # the acf corrected bed
-    data/prefix.adj.bed # the acf + fdr corrected bed
-    data/prefix.regions.bed # the regions that have been run.
-
-   each individual step and be run as::
-
-    comb-p acf
-    comb-p slk
-    comb-p fdr
-    comb-p peaks
-
-2. **Rigorous p-values for regions**.
+1. **Rigorous p-values for regions**. (in progress in rpsim)
    Since we have the stouffer-liptak for combined p-values, it should be used
    to do a correction for all p-values in a peak-region.
    This will require calculating the ACF on the input so it should be optional.
@@ -254,17 +233,15 @@ TODO
    This will require keep the non-significant p-values for a region as well.
    Maybe this should be a seperate step.::
 
-    comb-p region-correct --peaks data/prefix.regions.bed \
-                          --pvals data/prefix.adj.bed \
-                          -c 6 \
-                          -d 1:500:50 > data/prefix.regions.pvals.ped
+    comb-p rpsim -r data/prefix.regions.bed \
+                 -p data/prefix.adj.bed \
+                 -c 6 \
+                 -d 1:500:50 > data/prefix.regions.pvals.ped
 
-   Where --pvals is the file used to generated --peaks. But, if comb-p peaks
-   (optionally) output all p-values in a region, we wouldn't need --pvals
-   Then could have --acf as an argument. and mirror comb-p combine...
+   Where -p is the file used to generated -r.
 
-   # See Zaykin: Truncated Product method for combinign p-values
-   # convert uniform to normal: 
-     1 - pnorm(cholesky(sigma) * qnorm(1 - pvalues))
+   # See Zaykin: Truncated Product method for combining p-values
+   # convert uniform to normal:
+     pnorm(cholesky(sigma) * qnorm(pvalues))
 
-3. Handle outliers?
+2. Handle outliers?
