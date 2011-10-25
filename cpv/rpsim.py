@@ -1,6 +1,7 @@
 """
-   calculate the autocorrelation of a *sorted* bed file with a set
-   of *distance* lags.
+   simulate a p-value of a region using the truncated product method described
+   in Zaykin et al. 2002, "Truncated Product Method for Combining p-values".
+   Genet Epidemiol.
 """
 import argparse
 import sys
@@ -33,9 +34,12 @@ def calc_w(ps, truncate_at):
 def sim(sigma, ps, nsims, truncate):
     # see: https://gist.github.com/1306786#file_zaykin_truncated.py
     assert isinstance(ps[0], (int, float, long))
-    Y = gen_correlated(sigma, nsims)
+    B = 0.
     w0 = calc_w(ps, truncate)
-    return sum(calc_w(row, truncate) <= w0 for row in Y.T) / float(nsims)
+    for i in range(10):
+        Y = gen_correlated(sigma, nsims/10)
+        B += sum(calc_w(row, truncate) <= w0 for row in Y.T)
+    return B / nsims
 
 def run(args):
     col_num = get_col_num(args.c)
@@ -104,7 +108,7 @@ def main():
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
     p.add_argument("-N", dest="N", help="number of simulations to perform",
-                   type=int, default=1000)
+                   type=int, default=2000)
     p.add_argument("-c", dest="c", help="column number containing the p-value"
                    " of interest", type=int, default=-1)
     args = p.parse_args()
