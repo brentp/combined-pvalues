@@ -12,11 +12,15 @@ from _common import get_col_num
 def run(args):
     # get rid of N, just keep the correlation.
     col_num = get_col_num(args.c)
-    pvals = [b["p"] for b in bediter(args.bed_file, col_num)]
-    bh_pvals = fdrcorrection0(pvals, alpha=args.alpha,
-            method='indep')[1]
-    for bh, l in izip(bh_pvals, open(args.bed_file)):
+    for bh, l in fdr(args.bed_file, col_num, alpha)
         print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
+
+def fdr(fbedfile, col_num, alpha)
+    pvals = [b["p"] for b in bediter(fbed_file, col_num)]
+    bh_pvals = fdrcorrection0(pvals, alpha=alpha,
+            method='indep')[1]
+    for bh, l in izip(bh_pvals, open(fbed_file)):
+        yield bh, l
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
