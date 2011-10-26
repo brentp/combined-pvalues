@@ -54,11 +54,11 @@ class TestStoufferLiptak(CPVTest):
 class TestChart(TestStoufferLiptak):
 
     def testChart(self):
-        url = chart.chart(self.pvals, ",".join(map(str, self.pvals)))
+        url = chart.chart(self.pvals, self.pvals)
         self.assert_(url.startswith("http"))
 
         import urllib
-        r = urllib.urlopen(url).read()
+        r = urllib.urlopen(url).read(20)
         self.assert_("PNG" in r[:10])
 
 

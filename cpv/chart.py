@@ -13,6 +13,8 @@ def chart(values, xlabels, base="https://chart.googleapis.com/chart?cht=bvs&",
     url += "&chs=%ix250" % chart_width
     url += "&chco=" + color
     # draw the x-axis ... and the bin-names
+    if not isinstance(xlabels, basestring):
+        xlabels = "|".join(map(str, xlabels))
     url += "&chxt=x,y&chxl=0:|" + xlabels
 
     url += "&chxr=1,0,%.2f" % (max(values) + 0.02)
