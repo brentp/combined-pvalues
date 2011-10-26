@@ -6,6 +6,7 @@ import numpy as np
 HERE = op.abspath(op.dirname(__file__))
 sys.path.insert(0, op.abspath(op.join(HERE, "..", "..")))
 from cpv import stouffer_liptak as sl
+from cpv import chart
 
 BED = op.join(HERE, "data", "pvals.bed")
 
@@ -49,6 +50,16 @@ class TestStoufferLiptak(CPVTest):
         sigma[2,0] = sigma[0,2] = 0.6
         adjusted = sl.stouffer_liptak(self.pvals, sigma)
         self.assert_(adjusted['p'] > unadjusted['p'])
+
+class TestChart(TestStoufferLiptak):
+
+    def testChart(self):
+        url = chart.chart(self.pvals, ",".join(map(str, self.pvals)))
+        self.assert_(url.startswith("http"))
+
+        import urllib
+        r = urllib.urlopen(url).read()
+        self.assert_("PNG" in r[:10])
 
 
 if __name__ == "__main__":
