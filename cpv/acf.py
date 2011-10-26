@@ -24,6 +24,15 @@ except ImportError:
     HAS_DW = False
 
 def acf(fnames, lags, col_num0, partial=False, simple=False):
+    """
+    calculate the correlation of the numbers in `col_num0` from the bed files
+    in `fnames` at various lags. The lags are specified by distance. Partial
+    autocorrelation may be calculated as well.
+
+    Since the bed files may be very large, this attempts to be as memory
+    efficient as possible while still being very fast for a pure python
+    implementation.
+    """
     acfs = []
     for lag_min, lag_max in pairwise(lags):
         acfs.append((lag_min, lag_max,
@@ -73,6 +82,10 @@ def acf(fnames, lags, col_num0, partial=False, simple=False):
     return sorted(acf_res.items())
 
 def run(args):
+    """
+    general function that takes an args object (from argparse)
+    with the necessary options and calls acf()
+    """
     d = map(int, args.d.split(":"))
     d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
