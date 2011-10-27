@@ -77,6 +77,10 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
     # just use 2 for col_num, but dont need the p from regions.
     region_info = []
 
+    if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
+        print >>sys.stderr, "no regions in %s" % (fregions, )
+        sys.exit()
+
     for nr, region_line in enumerate((l.rstrip("\r\n")
                                    for l in open(fregions))):
         toks = region_line.split("\t")
