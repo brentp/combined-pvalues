@@ -25,6 +25,7 @@ SEE: https://github.com/brentp/combined-pvalues for documentation
     """
         sys.exit()
     if not sys.argv[1] in __actions:
+        sys.argv.pop(1)
         _pipeline()
     else:
         module = __import__(sys.argv[1])
@@ -33,6 +34,9 @@ SEE: https://github.com/brentp/combined-pvalues for documentation
         module.main()
 
 def _pipeline():
+    import sys
+    import os.path as op
+    sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, rpsim
     from _common import get_col_num
     import argparse
@@ -43,14 +47,16 @@ def _pipeline():
 
     p.add_argument("-c", dest="c", help="column number that has the value to"
                    "take the  acf", type=int, default=4)
-
+    p.add_argument("--tau", help="tau for the truncated product",
+                   type=float, default=0.1)
     p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
              " ACF calculation", type=int)
     p.add_argument("--step", dest="step", help="step size for the"
              " ACF calculation", type=int)
 
     p.add_argument("--seed", dest="seed", help="A value must be at least this"
-                 " large/small in order to seed a region.", type=float)
+                 " large/small in order to seed a region.", type=float,
+                 default=0.1)
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
@@ -62,17 +68,23 @@ def _pipeline():
 
     args = p.parse_args()
 
-    if not args.prefix:
+    if not (args.prefix and args.step):
         sys.exit(p.print_help())
+
+    if not args.threshold:
+        args.threshold = args.seed
 
     lags = range(1, args.dist, args.step)
     lags.append(lags[-1] + args.step)
     col_num = get_col_num(args.c)
+
     acf_vals = acf.acf(args.files, lags, col_num, simple=True)
     with open(args.prefix + ".acf.txt", "w") as fh:
         print >> fh, "lag_min\tlag_max\tauto_correlation"
         for (lag_min, lag_max), val in acf_vals:
             print >> fh, "%i\t%i\t%.4g" % (lag_min, lag_max, val)
+
+    print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
     with open(args.prefix + ".slk.bed", "w") as fh:
         for row in slk.adjust_pvals(args.files, col_num, acf_vals):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
@@ -84,8 +96,8 @@ def _pipeline():
         print >>sys.stderr, "wrote: %s" % fh.name
 
     with open(args.prefix + ".regions.bed", "w") as fh:
-        peaks.peaks(args.prefix + ".fdr.bed", args.threshold, args.seed,
-            args.dist, fh, operator.le)
+        peaks.peaks(args.prefix + ".fdr.bed", -1, args.threshold, args.seed,
+            args.step, fh, operator.le)
         print >>sys.stderr, "wrote: %s" % fh.name
 
     with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
@@ -93,7 +105,7 @@ def _pipeline():
         for region_line, psim in rpsim.rpsim(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
-                               5000, 0.1, args.step,
+                               5000, args.tau, args.step,
                                random=True):
             fh.write("%s\t%.4g\n" % (region_line, psim))
         print >>sys.stderr, "wrote: %s" % fh.name
