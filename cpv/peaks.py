@@ -79,7 +79,6 @@ def peaks(fbedfile, col_num, threshold, seed, dist, fout, scmp):
 
 def run(args):
     col_num = args.c if args.c < 0 else args.c - 1
-    chromiter = bediter(args.bed_file, col_num)
     scmp = operator.ge if args.invert else operator.le
     assert scmp(args.seed, args.threshold)
     # call list because the walk function is an iterator.
