@@ -46,7 +46,7 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
         # have to track max end because intervals are sorted only by start.
         max_end, peaks = 0, []
         for b in bedlist:
-            assert last_start <= b["start"], ("enforce sorted")
+            assert last_start <= b["start"], ("enforce sorted", last_start, b)
             last_start = b["start"]
             # this comparison gets both thresh and seed.
             if scmp(b["p"], thresh):
