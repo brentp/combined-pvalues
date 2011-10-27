@@ -94,10 +94,12 @@ def _pipeline():
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
 
-    with open(args.prefix + ".regions.bed", "w") as fh:
+    fregions = args.prefix + ".regions.bed"
+    with open(fregions, "w") as fh:
         peaks.peaks(args.prefix + ".fdr.bed", -1, args.threshold, args.seed,
             args.step, fh, operator.le)
         print >>sys.stderr, "wrote: %s" % fh.name
+    print >>sys.stderr, "%i regions" % (sum(1 for _ in open(fregions)))
 
     with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
         # use -2 for original, uncorrected p-values.

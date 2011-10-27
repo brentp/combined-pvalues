@@ -46,6 +46,7 @@ def plot(col_nums, ps, labels, lines, colors=cycle("bkrgyc")):
         else:
             plt.plot(xs, ys, colors.next() + sym, label=label)
     plt.legend()
+    plt.ylim(ymin=-0.05)
     plt.show()
 
 
