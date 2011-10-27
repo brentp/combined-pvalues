@@ -84,14 +84,14 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
         rstart, rend = map(int, toks[1:3])
         prows = []
         # grab the p-values in the bed file that are within the current region
-        while (prow["chrom"], prow["start"]) < (rchrom, rstart):
+        while (prow["chrom"] != rchrom or prow["start"] < rstart):
             prow = piter.next()
             if prow is None: break
         while (rchrom, rend) >= (prow["chrom"], prow["end"]):
             prows.append(prow)
             prow = piter.next()
             if prow is None: break
-        assert prows
+        assert prows, (region_line)
         region_len = rend - rstart + 1
         region_info.append((region_line, region_len, prows))
         del prows
