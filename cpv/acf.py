@@ -95,15 +95,22 @@ def run(args):
     assert len(d) == 3
     lags = range(*d)
     acf_vals = acf(args.files, lags, get_col_num(args.c), args.partial)
+    write_acf(acf_vals, sys.stdout)
+
+def write_acf(acf_vals, out):
+    # write acf to a file and return only [((lag_min, lag_max), corr)...]
+    simple_acf = []
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
-    print "#", chart(values, xlabels)
-    print "lag_min\tlag_max\tcorrelation\tN" + \
+    print >>out, "#", chart(values, xlabels)
+    print >> out, "#lag_min\tlag_max\tcorrelation\tN" + \
                       ("\tdurbin-watson" if HAS_DW else "")
     for k,v in sorted(acf_vals):
         line = "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
         if HAS_DW: line += "\t%.2f" % v[2]
-        print line
+        print >> out, line
+        simple_acf.append((k, v[0]))
+    return simple_acf
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,

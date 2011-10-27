@@ -78,11 +78,10 @@ def _pipeline():
     lags.append(lags[-1] + args.step)
     col_num = get_col_num(args.c)
 
-    acf_vals = acf.acf(args.files, lags, col_num, simple=True)
+    acf_vals = acf.acf(args.files, lags, col_num, simple=False)
+
     with open(args.prefix + ".acf.txt", "w") as fh:
-        print >> fh, "lag_min\tlag_max\tauto_correlation"
-        for (lag_min, lag_max), val in acf_vals:
-            print >> fh, "%i\t%i\t%.4g" % (lag_min, lag_max, val)
+        acf_vals = acf.write_acf(acf_vals, fh)
 
     print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
     with open(args.prefix + ".slk.bed", "w") as fh:
