@@ -74,6 +74,10 @@ def acf(fnames, lags, col_num0, partial=False, simple=False):
             # add the inner layers as we move out.
             xs = np.hstack((xs, xys["x"]))
             ys = np.hstack((ys, xys["y"]))
+        if len(xs) == 0:
+            print >>sys.stderr, "no values found at lag: %i-%i. skipping" \
+                    % (lmin, lmax)
+            continue
         if simple:
             acf_res[(lmin, lmax)] = np.corrcoef(xs, ys)[0, 1]
         else:
