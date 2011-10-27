@@ -52,8 +52,9 @@ def sim(sigma, ps, nsims, truncate, sample_distribution=None):
 
 def run(args):
     col_num = get_col_num(args.c)
-    rpsim(args.pvals, args.regions, col_num, args.N, args.tau, args.step,
-            args.random)
+    for region_line, psim in rpsim(args.pvals, args.regions,
+            col_num, args.N, args.tau, args.step, args.random):
+        print "%s\t%.4g" % (region_line, psim)
 
 def _gen_acf(region_info, fpvals, col_num, step):
     # calculate the ACF as far out as needed...
@@ -113,7 +114,7 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
         sigma = gen_sigma_matrix(prows, acfs)
         ps = np.array([prow["p"] for prow in prows])
         psim = sim(sigma, ps, nsims, tau, sample_distribution)
-        print "%s\t%.4g" % (region_line, psim)
+        yield (region_line, psim)
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,

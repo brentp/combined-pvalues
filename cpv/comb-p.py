@@ -33,8 +33,70 @@ SEE: https://github.com/brentp/combined-pvalues for documentation
         module.main()
 
 def _pipeline():
-    # TODO
-    pass
+    from cpv import acf, slk, fdr, peaks, rpsim
+    from _common import get_col_num
+    import argparse
+    import operator
+
+    p = argparse.ArgumentParser(description=__doc__,
+                   formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    p.add_argument("-c", dest="c", help="column number that has the value to"
+                   "take the  acf", type=int, default=4)
+
+    p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
+             " ACF calculation", type=int)
+    p.add_argument("--step", dest="step", help="step size for the"
+             " ACF calculation", type=int)
+
+    p.add_argument("--seed", dest="seed", help="A value must be at least this"
+                 " large/small in order to seed a region.", type=float)
+    p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
+                 " of at least this number can extend a region. ",
+                 type=float)
+
+    p.add_argument("-p", dest="prefix", help="prefix for output files",
+                   default=None)
+
+    p.add_argument('files', nargs='+', help='files to process')
+
+    args = p.parse_args()
+
+    if not args.prefix:
+        sys.exit(p.print_help())
+
+    lags = range(1, args.dist, args.step)
+    lags.append(lags[-1] + args.step)
+    col_num = get_col_num(args.c)
+    acf_vals = acf.acf(args.files, lags, col_num, simple=True)
+    with open(args.prefix + ".acf.txt", "w") as fh:
+        print >> fh, "lag_min\tlag_max\tauto_correlation"
+        for (lag_min, lag_max), val in acf_vals:
+            print >> fh, "%i\t%i\t%.4g" % (lag_min, lag_max, val)
+    with open(args.prefix + ".slk.bed", "w") as fh:
+        for row in slk.adjust_pvals(args.files, col_num, acf_vals):
+            fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
+        print >>sys.stderr, "wrote: %s" % fh.name
+
+    with open(args.prefix + ".fdr.bed", "w") as fh:
+        for bh, l in fdr.fdr(args.prefix + ".slk.bed", -1, 0.05):
+            fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
+        print >>sys.stderr, "wrote: %s" % fh.name
+
+    with open(args.prefix + ".regions.bed", "w") as fh:
+        peaks.peaks(args.prefix + ".fdr.bed", args.threshold, args.seed,
+            args.dist, fh, operator.le)
+        print >>sys.stderr, "wrote: %s" % fh.name
+
+    with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
+        # use -2 for original, uncorrected p-values.
+        for region_line, psim in rpsim.rpsim(
+                               args.prefix + ".slk.bed",
+                               args.prefix + ".regions.bed", -2,
+                               5000, 0.1, args.step,
+                               random=True):
+            fh.write("%s\t%.4g\n" % (region_line, psim))
+        print >>sys.stderr, "wrote: %s" % fh.name
 
 if __name__ == "__main__":
     main()
