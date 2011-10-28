@@ -13,7 +13,7 @@ from slk import gen_sigma_matrix
 from acf import acf
 
 from scipy.stats import norm
-from numpy.linalg import cholesky as chol
+from numpy.linalg import cholesky as chol, LinAlgError
 qnorm = norm.ppf
 pnorm = norm.cdf
 
@@ -26,14 +26,18 @@ def gen_correlated(sigma, n, X=None):
     p-values.
     """
     sigma = np.asmatrix(sigma)
-    if X is None:
-        X = np.random.uniform(0, 1, size=(sigma.shape[0], n))
-    else:
-        idxs = np.random.random_integers(0, len(X) - 1,
-                                         size=sigma.shape[0] * n)
-        X = X[idxs].reshape((sigma.shape[0], n))
+    while True:
+        try:
+            if X is None:
+                X = np.random.uniform(0, 1, size=(sigma.shape[0], n))
+            else:
+                idxs = np.random.random_integers(0, len(X) - 1,
+                                                 size=sigma.shape[0] * n)
+                X = X[idxs].reshape((sigma.shape[0], n))
 
-    return pnorm(chol(sigma) * qnorm(X))
+            return pnorm(chol(sigma) * qnorm(X))
+        except LinAlgError: # matrix not positive definitive, try again.
+            pass
 
 def calc_w(ps, truncate_at):
     # product of ps that are less than truncate_at
