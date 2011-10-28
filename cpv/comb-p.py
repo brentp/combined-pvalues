@@ -60,6 +60,9 @@ def _pipeline():
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
+    p.add_argument("--random", action="store_true", default=False,
+            help="If specified, sample from the uniform distribution rather "
+            "than the observed p-values. The latter deflates significance.")
 
     p.add_argument("-p", dest="prefix", help="prefix for output files",
                    default=None)
@@ -102,12 +105,12 @@ def _pipeline():
     print >>sys.stderr, "%i regions" % (sum(1 for _ in open(fregions)))
 
     with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
-        # use -2 for original, uncorrected p-values.
+        # use -2 for original, uncorrected p-values in slk.bed
         for region_line, psim in rpsim.rpsim(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
                                5000, args.tau, args.step,
-                               random=True):
+                               random=args.random):
             fh.write("%s\t%.4g\n" % (region_line, psim))
         print >>sys.stderr, "wrote: %s" % fh.name
 
