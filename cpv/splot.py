@@ -11,7 +11,7 @@ def run(args):
 
     # if they didn't specify labels, just the the column numbers
     labels = [x.strip() for x in args.labels.strip().split(",")] \
-            if args.labels else map(str, col_nums)
+            if args.labels else map(str, [c + 1 for c in col_nums])
 
     ps = dict((c, []) for c in col_nums)
 
@@ -29,24 +29,35 @@ def run(args):
         for c in col_nums:
             ps[c].append((bstart, bend, float(b[c])))
 
-    plot(col_nums, ps, labels, args.lines)
+    plot(col_nums, ps, labels, args.lines, chrom)
 
-def plot(col_nums, ps, labels, lines, colors=cycle("bkrgyc")):
+def plot(col_nums, ps, labels, lines, chrom, colors=cycle("brgkyc")):
     from matplotlib import pyplot as plt
-    plt.figure(figsize=(8, 3))
+    f = plt.figure(figsize=(8, 3))
+    ax = f.add_axes((0.08, 0.03, 0.9, 0.94))
+
     # choose the symbol based on the number of points.
     sym = '' if lines else \
                     ('o' if len(ps[col_nums[0]]) < 600 else \
                     ('.' if len(ps[col_nums[0]]) < 1200 else ","))
+    lw = 2.5
     for col, label in zip(col_nums, labels):
         xs, xends, ys = zip(*ps[col])
         if len(xs) < 600:
             plt.hlines(ys, xs, xends, colors=colors.next(), label=label,
-                    linewidth=2)
+                    linewidth=lw, alpha=0.8)
+            if lw >= 1: lw -= 0.6
         else:
             plt.plot(xs, ys, colors.next() + sym, label=label)
+    rng = (max(xs) - min(xs))
+    rng = ("%.2fKB" % (rng / 1000.)) if rng > 2000 else str(rng) + "bp"
+    txts = (chrom, min(xs), max(xs), rng, len(xs))
+    plt.text(0.02, 0.92, '%s:%i-%i (%s, %i probes)' % txts,
+            transform=ax.transAxes)
     plt.legend()
-    plt.ylim(ymin=-0.05)
+    plt.xticks([])
+    plt.ylabel("p-value")
+    plt.ylim(ymin=-0.02, ymax=1.02)
     plt.show()
 
 
