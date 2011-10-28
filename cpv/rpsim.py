@@ -17,7 +17,7 @@ from numpy.linalg import cholesky as chol, LinAlgError
 qnorm = norm.ppf
 pnorm = norm.cdf
 
-def gen_correlated(sigma, n, X=None):
+def gen_correlated(sigma, n, observed=None):
     """
     generate autocorrelated data according to the matrix
     sigma. if X is None, then data will be sampled from
@@ -28,12 +28,12 @@ def gen_correlated(sigma, n, X=None):
     sigma = np.asmatrix(sigma)
     while True:
         try:
-            if X is None:
+            if observed is None:
                 X = np.random.uniform(0, 1, size=(sigma.shape[0], n))
             else:
-                idxs = np.random.random_integers(0, len(X) - 1,
+                idxs = np.random.random_integers(0, len(observed) - 1,
                                                  size=sigma.shape[0] * n)
-                X = X[idxs].reshape((sigma.shape[0], n))
+                X = observed[idxs].reshape((sigma.shape[0], n))
 
             return pnorm(chol(sigma) * qnorm(X))
         except LinAlgError: # matrix not positive definitive, try again.
