@@ -32,7 +32,7 @@ def write_peaks(peaks, seed, out, scmp):
     # by start.
     peak_end = max(p["end"] for p in peaks)
     peak_count = len(peaks)
-    # TODO: something better than keep best p-value ?
+    # TODO: something better than keep best p-value ? truncated product?
     pbest = peaks[0]["p"]
     for p in peaks:
         if scmp(p["p"], pbest): pbest = p["p"]

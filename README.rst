@@ -227,4 +227,6 @@ calculation, perform 1000 monte-carlo simulations.
 TODO
 ====
 
-1. Handle outliers in ACF calc...?
+ 1. Handle outliers in ACF calc...?
+
+ 2. PCA, choose grouping column (for coloring) and p-columns?

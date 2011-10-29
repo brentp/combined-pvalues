@@ -8,6 +8,10 @@ from itertools import groupby, combinations
 
 
 def get_corr(dist, acfs):
+    """
+    extract the correlation from the acf sigma matrix
+    given a distance.
+    """
     # it's very close. just give it the next up.
     # TODO: should probably not do this. force them to start at 0.
     # acfs[0] is like (lag_min, lag_max), corr
@@ -44,8 +48,9 @@ def gen_sigma_matrix(group, acfs, cached={}):
     a = np.eye(len(group))
     group = enumerate(group)
     for (i, ibed), (j, jbed) in combinations(group, 2):
-        # a is always left of b
+        # j is always right of i. but could overlap
         dist = jbed["start"] - ibed["end"]
+        if dist < 0: dist = 0
         # symmetric.
         # cached speeds things up a bit...
         if not dist in cached:
