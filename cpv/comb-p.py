@@ -105,6 +105,7 @@ def _pipeline():
     print >>sys.stderr, "%i regions" % (sum(1 for _ in open(fregions)))
 
     with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
+        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tsim-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, psim in rpsim.rpsim(
                                args.prefix + ".slk.bed",
