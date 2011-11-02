@@ -20,6 +20,9 @@ def stouffer_liptak(pvals, sigma=None):
 
     >>> stouffer_liptak([0.5, 0.1, 0.1, 0.1, 0.5])
     {'p': 0.042..., 'C': 1.719..., 'OK': True}
+
+    >>> stouffer_liptak([0.5], [[1]])
+    {'p': 0.5...}
     """
     L = len(pvals)
     pvals = np.array(pvals)
