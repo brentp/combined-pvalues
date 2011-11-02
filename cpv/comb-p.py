@@ -105,14 +105,14 @@ def _pipeline():
     print >>sys.stderr, "%i regions" % (sum(1 for _ in open(fregions)))
 
     with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
-        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tsim-p\n")
+        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
-        for region_line, psim in rpsim.rpsim(
+        for region_line, slk_p, slk_sidak_p in rpsim.rpsim(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
                                5000, args.tau, args.step,
                                random=args.random):
-            fh.write("%s\t%.4g\n" % (region_line, psim))
+            fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
         print >>sys.stderr, "wrote: %s" % fh.name
 
 if __name__ == "__main__":
