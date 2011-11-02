@@ -23,6 +23,31 @@ except ImportError:
     def dw(xs, ys): return None
     HAS_DW = False
 
+def _acf_by_chrom(chromlist, acfs):
+    """
+    calculate the ACF for a single chromosome
+    currently updates acfs in-place. this should
+    be changed to allow for parallization.
+    """
+    chromlist = list(chromlist)
+    max_lag = max(a[1] for a in acfs)
+    for ix, xbed in enumerate(chromlist):
+        # find all lines within lag of xbed.
+        for iy in xrange(ix + 1, len(chromlist)):
+            ybed = chromlist[iy]
+            # y is always > x so dist calc is simplified.
+            dist = ybed['start'] - xbed['end']
+            if dist > max_lag: break
+
+            for lag_min, lag_max, xys in acfs:
+                # can break out of loop because we reverse-sorted acfs
+                # above. this is partial, but we merge below if needed.
+                if lag_min <= dist < lag_max:
+                    xys["x"].append(xbed['p'])
+                    xys["y"].append(ybed['p'])
+                elif dist > lag_max:
+                    break
+
 def acf(fnames, lags, col_num0, partial=True, simple=False):
     """
     calculate the correlation of the numbers in `col_num0` from the bed files
@@ -41,27 +66,11 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
     # reversing allows optimization below.
     acfs = acfs[::-1]
 
-    max_lag = max(a[1] for a in acfs)
     for fname in fnames:
         # groupby chromosome.
         for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
-            chromlist = list(chromlist)
-            for ix, xbed in enumerate(chromlist):
-                # find all lines within lag of xbed.
-                for iy in xrange(ix + 1, len(chromlist)):
-                    ybed = chromlist[iy]
-                    # y is always > x so dist calc is simplified.
-                    dist = ybed['start'] - xbed['end']
-                    if dist > max_lag: break
+            _acf_by_chrom(chromlist, acfs)
 
-                    for lag_min, lag_max, xys in acfs:
-                        # can break out of loop because we reverse-sorted acfs
-                        # above. this is partial, but we merge below if needed.
-                        if lag_min <= dist < lag_max:
-                            xys["x"].append(xbed['p'])
-                            xys["y"].append(ybed['p'])
-                        elif dist > lag_max:
-                            break
     acf_res = {}
     xs = np.array([], dtype='f')
     ys = np.array([], dtype='f')
