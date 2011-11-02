@@ -22,27 +22,10 @@ def bediter(fname, col_num):
                 "p": float(l[col_num])} # "stuff": l[3:][:]}
 
 # use class to keep track of written peaks.
-def write_peaks(peaks, seed, out, scmp, trim=True):
-    """
-    if trim is True, then values at the edges (the shoulders)
-    that are > seed are trimmed. This makes the region smaller,
-    but keeps it more significant for down-stream analyses.
-    """
+def write_peaks(peaks, seed, out, scmp):
     # could have a list with only those passing the threshold.
     if not any(scmp(p["p"], seed) for p in peaks): return None
     if len(peaks) == 0: return None
-    if trim:
-        i_start = 0
-        p_trim = sum(p["p"] for p in peaks) / float(len(peaks))
-        if scmp == operator.le: p_trim *= 10
-        else: p_trim /= 10
-        if scmp(seed, p_trim):
-            # p_trim is a bit less stringent than seed, so we just
-            # take values off the end that are above the mean.
-            while scmp(p_trim, peaks[i_start]["p"]): i_start += 1
-            i_end = len(peaks)
-            while scmp(p_trim, peaks[i_end - 1]["p"]): i_end -= 1
-            peaks = peaks[i_start:i_end]
     # peak_count unused...
     peak_start = peaks[0]["start"]
     # dont konw the length of the regions and they are only sorted
