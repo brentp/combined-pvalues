@@ -23,7 +23,7 @@ except ImportError:
     def dw(xs, ys): return None
     HAS_DW = False
 
-def acf(fnames, lags, col_num0, partial=False, simple=False):
+def acf(fnames, lags, col_num0, partial=True, simple=False):
     """
     calculate the correlation of the numbers in `col_num0` from the bed files
     in `fnames` at various lags. The lags are specified by distance. Partial
@@ -94,7 +94,8 @@ def run(args):
     d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
     lags = range(*d)
-    acf_vals = acf(args.files, lags, get_col_num(args.c), args.partial)
+    acf_vals = acf(args.files, lags, get_col_num(args.c), partial=(not
+                                                            args.full))
     write_acf(acf_vals, sys.stdout)
 
 def write_acf(acf_vals, out):
@@ -121,9 +122,9 @@ def main():
             type=str, default="15:500:50")
     p.add_argument("-c", dest="c", help="column number that has the value to"
                    "take the  acf", type=int, default=4)
-    p.add_argument("--partial", dest="partial", action="store_true",
-                   default=False, help="do partial autocorrelation (default"
-                   " is full")
+    p.add_argument("--full", dest="full", action="store_true",
+                   default=False, help="do full autocorrelation (default"
+                   " is partial")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):

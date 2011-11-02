@@ -31,9 +31,9 @@ python cpv/tests/test.py
 
 # the sum of the partials should add up the the final number in
 # the non-partial
-psum=$(python cpv/acf.py cpv/tests/data/pvals.bed -c 5 -d 1:500:50 --partial \
+psum=$(python cpv/acf.py cpv/tests/data/pvals.bed -c 5 -d 1:500:50 \
     | awk '(NR > 2){ s += $4; }END{ print s}')
-npsum=$(python cpv/acf.py cpv/tests/data/pvals.bed -c 5 -d 1:500:50 \
+npsum=$(python cpv/acf.py cpv/tests/data/pvals.bed -c 5 -d 1:500:50 --full \
     | awk '{ s=$4 }END{ print s }')
 
 test $psum -ne $npsum && echo "ERROR in ACF"
