@@ -127,9 +127,6 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
         print >>sys.stderr, "no regions in %s" % (fregions, )
         sys.exit()
 
-    total_coverage = get_total_coverage(fpvals, col_num)
-    print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
-                                (total_coverage)
 
     for nr, region_line in enumerate((l.rstrip("\r\n")
                                    for l in open(fregions))):
@@ -153,6 +150,9 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
 
     acfs = _gen_acf(region_info, (fpvals,), col_num, step)
     # regions first and then create ACF for the longest one.
+    total_coverage = get_total_coverage(fpvals, col_num)
+    print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
+                                (total_coverage)
     if not random:
         sample_distribution = np.array([b["p"] for b in bediter(fpvals,
                                                                 col_num)])
@@ -160,9 +160,10 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
         sample_distribution = None
     for region_line, region_len, prows in region_info:
         # gen_sigma expects a list of bed dicts.
-        prows = prows[1:-1]
         sigma = gen_sigma_matrix(prows, acfs)
         ps = np.array([prow["p"] for prow in prows])
+        assert ps.shape[0] != 0, ("bad region", region_line)
+        assert ps.shape[0] == sigma.shape[0], ("bad_region", region_line)
 
         # calculate the SLK for the region.
         region_slk = stouffer_liptak(ps, sigma)
