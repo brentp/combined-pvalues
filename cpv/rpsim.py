@@ -8,9 +8,12 @@ import sys
 import numpy as np
 
 from _common import bediter, get_col_num
-from itertools import chain
+from itertools import chain, groupby
+from operator import itemgetter
 from slk import gen_sigma_matrix
 from acf import acf
+from stouffer_liptak import stouffer_liptak
+
 
 from scipy.stats import norm
 from numpy.linalg import cholesky as chol, LinAlgError
@@ -56,9 +59,15 @@ def sim(sigma, ps, nsims, truncate, sample_distribution=None):
 
 def run(args):
     col_num = get_col_num(args.c)
-    for region_line, psim in rpsim(args.pvals, args.regions,
+    # order in results is slk, uniform, sample
+    for region_line, slk, slk_sidak in rpsim(args.pvals, args.regions,
             col_num, args.N, args.tau, args.step, args.random):
-        print "%s\t%.4g" % (region_line, psim)
+        print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
+    """
+    for region_line, slk, puniform, psample in rpsim(args.pvals, args.regions,
+            col_num, args.N, args.tau, args.step, args.random):
+        print "%s\t%.4g\t%.4g\t%.4g" % (region_line, slk, puniform, psample)
+    """
 
 def _gen_acf(region_info, fpvals, col_num, step):
     # calculate the ACF as far out as needed...
@@ -84,15 +93,43 @@ def _gen_acf(region_info, fpvals, col_num, step):
     print >>sys.stderr, "# Done with one-time ACF calculation"
     return acfs
 
+def get_total_coverage(fpvals, col_num):
+    """
+    Calculate total bases of coverage in `fpvals`.
+    Used for the sidak correction
+    """
+    total_coverage = 0
+    for key, chrom_iter in groupby(bediter(fpvals, col_num),
+            itemgetter('chrom')):
+        bases = set([])
+        for feat in chrom_iter:
+            bases.update(range(feat['start'], feat['end']))
+        total_coverage += len(bases)
+    return total_coverage
+
+def sidak(p, region_length, total_coverage):
+    """
+    see: https://github.com/brentp/combined-pvalues/issues/2
+    """
+    k = total_coverage / float(region_length)
+    p_sidak = 1 - (1 - p)**k
+    # print "bonferroni:", min(p * k, 1)
+    return min(p_sidak, 1)
+
 def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
     piter = chain(bediter(fpvals, col_num), [None])
     prow = piter.next()
     # just use 2 for col_num, but dont need the p from regions.
     region_info = []
 
+
     if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
         print >>sys.stderr, "no regions in %s" % (fregions, )
         sys.exit()
+
+    total_coverage = get_total_coverage(fpvals, col_num)
+    print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
+                                (total_coverage)
 
     for nr, region_line in enumerate((l.rstrip("\r\n")
                                    for l in open(fregions))):
@@ -109,7 +146,7 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
             prow = piter.next()
             if prow is None: break
         assert prows, (region_line)
-        region_len = rend - rstart + 1
+        region_len = rend - rstart
         region_info.append((region_line, region_len, prows))
         del prows
     assert nr + 1 == len(region_info), (nr, len(region_info))
@@ -123,10 +160,27 @@ def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
         sample_distribution = None
     for region_line, region_len, prows in region_info:
         # gen_sigma expects a list of bed dicts.
+        prows = prows[1:-1]
         sigma = gen_sigma_matrix(prows, acfs)
         ps = np.array([prow["p"] for prow in prows])
-        psim = sim(sigma, ps, nsims, tau, sample_distribution)
-        yield (region_line, psim)
+
+        # calculate the SLK for the region.
+        region_slk = stouffer_liptak(ps, sigma)
+        assert region_slk["OK"] is True
+        slk_p = region_slk["p"]
+
+        sidak_slk_p = sidak(slk_p, region_len, total_coverage)
+
+
+        result = [region_line, slk_p, sidak_slk_p]
+        # NOTE: for now, were doing the uniform and the self distribution
+        """
+        for sample in (None, sample_distribution):
+            psim = sim(sigma, ps, nsims, tau, sample)
+            result.append(psim)
+        # order in results is slk, uniform, sample
+        """
+        yield result
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
