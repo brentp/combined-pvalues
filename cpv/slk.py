@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from _common import read_acf, bediter, get_col_num
 from itertools import groupby, combinations
-
+from stouffer_liptak import stouffer_liptak
 
 def get_corr(dist, acfs):
     """
@@ -58,28 +58,34 @@ def gen_sigma_matrix(group, acfs, cached={}):
         a[j, i] = a[i, j] = cached[dist]
     return a
 
+def slk_chrom(chromlist, lag_max, acfs):
+    """
+    calculate the slk for a given chromosome
+    """
+    for xbed, xneighbors in walk(chromlist, lag_max):
+
+        sigma = gen_sigma_matrix(xneighbors, acfs)
+        pvals = [g['p'] for g in xneighbors]
+        r = stouffer_liptak(pvals, sigma)
+        yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
+                r["p"])
+        if not r["OK"]:
+            print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
+                    (xbed["chrom"], xbed["start"], xbed["end"])
+
 def adjust_pvals(fnames, col_num0, acfs):
-    from stouffer_liptak import stouffer_liptak
     lag_max = acfs[-1][0][1]
     for fname in fnames:
         for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
-            for xbed, xneighbors in walk(chromlist, lag_max):
 
-                sigma = gen_sigma_matrix(xneighbors, acfs)
-                pvals = [g['p'] for g in xneighbors]
-                r = stouffer_liptak(pvals, sigma)
-                yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
-                        r["p"])
-                if not r["OK"]:
-                    print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
-                            (xbed["chrom"], xbed["start"], xbed["end"])
+            results = slk_chrom(chromlist, lag_max, acfs)
+            for r in results:
+                yield r
 
 def run(args):
     acf_vals = read_acf(args.acf)
-    adjusted = []
     col_num = get_col_num(args.c)
     for row in adjust_pvals(args.files, col_num, acf_vals):
-        adjusted.append(row[-1])
         sys.stdout.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
 
 def main():
