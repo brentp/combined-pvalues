@@ -7,16 +7,28 @@ from array import array
 from chart import chart
 import sys
 import numpy as np
-from itertools import groupby
+from itertools import groupby, izip
 from _common import bediter, pairwise, get_col_num
 
-def _acf_by_chrom(chromlist, acfs):
+def create_acf_list(lags):
+    acfs = []
+    for lag_min, lag_max in pairwise(lags):
+        acfs.append((lag_min, lag_max,
+            # array uses less memory than list.
+            {"x": array("f"), "y": array("f") }))
+    acfs.reverse()
+    return acfs
+
+def _acf_by_chrom(args):
     """
     calculate the ACF for a single chromosome
     currently updates acfs in-place. this should
     be changed to allow for parallization.
     """
-    chromlist = list(chromlist)
+    chromlist, lags = args
+    acfs = create_acf_list(lags)
+    if not isinstance(chromlist, list):
+        chromlist = list(chromlist)
     max_lag = max(a[1] for a in acfs)
     for ix, xbed in enumerate(chromlist):
         # find all lines within lag of xbed.
@@ -34,6 +46,25 @@ def _acf_by_chrom(chromlist, acfs):
                     xys["y"].append(ybed['p'])
                 elif dist > lag_max:
                     break
+    return acfs
+
+def merge_acfs(unmerged):
+    """
+    utitlity function to merge the chromosomes after
+    they've been calculated, and before the correlation
+    is calculated.
+    """
+    merged = unmerged.pop()
+    for um in unmerged:
+        # have to merge at each lag.
+        for (glag_min, glag_max, gxys), (ulag_min, ulag_max, uxys) in \
+                                                        izip(merged, um):
+            assert glag_min == ulag_min and glag_max == ulag_max
+            gxys["x"].extend(uxys["x"])
+            gxys["y"].extend(uxys["y"])
+            # reduce copies in memory.
+            uxys = {}
+    return merged
 
 def acf(fnames, lags, col_num0, partial=True, simple=False):
     """
@@ -45,19 +76,24 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
     efficient as possible while still being very fast for a pure python
     implementation.
     """
-    acfs = []
-    for lag_min, lag_max in pairwise(lags):
-        acfs.append((lag_min, lag_max,
-            # array uses less memory than list.
-            {"x": array("f"), "y": array("f") }))
     # reversing allows optimization below.
-    acfs = acfs[::-1]
+    try:
+        from multiprocessing import Pool
+        p = Pool()
+        imap = p.imap
+    except ImportError:
+        from itertools import imap
 
+    unmerged_acfs = [] # separated by chrom. need to merge later.
     for fname in fnames:
         # groupby chromosome.
-        for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
-            _acf_by_chrom(chromlist, acfs)
+        arg_list = ((list(chromlist), lags) for chrom, chromlist in
+                groupby(bediter(fname, col_num0), lambda a: a["chrom"]))
 
+        for chrom_acf in imap(_acf_by_chrom, arg_list):
+            unmerged_acfs.append(chrom_acf)
+
+    acfs = merge_acfs(unmerged_acfs)
     acf_res = {}
     xs = np.array([], dtype='f')
     ys = np.array([], dtype='f')
