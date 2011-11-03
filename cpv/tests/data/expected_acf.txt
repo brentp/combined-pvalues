@@ -1,0 +1,5 @@
+# https://chart.googleapis.com/chart?cht=bvs&&chd=t:0.064,0.050,0.030&chs=174x250&chco=224499&chxt=x,y&chxl=0:|1-61|61-121|121-181&chxr=1,0,0.08&chm=N,000000,0,-1,12&chbh=42,6,12&chds=a
+#lag_min	lag_max	correlation	N
+1	61	0.06428	4353
+61	121	0.05026	3051
+121	181	0.03039	3922

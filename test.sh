@@ -38,4 +38,16 @@ npsum=$(python cpv/acf.py cpv/tests/data/pvals.bed -c 5 -d 1:500:50 --full \
 
 test $psum -ne $npsum && echo "ERROR in ACF"
 
+
+# test the acf output is as expected.
+md=$(python cpv/acf.py -d 1:240:60 cpv/tests/data/pvals.bed -c 5 | md5sum \
+    | awk '{ print $1 }')
+
+md_expected=$(md5sum cpv/tests/data/expected_acf.txt | awk '{ print $1 }')
+
+if [ $md != $md_expected ]; then
+    echo "ACF OUTPUT different"
+fi
+
+
 rm t
