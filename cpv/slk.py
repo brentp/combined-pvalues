@@ -2,10 +2,13 @@
 """
 import argparse
 import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
 import numpy as np
 from _common import read_acf, bediter, get_col_num
 from itertools import groupby, combinations
 from stouffer_liptak import stouffer_liptak
+
 
 def get_corr(dist, acfs):
     """
@@ -67,20 +70,36 @@ def slk_chrom(chromlist, lag_max, acfs):
         sigma = gen_sigma_matrix(xneighbors, acfs)
         pvals = [g['p'] for g in xneighbors]
         r = stouffer_liptak(pvals, sigma)
+
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
                 r["p"])
         if not r["OK"]:
             print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
                     (xbed["chrom"], xbed["start"], xbed["end"])
 
+def _slk_chrom(args):
+    return list(slk_chrom(*args))
+
 def adjust_pvals(fnames, col_num0, acfs):
     lag_max = acfs[-1][0][1]
-    for fname in fnames:
-        for key, chromlist in groupby(bediter(fname, col_num0), lambda a: a["chrom"]):
 
-            results = slk_chrom(chromlist, lag_max, acfs)
+    # parallelize if multiprocesing is installed.
+    try:
+        from multiprocessing import Pool
+        pool = Pool()
+        imap = pool.imap
+    except ImportError:
+        import itertools
+        imap = itertools.imap
+
+    for fname in fnames:
+        arg_iter = ((list(chromlist), lag_max, acfs) for key, chromlist in
+                        groupby(bediter(fname, col_num0), lambda a: a["chrom"]))
+
+        for results in imap(_slk_chrom, arg_iter):
             for r in results:
                 yield r
+
 
 def run(args):
     acf_vals = read_acf(args.acf)
