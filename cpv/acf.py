@@ -10,19 +10,6 @@ import numpy as np
 from itertools import groupby
 from _common import bediter, pairwise, get_col_num
 
-try:
-    import scikits.statsmodels.api as sm
-    from scikits.statsmodels.stats.stattools import durbin_watson
-
-    def dw(xs, ys):
-        model = sm.OLS(xs, ys)
-        r = model.fit()
-        return durbin_watson(r.resid)
-    HAS_DW = False # leave for now, not working.
-except ImportError:
-    def dw(xs, ys): return None
-    HAS_DW = False
-
 def _acf_by_chrom(chromlist, acfs):
     """
     calculate the ACF for a single chromosome
@@ -90,8 +77,7 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
         if simple:
             acf_res[(lmin, lmax)] = np.corrcoef(xs, ys)[0, 1]
         else:
-            acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs),
-                                    dw(xs, ys))
+            acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs))
     return sorted(acf_res.items())
 
 def run(args):
@@ -113,12 +99,9 @@ def write_acf(acf_vals, out):
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print >>out, "#", chart(values, xlabels)
-    print >> out, "#lag_min\tlag_max\tcorrelation\tN" + \
-                      ("\tdurbin-watson" if HAS_DW else "")
+    print >> out, "#lag_min\tlag_max\tcorrelation\tN"
     for k,v in sorted(acf_vals):
-        line = "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
-        if HAS_DW: line += "\t%.2f" % v[2]
-        print >> out, line
+        print >> out, "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
         simple_acf.append((k, v[0]))
     return simple_acf
 
