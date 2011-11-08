@@ -17,7 +17,7 @@ This message is displayed::
        slk   - Stouffer-Liptak-Kechris correction of spatially correlated p-values
        fdr   - Benjamini-Hochberg correction of p-values
        peaks - find peaks in a BED file.
-       rpsim - generate p-values for a region (of p-values) by simulation.**
+       region_p - generate p-values for a region (of p-values) by simulation.**
        hist  - plot a histogram of a column and check for uniformity.
        splot - a scatter plot of column(s) in a bed file for a given region.
 
@@ -195,12 +195,12 @@ larger regions will automatically be plotted as points.
 You may specify any number of columns to plot.
 
 
-Region Sims (rpsim)
+Region Sims (region_p)
 -------------------
 
 Given a region we want to generate, by simulation a *p-value* for the entire
 region. Zaykin et al. (2002. Truncated Product Method for Combining p-values
-indicates a Monte-Carlo simulation strategy implement in rpsim. The procedure
+indicates a Monte-Carlo simulation strategy implement in region_p. The procedure
 for each region is to::
 
  + set Wo = product(p for p in region if p <= tau)
@@ -214,7 +214,7 @@ for each region is to::
 
 This adds a column for a Zaykin p-value. An invocation::
 
-   $ python cpv/rpsim.py -p data/pvals.bed \
+   $ python cpv/region_p.py -p data/pvals.bed \
                          -r data/regions.bed \
                          -t 0.1 \
                          -s 50 \

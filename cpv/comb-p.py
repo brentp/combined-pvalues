@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
-__actions = ("acf", "slk", "fdr", "peaks", "rpsim", "hist", "splot")
+__actions = ("acf", "slk", "fdr", "peaks", "region_p", "hist", "splot",
+             "manhattan")
 
 def main():
     if len(sys.argv) == 1 or sys.argv[1] in ("-h", "--help"):
@@ -16,7 +17,7 @@ To run, indicate one of:
    slk       - Stouffer-Liptak-Kechris correction of correlated p-values
    fdr       - Benjamini-Hochberg correction of p-values
    peaks     - find peaks in a BED file.
-   rpsim     - generate p-values for a region (of p-values) by simulation.
+   region_p  - generate SLK p-values for a region (of p-values)
    hist      - plot a histogram of a column and check for uniformity.
    splot     - a scatter plot of column(s) in a bed file for a given region.
    manhattan - a manhattan plot of values in a BED file.
@@ -38,7 +39,7 @@ def _pipeline():
     import sys
     import os.path as op
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
-    from cpv import acf, slk, fdr, peaks, rpsim
+    from cpv import acf, slk, fdr, peaks, region_p
     from _common import get_col_num
     import argparse
     import operator
@@ -108,7 +109,7 @@ def _pipeline():
     with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
         fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
-        for region_line, slk_p, slk_sidak_p in rpsim.rpsim(
+        for region_line, slk_p, slk_sidak_p in region_p.region_p(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
                                5000, args.tau, args.step,

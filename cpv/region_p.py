@@ -1,7 +1,11 @@
 """
-   simulate a p-value of a region using the truncated product method described
-   in Zaykin et al. 2002, "Truncated Product Method for Combining p-values".
-   Genet Epidemiol.
+   simulate a p-value of a region using:
+
+    + The Stouffer-Liptak method.
+
+    + the truncated product method described
+      in Zaykin et al. 2002, "Truncated Product Method for Combining p-values".
+      Genet Epidemiol.
 """
 import argparse
 import sys
@@ -13,7 +17,6 @@ from operator import itemgetter
 from slk import gen_sigma_matrix
 from acf import acf
 from stouffer_liptak import stouffer_liptak
-
 
 from scipy.stats import norm
 from numpy.linalg import cholesky as chol, LinAlgError
@@ -60,11 +63,11 @@ def sim(sigma, ps, nsims, truncate, sample_distribution=None):
 def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
-    for region_line, slk, slk_sidak in rpsim(args.pvals, args.regions,
+    for region_line, slk, slk_sidak in region_p(args.pvals, args.regions,
             col_num, args.N, args.tau, args.step, args.random):
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
     """
-    for region_line, slk, puniform, psample in rpsim(args.pvals, args.regions,
+    for region_line, slk, puniform, psample in region_p(args.pvals, args.regions,
             col_num, args.N, args.tau, args.step, args.random):
         print "%s\t%.4g\t%.4g\t%.4g" % (region_line, slk, puniform, psample)
     """
@@ -116,7 +119,7 @@ def sidak(p, region_length, total_coverage):
     # print "bonferroni:", min(p * k, 1)
     return min(p_sidak, 1)
 
-def rpsim(fpvals, fregions, col_num, nsims, tau, step, random=False):
+def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
     piter = chain(bediter(fpvals, col_num), [None])
     prow = piter.next()
     # just use 2 for col_num, but dont need the p from regions.
