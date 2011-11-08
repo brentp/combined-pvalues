@@ -12,13 +12,14 @@ Tools for viewing and adjusting p-values in BED files.
 
 To run, indicate one of:
 
-   acf   - calculate autocorrelation within BED file
-   slk   - Stouffer-Liptak-Kechris correction of spatially correlated p-values
-   fdr   - Benjamini-Hochberg correction of p-values
-   peaks - find peaks in a BED file.
-   rpsim - generate p-values for a region (of p-values) by simulation.**
-   hist  - plot a histogram of a column and check for uniformity.
-   splot - a scatter plot of column(s) in a bed file for a given region.
+   acf       - calculate autocorrelation within BED file
+   slk       - Stouffer-Liptak-Kechris correction of correlated p-values
+   fdr       - Benjamini-Hochberg correction of p-values
+   peaks     - find peaks in a BED file.
+   rpsim     - generate p-values for a region (of p-values) by simulation.
+   hist      - plot a histogram of a column and check for uniformity.
+   splot     - a scatter plot of column(s) in a bed file for a given region.
+   manhattan - a manhattan plot of values in a BED file.
 
 NOTE: most of these assume *sorted* BED files.
 SEE: https://github.com/brentp/combined-pvalues for documentation
