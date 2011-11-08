@@ -9,23 +9,10 @@ import sys
 from itertools import groupby, cycle
 from operator import itemgetter
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 from cpv._common import bediter, get_col_num
-
-def chr_cmp(a, b):
-    a = a.lower().replace("_", ""); b = b.lower().replace("_", "")
-    achr = a[3:] if a.startswith("chr") else a
-    bchr = b[3:] if b.startswith("chr") else b
-
-    try:
-        return cmp(int(achr), int(bchr))
-    except ValueError:
-        if achr.isdigit() and not bchr.isdigit(): return -1
-        if bchr.isdigit() and not achr.isdigit(): return 1
-        # X Y
-        return cmp(achr, bchr)
 
 def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
 
@@ -59,6 +46,8 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     f = plt.figure()
     ax = f.add_axes((0.1, 0.09, 0.88, 0.85))
 
+    bonferonni_p = 0.05 / nrows
+
     if title is not None:
         plt.title(title)
 
@@ -70,7 +59,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
 
     # plot 0.05 line after multiple testing. always nlog10'ed since
     # that's the space we're plotting in.
-    ax.axhline(y=-np.log10(0.05 / nrows), color='0.5', linewidth=2)
+    ax.axhline(y=-np.log10(bonferonni_p), color='0.5', linewidth=2)
     plt.axis('tight')
     plt.xlim(0, xs[-1])
     plt.ylim(ymin=0)
@@ -81,6 +70,20 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     #plt.show()
     print >>sys.stderr, "Bonferonni-corrected p-value for %i rows: %.3g" \
             % (nrows, 0.05 / nrows)
+    print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
+            % (ys > -np.log10(bonferonni_p)).sum()
+
+    """
+    qqplot stuffs
+    plt.close()
+    pys = np.sort(10**-ys) # convert back to actual p-values
+    plt.plot(np.arange(ys.shape[0]), np.sort(pys), "r,")
+    plt.plot(np.arange(ys.shape[0]), np.arange(ys.shape[0], dtype='f') /
+            ys.shape[0], "k--")
+    plt.xlim(0, ys.shape[0])
+    plt.ylim(0, 1.05)
+    plt.show()
+    """
 
 def main():
     p = argparse.ArgumentParser(__doc__)
