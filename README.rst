@@ -152,9 +152,9 @@ A call like::
 Benjamini-Hochberg Correction
 -----------------------------
 
-This performas BH FDR correction on the pvalues. A call looks like::
+This performs BH FDR correction on the pvalues. A call looks like::
 
-    $ python cpv/fdr.py --alpha 0.05 data/pvals.acf.bed > data/pvals.adjusted.bed
+    $ python cpv/fdr.py data/pvals.acf.bed > data/pvals.adjusted.bed
 
 where the new file has one additional column, the corrected p-value. By
 default, it uses the last column as the p-value input, but another column can
@@ -195,11 +195,24 @@ larger regions will automatically be plotted as points.
 You may specify any number of columns to plot.
 
 
-Region Sims (region_p)
--------------------
+Region P-values (region_p)
+--------------------------
 
-Given a region we want to generate, by simulation a *p-value* for the entire
-region. Zaykin et al. (2002. Truncated Product Method for Combining p-values
+Currently, the reported p-value is a Stouffer-Liptak *p-value* for the entire
+region. This is done by taking a file of regions, and the original,
+uncorrected p-values, calculating the ACF out to the length of the longest
+region, and then using that ACF to perform the Stouffer-Liptak correction on
+each region based on the original p-values.
+The 1-step Sidak correction for multiple testing is performed on the p-value
+for the region. Because the original p-values are sent in, we know the
+coverage of the input. The Sidak correction is then based on the number of
+possible regions of the current size that could be created from the total
+coverage. The extra columns added to the output file are the Stouffer-Liptak
+p-value of the region and the Sidak correction of that p-value.
+
+
+In addition, we can report by simulation a *p-value* for the region.
+Zaykin et al. (2002. Truncated Product Method for Combining p-values)
 indicates a Monte-Carlo simulation strategy implement in region_p. The procedure
 for each region is to::
 
