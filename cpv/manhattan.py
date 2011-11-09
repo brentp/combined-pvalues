@@ -6,9 +6,12 @@ plot a manhattan plot of the input file(s).
 
 import argparse
 import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from itertools import groupby, cycle
 from operator import itemgetter
 import matplotlib
+import scipy.stats as ss
 #matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
@@ -65,25 +68,46 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     plt.ylim(ymin=0)
     if ymax is not None: plt.ylim(ymax=ymax)
     plt.xticks([c[1] for c in chrom_centers], [c[0] for c in chrom_centers], rotation=-90, size=8.5)
-    print >>sys.stderr, "saving to: %s" % image_path
-    plt.savefig(image_path)
     #plt.show()
     print >>sys.stderr, "Bonferonni-corrected p-value for %i rows: %.3g" \
             % (nrows, 0.05 / nrows)
     print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
             % (ys > -np.log10(bonferonni_p)).sum()
 
-    """
-    qqplot stuffs
-    plt.close()
+    ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
+
     pys = np.sort(10**-ys) # convert back to actual p-values
-    plt.plot(np.arange(ys.shape[0]), np.sort(pys), "r,")
-    plt.plot(np.arange(ys.shape[0]), np.arange(ys.shape[0], dtype='f') /
-            ys.shape[0], "k--")
-    plt.xlim(0, ys.shape[0])
-    plt.ylim(0, 1.05)
-    plt.show()
-    """
+    qq(pys, ax_qq)
+
+    ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
+    hist(pys, ax_hist)
+    print >>sys.stderr, "saving to: %s" % image_path
+    plt.savefig(image_path)
+
+    return
+
+def hist(pys, ax_hist):
+    ax_hist.hist(pys, bins=40, color='0.75')
+    ax_hist.set_xticks([])
+    ax_hist.set_yticks([])
+
+
+
+def qq(pys, ax_qq):
+    from scikits.statsmodels.graphics.qqplot import qqplot
+    qqplot(pys, dist=ss.uniform, line='45')
+
+    ax_qq.lines[0].set_marker(',')
+    ax_qq.lines[0].set_markeredgecolor('0.75')
+    ax_qq.lines[1].set_linestyle('dashed')
+    ax_qq.lines[1].set_color('k')
+    ax_qq.set_xticks([])
+    ax_qq.set_xlabel('')
+    ax_qq.set_ylabel('')
+    ax_qq.set_yticks([])
+    #ax_qq.lines[0].set_linestyle(None)
+    ax_qq.axis('tight')
+    ax_qq.axes.set_frame_on(True)
 
 def main():
     p = argparse.ArgumentParser(__doc__)
