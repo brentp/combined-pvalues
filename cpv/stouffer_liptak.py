@@ -39,8 +39,8 @@ def stouffer_liptak(pvals, sigma=None):
             # cant do the correction non-invertible
             result["OK"] = False
         # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
-        wi2 = np.power(sigma.sum(0), 2)
-        Cp = qvals.sum() / np.sqrt(wi2.sum())
+        denom = np.sqrt(np.sum(np.power(sigma, 2)))
+        Cp = qvals.sum() / denom
     else:
         Cp = qvals.sum() / np.sqrt(len(qvals))
 
