@@ -21,7 +21,7 @@ def stouffer_liptak(pvals, sigma=None):
     >>> stouffer_liptak([0.5, 0.1, 0.1, 0.1, 0.5])
     {'p': 0.042..., 'C': 1.719..., 'OK': True}
 
-    >>> stouffer_liptak([0.5], [[1]])
+    >>> stouffer_liptak([0.5], np.matrix([[1]]))
     {'p': 0.5...}
     """
     L = len(pvals)
@@ -38,7 +38,12 @@ def stouffer_liptak(pvals, sigma=None):
         except LinAlgError:
             # cant do the correction non-invertible
             result["OK"] = False
-    Cp = qvals.sum() / (len(qvals)**0.5)
+        # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
+        wi2 = np.power(sigma.sum(0), 2)
+        Cp = qvals.sum() / np.sqrt(wi2.sum())
+    else:
+        Cp = qvals.sum() / np.sqrt(len(qvals))
+
     # get the right tail.
     pstar = 1 - pnorm(Cp)
     result.update({"C": Cp, "p": pstar})
