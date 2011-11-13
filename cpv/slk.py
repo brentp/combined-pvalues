@@ -32,7 +32,8 @@ def walk(chromlist, lag_max):
     within lag-max. These yielded values are then used to generate
     the sigma autocorrelation matrix.
     """
-    L = list(chromlist)
+    L = list(chromlist) if not isinstance(chromlist, list) else chromlist
+
     N = len(L)
     imin = imax = 0
     for ithis, xbed in enumerate(L):
