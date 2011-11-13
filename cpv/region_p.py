@@ -96,7 +96,7 @@ def _gen_acf(region_info, fpvals, col_num, step):
     print >>sys.stderr, "# Done with one-time ACF calculation"
     return acfs
 
-def get_total_coverage(fpvals, col_num):
+def get_total_coverage(fpvals, col_num, out_val):
     """
     Calculate total bases of coverage in `fpvals`.
     Used for the sidak correction
@@ -108,7 +108,14 @@ def get_total_coverage(fpvals, col_num):
         for feat in chrom_iter:
             bases.update(range(feat['start'], feat['end']))
         total_coverage += len(bases)
-    return total_coverage
+    out_val.value = total_coverage
+
+def _get_total_coverage(fpvals, col_num):
+    from multiprocessing import Process, Value
+    val = Value('f')
+    p = Process(target=get_total_coverage, args=(fpvals, col_num, val))
+    p.start()
+    return p, val
 
 def sidak(p, region_length, total_coverage):
     """
@@ -125,11 +132,11 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
     # just use 2 for col_num, but dont need the p from regions.
     region_info = []
 
-
     if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
         print >>sys.stderr, "no regions in %s" % (fregions, )
         sys.exit()
 
+    process, total_coverage_sync = _get_total_coverage(fpvals, col_num)
 
     for nr, region_line in enumerate((l.rstrip("\r\n")
                                    for l in open(fregions))):
@@ -152,8 +159,10 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
     assert nr + 1 == len(region_info), (nr, len(region_info))
 
     acfs = _gen_acf(region_info, (fpvals,), col_num, step)
+    process.join()
+    total_coverage = total_coverage_sync.value
+
     # regions first and then create ACF for the longest one.
-    total_coverage = get_total_coverage(fpvals, col_num)
     print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
                                 (total_coverage)
     if not random:
