@@ -8,6 +8,7 @@ from chart import chart
 import sys
 import numpy as np
 from itertools import groupby, izip
+from operator import itemgetter
 from _common import bediter, pairwise, get_col_num
 
 def create_acf_list(lags):
@@ -64,6 +65,28 @@ def merge_acfs(unmerged):
             # reduce copies in memory.
             uxys = {}
     return merged
+
+def local_acf(bed_file, lags, col_num0):
+    from slk import walk
+    # walk yields a tuple of center row, [neighbors]
+    # we'll calculate the ACF on neighbors
+    max_lag = max(lags)
+    lag_str = "\t".join(("%i-%i" % (lmin, lmax)) for lmin, lmax in pairwise(lags))
+    print "\t".join("#chrom start end p".split()) + "\t" + lag_str
+
+    for key, chromgroup in groupby(bediter(bed_file, col_num0),
+                                   itemgetter("chrom")):
+        for xbed, neighbors in walk(chromgroup, max_lag):
+
+            line = [xbed['chrom'], str(xbed['start']), str(xbed['end']), "%.4g" % (xbed['p'])]
+            for lag_min, lag_max, xys in reversed(_acf_by_chrom((neighbors, lags))):
+                xs, ys = xys['x'], xys['y']
+                if len(xs) > 3:
+                    line.append("%.4g" % np.corrcoef(xs, ys)[0, 1])
+                else:
+                    line.append("NA")
+            print "\t".join(line)
+
 
 def acf(fnames, lags, col_num0, partial=True, simple=False):
     """
@@ -124,6 +147,9 @@ def run(args):
     d[1] += 1 # adjust for non-inclusive end-points...
     assert len(d) == 3
     lags = range(*d)
+    if args.local:
+        return local_acf(args.files[0], lags, get_col_num(args.c))
+
     acf_vals = acf(args.files, lags, get_col_num(args.c), partial=(not
                                                             args.full))
     write_acf(acf_vals, sys.stdout)
@@ -152,6 +178,8 @@ def main():
     p.add_argument("--full", dest="full", action="store_true",
                    default=False, help="do full autocorrelation (default"
                    " is partial")
+    p.add_argument("--local", dest="local", action="store_true",
+                   default=False, help="do local ACF")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):
