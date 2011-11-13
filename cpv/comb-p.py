@@ -106,7 +106,7 @@ def _pipeline():
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "%i regions" % (sum(1 for _ in open(fregions)))
 
-    with open(args.prefix + ".sim-p.regions.bed", "w") as fh:
+    with open(args.prefix + ".regions-p.bed", "w") as fh:
         fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p in region_p.region_p(
