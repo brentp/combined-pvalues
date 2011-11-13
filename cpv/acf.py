@@ -22,8 +22,7 @@ def create_acf_list(lags):
 def _acf_by_chrom(args):
     """
     calculate the ACF for a single chromosome
-    currently updates acfs in-place. this should
-    be changed to allow for parallization.
+    chromlist is the data for a single chromsome
     """
     chromlist, lags = args
     acfs = create_acf_list(lags)
