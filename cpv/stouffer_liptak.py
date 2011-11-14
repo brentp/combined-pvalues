@@ -39,31 +39,17 @@ def stouffer_liptak(pvals, sigma=None):
             # cant do the correction non-invertible
             result["OK"] = False
         # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
+    """
         denom = np.sqrt(np.sum(np.power(sigma, 2)))
         Cp = qvals.sum() / denom
     else:
-        Cp = qvals.sum() / np.sqrt(len(qvals))
+    """
+    Cp = qvals.sum() / np.sqrt(len(qvals))
 
     # get the right tail.
     pstar = 1 - pnorm(Cp)
     result.update({"C": Cp, "p": pstar})
     return result
-
-def fisher(ps, aacf, df):
-    # aacf is off-diagonal. 
-    # copied from kechris.
-    k0 = float(len(ps))
-    v = float(df)
-    psi = -2.0 * np.log(ps).sum()
-    # TODO: numexpr
-    cov = ( 3.263 * aacf + 0.710 * aacf**2 + 0.027 * aacf**3 + 0.727 * (1 / v)
-          + 0.327 * (aacf / v) - 0.768 *(aacf**2) / v - 0.331 * (aacf**3) / v
-          ).sum()
-    ev = 2 * k0
-    vv = 4 * k0 + 2 * cov
-    f = 2 * ev**2 / vv
-    cv = vv / (2 * ev)
-    return chisqprob(psi / cv, f)
 
 if __name__ == "__main__":
     import doctest
