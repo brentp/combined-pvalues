@@ -77,7 +77,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
 
     pys = np.sort(10**-ys) # convert back to actual p-values
-    qq(pys, ax_qq)
+    qqplot(ys, ax_qq)
 
     ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
     hist(pys, ax_hist)
@@ -91,28 +91,21 @@ def hist(pys, ax_hist):
     ax_hist.set_xticks([])
     ax_hist.set_yticks([])
 
-
-
-def qq(pys, ax_qq):
-    from scikits.statsmodels.graphics.qqplot import qqplot
-    qqplot(pys, dist=ss.uniform, line='45')
-
-    ax_qq.lines[0].set_marker(',')
-    ax_qq.lines[0].set_markeredgecolor('0.75')
-    ax_qq.lines[1].set_linestyle('dashed')
-    ax_qq.lines[1].set_color('k')
+def qqplot(lpys, ax_qq):
+    lunif = -np.log10(np.arange(1, len(lpys) + 1) / float(len(lpys)))[::-1]
+    ax_qq.plot(lunif, np.sort(lpys), marker=',', linestyle='none')
     ax_qq.set_xticks([])
+    ax_qq.plot(lunif, lunif, 'r--')
     ax_qq.set_xlabel('')
     ax_qq.set_ylabel('')
     ax_qq.set_yticks([])
-    #ax_qq.lines[0].set_linestyle(None)
     ax_qq.axis('tight')
     ax_qq.axes.set_frame_on(True)
 
 def main():
     p = argparse.ArgumentParser(__doc__)
-    p.add_argument("--no-log", help="don't do -log10(p) on the value",
-            action='store_true', default=False)
+    p.add_argument("--no-log", help="the p-value is already -log10'd, don't "
+                "re -log10", action='store_true', default=False)
     p.add_argument("--col", dest="col", help="index of the column containing"
                    " the the p-value", default=-1, type=int)
     p.add_argument("--colors", dest="colors", help="cycle through these colors",
