@@ -71,7 +71,7 @@ def local_acf(bed_file, lags, col_num0):
     # walk yields a tuple of center row, [neighbors]
     # we'll calculate the ACF on neighbors
     max_lag = max(lags)
-    lag_str = "\t".join(("%i-%i" % (lmin, lmax)) for lmin, lmax in pairwise(lags))
+    lag_str = "\t".join(("%i-%i-corr\t%i-%i-N" % (lmin, lmax, lmin, lmax)) for lmin, lmax in pairwise(lags))
     print "\t".join("#chrom start end p".split()) + "\t" + lag_str
 
     for key, chromgroup in groupby(bediter(bed_file, col_num0),
@@ -82,9 +82,11 @@ def local_acf(bed_file, lags, col_num0):
             for lag_min, lag_max, xys in reversed(_acf_by_chrom((neighbors, lags))):
                 xs, ys = xys['x'], xys['y']
                 if len(xs) > 3:
-                    line.append("%.4g" % np.corrcoef(xs, ys)[0, 1])
+                    xs, ys = -np.log10(xs), -np.log10(ys)
+                    line.append("%.4g\t%i" % (np.corrcoef(xs, ys)[0, 1],
+                                                len(xs)))
                 else:
-                    line.append("NA")
+                    line.append("NA\t%i" % len(xs))
             print "\t".join(line)
 
 
