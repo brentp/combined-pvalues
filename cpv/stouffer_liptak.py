@@ -51,6 +51,31 @@ def stouffer_liptak(pvals, sigma=None):
     result.update({"C": Cp, "p": pstar})
     return result
 
+from scipy.misc import comb
+from math import log, factorial
+def zaykin_truncated_independent(pvals, cutoff=0.05):
+    tau = cutoff
+    pvals = np.asarray(pvals)
+    L = len(pvals)
+    # what is K?
+    k = (pvals <= tau).sum()
+
+    w = np.product(pvals[pvals <= tau]) # ? no qvalue, just a cutoff
+    print w
+
+    p = 0
+    for k in range(1, L):
+        lhs = comb(L, k) * (1 - tau)**(L - k)
+
+        rhs = 0
+        for s in range(k):
+            rhs += ((k * log(tau) - log(w))**s) / factorial(s) * int(w <= tau**k) + tau**k * int(w > tau**k)
+
+
+        p += lhs * w * rhs
+
+    return p
+
 def fisherp(pvals):
     """ combined fisher probability without correction """
     s = -2 * np.sum(np.log(pvals))
