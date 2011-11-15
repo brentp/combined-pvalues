@@ -39,7 +39,7 @@ def _pipeline():
     import sys
     import os.path as op
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
-    from cpv import acf, slk, fdr, peaks, region_p
+    from cpv import acf, slk, fdr, peaks, region_p, stepsize
     from _common import get_col_num
     import argparse
     import operator
@@ -53,9 +53,6 @@ def _pipeline():
                    type=float, default=0.1)
     p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
              " ACF calculation", type=int)
-    p.add_argument("--step", dest="step", help="step size for the"
-             " ACF calculation", type=int)
-
     p.add_argument("--seed", dest="seed", help="A value must be at least this"
                  " large/small in order to seed a region.", type=float,
                  default=0.1)
@@ -69,28 +66,40 @@ def _pipeline():
     p.add_argument("-p", dest="prefix", help="prefix for output files",
                    default=None)
 
-    p.add_argument('files', nargs='+', help='files to process')
+    p.add_argument('bed_file', help='sorted bed file to process')
 
     args = p.parse_args()
 
-    if not (args.prefix and args.step):
+    if not (args.prefix):
         sys.exit(p.print_help())
 
     if not args.threshold:
         args.threshold = args.seed
 
-    lags = range(1, args.dist, args.step)
-    lags.append(lags[-1] + args.step)
     col_num = get_col_num(args.c)
+    step = stepsize.stepsize(args.bed_file, col_num)
+    print >>sys.stderr, "calculcated stepsize as: %i" % step
 
-    acf_vals = acf.acf(args.files, lags, col_num, simple=False)
+    lags = range(1, args.dist, step)
+    lags.append(lags[-1] + step)
+
+    # go out to max requested distance but stop once an autocorrelation 
+    # < 0.05 is added.
+    CUTOFF = 0.05
+    putative_acf_vals = acf.acf((args.bed_file,), lags, col_num, simple=False)
+    acf_vals = []
+    for a in putative_acf_vals:
+        # a is ((lmin, lmax), (corr, N))
+        acf_vals.append(a)
+        if a[1][0] < CUTOFF: break
 
     with open(args.prefix + ".acf.txt", "w") as fh:
         acf_vals = acf.write_acf(acf_vals, fh)
+        print >>sys.stderr, "wrote: %s" % fh.name
 
     print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
     with open(args.prefix + ".slk.bed", "w") as fh:
-        for row in slk.adjust_pvals(args.files, col_num, acf_vals):
+        for row in slk.adjust_pvals((args.bed_file,), col_num, acf_vals):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
 
@@ -102,20 +111,23 @@ def _pipeline():
     fregions = args.prefix + ".regions.bed"
     with open(fregions, "w") as fh:
         peaks.peaks(args.prefix + ".fdr.bed", -1, args.threshold, args.seed,
-            args.step, fh, operator.le)
-        print >>sys.stderr, "wrote: %s" % fh.name
-    print >>sys.stderr, "%i regions" % (sum(1 for _ in open(fregions)))
+            step, fh, operator.le)
+    n_regions = sum(1 for _ in open(fregions))
+    print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
 
     with open(args.prefix + ".regions-p.bed", "w") as fh:
+        N = 0
         fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p in region_p.region_p(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
-                               5000, args.tau, args.step,
+                               5000, args.tau, step,
                                random=args.random):
             fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
-        print >>sys.stderr, "wrote: %s" % fh.name
+            N += int(slk_sidak_p < 0.05)
+        print >>sys.stderr, "wrote: %s, (regions with corrected-p < 0.05: %i)" \
+                % (fh.name, N)
 
 if __name__ == "__main__":
     main()
