@@ -25,14 +25,14 @@ def stouffer_liptak(pvals, sigma=None):
     {'p': 0.5...}
     """
     L = len(pvals)
-    pvals = np.array(pvals)
+    pvals = np.asarray(pvals)
     qvals = qnorm(1 - pvals, loc=0, scale=1).reshape(L, 1)
     # dont do the correction unless sigma is specified.
     result = {"OK": True}
     if not sigma is None:
         try:
             C = chol(sigma)
-            Cm1 = np.matrix(C).I # C^-1
+            Cm1 = np.asmatrix(C).I # C^-1
             # qstar
             qvals = Cm1 * qvals
         except LinAlgError:
@@ -40,7 +40,7 @@ def stouffer_liptak(pvals, sigma=None):
             result["OK"] = False
         # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
     """
-        denom = np.sqrt(np.sum(np.power(sigma, 2)))
+        denom = np.sqrt(np.power(sigma, 2).sum())
         Cp = qvals.sum() / denom
     else:
     """
@@ -50,6 +50,11 @@ def stouffer_liptak(pvals, sigma=None):
     pstar = 1 - pnorm(Cp)
     result.update({"C": Cp, "p": pstar})
     return result
+
+def fisherp(pvals):
+    """ combined fisher probability without correction """
+    s = -2 * np.sum(np.log(pvals))
+    return chisqprob(s, 2 * len(pvals))
 
 if __name__ == "__main__":
     import doctest
