@@ -60,17 +60,30 @@ def sim(sigma, ps, nsims, truncate, sample_distribution=None):
         B += sum(calc_w(row, truncate) <= w0 for row in Y.T)
     return B / nsims
 
+def sl_sim(sigma, ps, nsims, sample_distribution=None):
+    N = 0
+    w0 = stouffer_liptak(ps, sigma)["p"]
+    for i in range(10):
+        Y = gen_correlated(sigma, nsims/10, sample_distribution)
+        for prow in Y.T:
+            s = stouffer_liptak(prow, sigma)
+            if not s["OK"]: 1/0
+            if s["p"] < w0: N += 1
+
+    return N / float(nsims)
+
 def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
+    #for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
     for region_line, slk, slk_sidak in region_p(args.pvals, args.regions,
             col_num, args.N, args.tau, args.step, args.random):
+        """
+        if sim_p != "NA":
+            sim_p = "%.4g" % (sim_p)
+        print "%s\t%.4g\t%.4g\t%s" % (region_line, slk, slk_sidak, sim_p)
+        """
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
-    """
-    for region_line, slk, puniform, psample in region_p(args.pvals, args.regions,
-            col_num, args.N, args.tau, args.step, args.random):
-        print "%s\t%.4g\t%.4g\t%.4g" % (region_line, slk, puniform, psample)
-    """
 
 def _gen_acf(region_info, fpvals, col_num, step):
     # calculate the ACF as far out as needed...
@@ -126,18 +139,13 @@ def sidak(p, region_length, total_coverage):
     # print "bonferroni:", min(p * k, 1)
     return min(p_sidak, 1)
 
-def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
+def _get_ps_in_regions(fregions, fpvals, col_num):
+    """
+    find the pvalues associated with each region
+    """
+    region_info = []
     piter = chain(bediter(fpvals, col_num), [None])
     prow = piter.next()
-    # just use 2 for col_num, but dont need the p from regions.
-    region_info = []
-
-    if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
-        print >>sys.stderr, "no regions in %s" % (fregions, )
-        sys.exit()
-
-    process, total_coverage_sync = _get_total_coverage(fpvals, col_num)
-
     for nr, region_line in enumerate((l.rstrip("\r\n")
                                    for l in open(fregions))):
         toks = region_line.split("\t")
@@ -157,6 +165,17 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
         region_info.append((region_line, region_len, prows))
         del prows
     assert nr + 1 == len(region_info), (nr, len(region_info))
+    return region_info
+
+def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
+    # just use 2 for col_num, but dont need the p from regions.
+
+    if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
+        print >>sys.stderr, "no regions in %s" % (fregions, )
+        sys.exit()
+
+    process, total_coverage_sync = _get_total_coverage(fpvals, col_num)
+    region_info = _get_ps_in_regions(fregions, fpvals, col_num)
 
     acfs = _gen_acf(region_info, (fpvals,), col_num, step)
     process.join()
@@ -165,11 +184,12 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
     # regions first and then create ACF for the longest one.
     print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
                                 (total_coverage)
-    if not random:
+    if random:
+        sample_distribution = None
+        1/0
+    else:
         sample_distribution = np.array([b["p"] for b in bediter(fpvals,
                                                                 col_num)])
-    else:
-        sample_distribution = None
     for region_line, region_len, prows in region_info:
         # gen_sigma expects a list of bed dicts.
         sigma = gen_sigma_matrix(prows, acfs)
@@ -184,16 +204,21 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
 
         sidak_slk_p = sidak(slk_p, region_len, total_coverage)
 
-
         result = [region_line, slk_p, sidak_slk_p]
-        # NOTE: for now, were doing the uniform and the self distribution
+ 
+        # corroborate those with p-values < 0.1 by simulation
         """
-        for sample in (None, sample_distribution):
-            psim = sim(sigma, ps, nsims, tau, sample)
-            result.append(psim)
-        # order in results is slk, uniform, sample
+        if sidak_slk_p < 0.1:
+            # NOTE: for now, were doing only self distribution
+            #sim_p = sim(sigma, ps, nsims, tau, sample_distribution)
+            assert sample_distribution is not None
+            sim_p = sl_sim(sigma, ps, nsims, sample_distribution)
+            result.append(sim_p)
+        else:
+            result.append("NA")
         """
         yield result
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,

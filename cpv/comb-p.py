@@ -78,7 +78,7 @@ def _pipeline():
 
     col_num = get_col_num(args.c)
     step = stepsize.stepsize(args.bed_file, col_num)
-    print >>sys.stderr, "calculcated stepsize as: %i" % step
+    print >>sys.stderr, "calculated stepsize as: %i" % step
 
     lags = range(1, args.dist, step)
     lags.append(lags[-1] + step)
@@ -96,7 +96,6 @@ def _pipeline():
     with open(args.prefix + ".acf.txt", "w") as fh:
         acf_vals = acf.write_acf(acf_vals, fh)
         print >>sys.stderr, "wrote: %s" % fh.name
-
     print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
     with open(args.prefix + ".slk.bed", "w") as fh:
         for row in slk.adjust_pvals((args.bed_file,), col_num, acf_vals):
@@ -117,14 +116,19 @@ def _pipeline():
 
     with open(args.prefix + ".regions-p.bed", "w") as fh:
         N = 0
-        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n")
+        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p") 
+        #        + "\tsim-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
-        for region_line, slk_p, slk_sidak_p in region_p.region_p(
+        for region_line, slk_p, slk_sidak_p, sim_sidak_p in region_p.region_p(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
-                               5000, args.tau, step,
-                               random=args.random):
-            fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
+                               10000, args.tau, step,
+                               random=False):
+            #if sim_sidak_p != "NA":
+            #    sim_sidak_p = "%.4g" % sim_sidak_p
+            fh.write("%s\t%.4g\t%.4g\t%s\n" % (region_line, slk_p, slk_sidak_p))
+            #                                    sim_sidak_p))
+            fh.flush()
             N += int(slk_sidak_p < 0.05)
         print >>sys.stderr, "wrote: %s, (regions with corrected-p < 0.05: %i)" \
                 % (fh.name, N)
