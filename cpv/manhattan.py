@@ -12,7 +12,7 @@ from itertools import groupby, cycle
 from operator import itemgetter
 import matplotlib
 import scipy.stats as ss
-#matplotlib.use('Agg')
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 from cpv._common import bediter, get_col_num
