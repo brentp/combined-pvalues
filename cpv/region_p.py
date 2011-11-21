@@ -19,7 +19,7 @@ from acf import acf
 from stouffer_liptak import stouffer_liptak
 
 from scipy.stats import norm
-from numpy.linalg import cholesky as chol, LinAlgError
+from numpy.linalg import cholesky as chol
 qnorm = norm.ppf
 pnorm = norm.cdf
 
@@ -34,7 +34,6 @@ def gen_correlated(sigma, n, observed=None):
     C = np.matrix(chol(sigma))
     if observed is None:
         X = np.random.uniform(0, 1, size=(n, sigma.shape[0]))
-        1/0
     else:
         assert n * sigma.shape[0] < observed.shape[0]
         idxs = np.random.random_integers(0, len(observed) - 1,
@@ -44,21 +43,6 @@ def gen_correlated(sigma, n, observed=None):
     Q = np.matrix(qnorm(X))
     for row in  np.array(pnorm((Q * C).T)).T:
         yield row
-
-def calc_w(ps, truncate_at):
-    # product of ps that are less than truncate_at
-    # avoid underflow by taking log.
-    return np.exp(np.sum(np.log(ps[ps <= truncate_at])))
-
-def sim(sigma, ps, nsims, truncate, sample_distribution=None):
-    # see: https://gist.github.com/1306786#file_zaykin_truncated.py
-    assert isinstance(ps[0], (int, float, long))
-    B = 0.
-    w0 = calc_w(ps, truncate)
-    for i in range(10):
-        Y = gen_correlated(sigma, nsims/10, sample_distribution)
-        B += sum(calc_w(row, truncate) <= w0 for row in Y)
-    return B / nsims
 
 def sl_sim(sigma, ps, nsims, sample_distribution=None):
     N = 0
