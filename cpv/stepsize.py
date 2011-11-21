@@ -11,24 +11,25 @@ from operator import itemgetter
 from itertools import groupby
 import numpy as np
 
-def stepsize(bed_file, col):
+def stepsize(bed_files, col):
 
     D1 = []
-    for _, chromlist in groupby(bediter(bed_file, col), itemgetter('chrom')):
-        L = list(chromlist)
+    for bed_file in bed_files:
+        for _, chromlist in groupby(bediter(bed_file, col), itemgetter('chrom')):
+            L = list(chromlist)
 
-        last_start = 0
-        for i, ibed in enumerate(L):
-            assert ibed['start'] >= last_start
-            # look around ibed. nearest could be up or down-stream
-            if i + 2 == len(L): break
-            D1.append(L[i + 1]['start'] - ibed['start'])
-    # round up to the nearest 10
+            last_start = 0
+            for i, ibed in enumerate(L):
+                assert ibed['start'] >= last_start
+                # look around ibed. nearest could be up or down-stream
+                if i + 2 == len(L): break
+                D1.append(L[i + 1]['start'] - ibed['start'])
+        # round up to the nearest 10
     return int(round(np.median(D1) + 5, -1))
 
 def run(args):
     col = get_col_num(args.c)
-    print stepsize(args.bed_file, col)
+    print stepsize((args.bed_file,), col)
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,

@@ -66,7 +66,7 @@ def _pipeline():
     p.add_argument("-p", dest="prefix", help="prefix for output files",
                    default=None)
 
-    p.add_argument('bed_file', help='sorted bed file to process')
+    p.add_argument('bed_files', nargs='+', help='sorted bed file to process')
 
     args = p.parse_args()
 
@@ -77,7 +77,7 @@ def _pipeline():
         args.threshold = args.seed
 
     col_num = get_col_num(args.c)
-    step = stepsize.stepsize(args.bed_file, col_num)
+    step = stepsize.stepsize(args.bed_files, col_num)
     print >>sys.stderr, "calculated stepsize as: %i" % step
 
     lags = range(1, args.dist, step)
@@ -86,7 +86,7 @@ def _pipeline():
     # go out to max requested distance but stop once an autocorrelation 
     # < 0.05 is added.
     CUTOFF = 0.05
-    putative_acf_vals = acf.acf((args.bed_file,), lags, col_num, simple=False)
+    putative_acf_vals = acf.acf(args.bed_files, lags, col_num, simple=False)
     acf_vals = []
     for a in putative_acf_vals:
         # a is ((lmin, lmax), (corr, N))
@@ -98,7 +98,7 @@ def _pipeline():
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
     with open(args.prefix + ".slk.bed", "w") as fh:
-        for row in slk.adjust_pvals((args.bed_file,), col_num, acf_vals):
+        for row in slk.adjust_pvals(args.bed_files, col_num, acf_vals):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
 
@@ -116,18 +116,18 @@ def _pipeline():
 
     with open(args.prefix + ".regions-p.bed", "w") as fh:
         N = 0
-        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p") 
+        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n") 
         #        + "\tsim-p\n")
         # use -2 for original, uncorrected p-values in slk.bed
-        for region_line, slk_p, slk_sidak_p, sim_sidak_p in region_p.region_p(
+        for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
                                10000, args.tau, step,
                                random=False):
-            #if sim_sidak_p != "NA":
-            #    sim_sidak_p = "%.4g" % sim_sidak_p
-            fh.write("%s\t%.4g\t%.4g\t%s\n" % (region_line, slk_p, slk_sidak_p))
-            #                                    sim_sidak_p))
+            if sim_p != "NA":
+                sim_p = "%.4g" % sim_p
+            fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
+            #                                    sim_p))
             fh.flush()
             N += int(slk_sidak_p < 0.05)
         print >>sys.stderr, "wrote: %s, (regions with corrected-p < 0.05: %i)" \
