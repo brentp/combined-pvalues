@@ -82,13 +82,15 @@ def _pipeline():
     # go out to max requested distance but stop once an autocorrelation 
     # < 0.05 is added.
     
-    #CUTOFF = 0.05
     putative_acf_vals = acf.acf(args.bed_files, lags, col_num, simple=False)
     acf_vals = []
     for a in putative_acf_vals:
         # a is ((lmin, lmax), (corr, N))
+        # this heuristic seems to work. stop just above the 0.1 correlation
+        # lag.
+        if a[1][0] < 0.1 and len(acf_vals) > 4: break
         acf_vals.append(a)
-        #if a[1][0] < CUTOFF: break
+        if a[1][0] < 0.1 and len(acf_vals): break
 
     # save the arguments that this was called with.
     with open(args.prefix + ".args.txt", "w") as fh:
