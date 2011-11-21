@@ -90,6 +90,12 @@ def _pipeline():
         acf_vals.append(a)
         if a[1][0] < CUTOFF: break
 
+    # save the arguments that this was called with.
+    with open(args.prefix + ".args.txt", "w") as fh:
+        print >>fh, " ".join(sys.argv[1:]) + "\n"
+        import datetime
+        print >>fh, "date: %s" % datetime.datetime.today()
+
     with open(args.prefix + ".acf.txt", "w") as fh:
         acf_vals = acf.write_acf(acf_vals, fh)
         print >>sys.stderr, "wrote: %s" % fh.name
