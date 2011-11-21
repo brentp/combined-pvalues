@@ -7,7 +7,7 @@ from array import array
 from chart import chart
 import sys
 import numpy as np
-from itertools import groupby, izip
+from itertools import groupby, izip, chain
 from operator import itemgetter
 from _common import bediter, pairwise, get_col_num
 
@@ -85,13 +85,14 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
         from itertools import imap
 
     unmerged_acfs = [] # separated by chrom. need to merge later.
+    arg_list = []
     for fname in fnames:
         # groupby chromosome.
-        arg_list = ((list(chromlist), lags) for chrom, chromlist in
-                groupby(bediter(fname, col_num0), lambda a: a["chrom"]))
+        arg_list = chain(arg_list, ((list(chromlist), lags) for chrom, chromlist in
+                groupby(bediter(fname, col_num0), lambda a: a["chrom"])))
 
-        for chrom_acf in imap(_acf_by_chrom, arg_list):
-            unmerged_acfs.append(chrom_acf)
+    for chrom_acf in imap(_acf_by_chrom, arg_list):
+        unmerged_acfs.append(chrom_acf)
 
     acfs = merge_acfs(unmerged_acfs)
     acf_res = {}
