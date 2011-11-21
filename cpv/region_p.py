@@ -62,7 +62,7 @@ def run(args):
     # order in results is slk, uniform, sample
     #for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-            col_num, args.N, args.tau, args.step):
+            col_num, args.N, args.step):
         if sim_p != "NA":
             sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g\t%s" % (region_line, slk, slk_sidak, sim_p)
@@ -159,7 +159,7 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
     assert nr == len(region_info), (nr, len(region_info))
     return region_info
 
-def region_p(fpvals, fregions, col_num, nsims, tau, step):
+def region_p(fpvals, fregions, col_num, nsims, step):
     # just use 2 for col_num, but dont need the p from regions.
 
     if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
@@ -186,7 +186,9 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step):
         assert ps.shape[0] == sigma.shape[0], ("bad_region", region_line)
 
         # calculate the SLK for the region.
+
         region_slk = stouffer_liptak(ps, sigma)
+
         assert region_slk["OK"] is True
         slk_p = region_slk["p"]
 
@@ -195,18 +197,19 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step):
         result = [region_line, slk_p, sidak_slk_p]
  
         # corroborate those with p-values < 0.1 by simulation
-        #"""
+        """
         if sidak_slk_p < 0.1:
 
             # adjust nsims so it's an adjusted p-value.
             q_nsims = int(0.5 + total_coverage / float(region_len))
             assert sample_distribution is not None
+            # trim sigma because we may have trimmed the ps above.
             sim_p = sl_sim(sigma, ps, q_nsims, sample_distribution)
             result.append(sim_p)
         else:
             result.append("NA")
-        #"""
-        #result.append("NA")
+        """
+        result.append("NA")
         yield result
 
 def main():
@@ -215,8 +218,6 @@ def main():
     p.add_argument("-p", dest="pvals", help="BED containing all the p values"
                   " used to generate `regions`")
     p.add_argument("-r", dest="regions", help="BED containing all the regions")
-    p.add_argument("-t", dest="tau", help="tau cutoff", type=float,
-                  default=0.05)
     p.add_argument("-s", dest="step", type=int, default=50,
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
