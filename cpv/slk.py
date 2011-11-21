@@ -6,6 +6,7 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 import numpy as np
 from operator import itemgetter
+from itertools import chain
 from _common import read_acf, bediter, get_col_num
 from itertools import groupby, combinations
 from stouffer_liptak import stouffer_liptak
@@ -105,13 +106,15 @@ def adjust_pvals(fnames, col_num0, acfs):
         import itertools
         imap = itertools.imap
 
+    arg_iter = []
     for fname in fnames:
-        arg_iter = ((list(chromlist), lag_max, acfs) for key, chromlist in
-                        groupby(bediter(fname, col_num0), itemgetter("chrom")))
+        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs) for key, chromlist in
+                        groupby(bediter(fname, col_num0),
+                            itemgetter("chrom"))))
 
-        for results in imap(_slk_chrom, arg_iter):
-            for r in results:
-                yield r
+    for results in imap(_slk_chrom, arg_iter):
+        for r in results:
+            yield r
 
 
 def run(args):
