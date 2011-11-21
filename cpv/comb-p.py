@@ -59,10 +59,6 @@ def _pipeline():
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
-    p.add_argument("--random", action="store_true", default=False,
-            help="If specified, sample from the uniform distribution rather "
-            "than the observed p-values. The latter deflates significance.")
-
     p.add_argument("-p", dest="prefix", help="prefix for output files",
                    default=None)
 
@@ -85,6 +81,7 @@ def _pipeline():
 
     # go out to max requested distance but stop once an autocorrelation 
     # < 0.05 is added.
+    
     CUTOFF = 0.05
     putative_acf_vals = acf.acf(args.bed_files, lags, col_num, simple=False)
     acf_vals = []
@@ -116,18 +113,16 @@ def _pipeline():
 
     with open(args.prefix + ".regions-p.bed", "w") as fh:
         N = 0
-        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n") 
-        #        + "\tsim-p\n")
+        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\tsim_p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                args.prefix + ".slk.bed",
                                args.prefix + ".regions.bed", -2,
-                               10000, args.tau, step,
-                               random=False):
+                               10000, args.tau, step):
             if sim_p != "NA":
                 sim_p = "%.4g" % sim_p
-            fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
-            #                                    sim_p))
+            fh.write("%s\t%.4g\t%.4g\t%s\n" % (region_line, slk_p, slk_sidak_p, \
+                                                 sim_p))
             fh.flush()
             N += int(slk_sidak_p < 0.05)
         print >>sys.stderr, "wrote: %s, (regions with corrected-p < 0.05: %i)" \

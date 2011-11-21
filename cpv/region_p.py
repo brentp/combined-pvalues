@@ -31,19 +31,19 @@ def gen_correlated(sigma, n, observed=None):
     from X. Where X is then *all* observed
     p-values.
     """
-    sigma = np.asmatrix(sigma)
-    while True:
-        try:
-            if observed is None:
-                X = np.random.uniform(0, 1, size=(sigma.shape[0], n))
-            else:
-                idxs = np.random.random_integers(0, len(observed) - 1,
-                                                 size=sigma.shape[0] * n)
-                X = observed[idxs].reshape((sigma.shape[0], n))
+    C = np.matrix(chol(sigma))
+    if observed is None:
+        X = np.random.uniform(0, 1, size=(n, sigma.shape[0]))
+        1/0
+    else:
+        assert n * sigma.shape[0] < observed.shape[0]
+        idxs = np.random.random_integers(0, len(observed) - 1,
+                                         size=sigma.shape[0] * n)
+        X = observed[idxs].reshape((n, sigma.shape[0]))
 
-            return pnorm(chol(sigma) * qnorm(X))
-        except LinAlgError: # matrix not positive definitive, try again.
-            pass
+    Q = np.matrix(qnorm(X))
+    for row in  np.array(pnorm((Q * C).T)).T:
+        yield row
 
 def calc_w(ps, truncate_at):
     # product of ps that are less than truncate_at
@@ -57,18 +57,19 @@ def sim(sigma, ps, nsims, truncate, sample_distribution=None):
     w0 = calc_w(ps, truncate)
     for i in range(10):
         Y = gen_correlated(sigma, nsims/10, sample_distribution)
-        B += sum(calc_w(row, truncate) <= w0 for row in Y.T)
+        B += sum(calc_w(row, truncate) <= w0 for row in Y)
     return B / nsims
 
 def sl_sim(sigma, ps, nsims, sample_distribution=None):
     N = 0
+    print "nsims:", nsims
     w0 = stouffer_liptak(ps, sigma)["p"]
+    # TODO parallelize here.
     for i in range(10):
-        Y = gen_correlated(sigma, nsims/10, sample_distribution)
-        for prow in Y.T:
+        for prow in gen_correlated(sigma, nsims/10, sample_distribution):
             s = stouffer_liptak(prow, sigma)
             if not s["OK"]: 1/0
-            if s["p"] < w0: N += 1
+            if s["p"] <= w0: N += 1
 
     return N / float(nsims)
 
@@ -76,14 +77,14 @@ def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
     #for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-    for region_line, slk, slk_sidak in region_p(args.pvals, args.regions,
-            col_num, args.N, args.tau, args.step, args.random):
-        """
+    for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
+            col_num, args.N, args.tau, args.step):
         if sim_p != "NA":
             sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g\t%s" % (region_line, slk, slk_sidak, sim_p)
         """
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
+        """
 
 def _gen_acf(region_info, fpvals, col_num, step):
     # calculate the ACF as far out as needed...
@@ -139,6 +140,14 @@ def sidak(p, region_length, total_coverage):
     # print "bonferroni:", min(p * k, 1)
     return min(p_sidak, 1)
 
+def gen_regions(fregions):
+    for region_line in (l.rstrip("\r\n")
+                                   for l in open(fregions) if l[0] != "#"):
+        toks = region_line.split("\t")
+        rchrom = toks[0]
+        rstart, rend = map(int, toks[1:3])
+        yield rchrom, rstart, rend, region_line
+
 def _get_ps_in_regions(fregions, fpvals, col_num):
     """
     find the pvalues associated with each region
@@ -146,12 +155,11 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
     region_info = []
     piter = chain(bediter(fpvals, col_num), [None])
     prow = piter.next()
-    for nr, region_line in enumerate((l.rstrip("\r\n")
-                                   for l in open(fregions))):
-        toks = region_line.split("\t")
-        rchrom = toks[0]
-        rstart, rend = map(int, toks[1:3])
+    nr = 0
+    for rchrom, rstart, rend, region_line in sorted(gen_regions(fregions),
+                                                key=itemgetter(0, 1)):
         prows = []
+        nr += 1
         # grab the p-values in the bed file that are within the current region
         while (prow["chrom"] != rchrom or prow["start"] < rstart):
             prow = piter.next()
@@ -164,10 +172,10 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
         region_len = rend - rstart
         region_info.append((region_line, region_len, prows))
         del prows
-    assert nr + 1 == len(region_info), (nr, len(region_info))
+    assert nr == len(region_info), (nr, len(region_info))
     return region_info
 
-def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
+def region_p(fpvals, fregions, col_num, nsims, tau, step):
     # just use 2 for col_num, but dont need the p from regions.
 
     if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
@@ -184,11 +192,7 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
     # regions first and then create ACF for the longest one.
     print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
                                 (total_coverage)
-    if random:
-        sample_distribution = None
-        1/0
-    else:
-        sample_distribution = np.array([b["p"] for b in bediter(fpvals,
+    sample_distribution = np.array([b["p"] for b in bediter(fpvals,
                                                                 col_num)])
     for region_line, region_len, prows in region_info:
         # gen_sigma expects a list of bed dicts.
@@ -207,18 +211,19 @@ def region_p(fpvals, fregions, col_num, nsims, tau, step, random=False):
         result = [region_line, slk_p, sidak_slk_p]
  
         # corroborate those with p-values < 0.1 by simulation
-        """
+        #"""
         if sidak_slk_p < 0.1:
-            # NOTE: for now, were doing only self distribution
-            #sim_p = sim(sigma, ps, nsims, tau, sample_distribution)
+
+            # adjust nsims so it's an adjusted p-value.
+            q_nsims = int(0.5 + total_coverage / float(region_len))
             assert sample_distribution is not None
-            sim_p = sl_sim(sigma, ps, nsims, sample_distribution)
+            sim_p = sl_sim(sigma, ps, q_nsims, sample_distribution)
             result.append(sim_p)
         else:
             result.append("NA")
-        """
+        #"""
+        #result.append("NA")
         yield result
-
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
@@ -228,10 +233,6 @@ def main():
     p.add_argument("-r", dest="regions", help="BED containing all the regions")
     p.add_argument("-t", dest="tau", help="tau cutoff", type=float,
                   default=0.05)
-    p.add_argument("--random", default=False, action="store_true",
-            help="for simulations, the default is to sample from the p-values"
-            " from -p argument; if this flag is set, it will sample from"
-            " the uniform distribution instead")
     p.add_argument("-s", dest="step", type=int, default=50,
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
