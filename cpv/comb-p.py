@@ -88,9 +88,9 @@ def _pipeline():
         # a is ((lmin, lmax), (corr, N))
         # this heuristic seems to work. stop just above the 0.08 correlation
         # lag.
-        if a[1][0] < 0.08 and len(acf_vals) > 1: break
+        if a[1][0] < 0.1 and len(acf_vals) > 2: break
         acf_vals.append(a)
-        if a[1][0] < 0.08 and len(acf_vals): break
+        if a[1][0] < 0.1 and len(acf_vals): break
 
     # save the arguments that this was called with.
     with open(args.prefix + ".args.txt", "w") as fh:
