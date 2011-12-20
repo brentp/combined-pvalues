@@ -53,6 +53,8 @@ def _pipeline():
                    type=float, default=0.1)
     p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
              " ACF calculation", type=int)
+    p.add_argument("--step", dest="step", help="step size for bins in the"
+             " ACF calculation", type=int)
     p.add_argument("--seed", dest="seed", help="A value must be at least this"
                  " large/small in order to seed a region.", type=float,
                  default=0.1)
@@ -73,8 +75,11 @@ def _pipeline():
         args.threshold = args.seed
 
     col_num = get_col_num(args.c)
-    step = stepsize.stepsize(args.bed_files, col_num)
-    print >>sys.stderr, "calculated stepsize as: %i" % step
+    if args.step is None:
+        step = stepsize.stepsize(args.bed_files, col_num)
+        print >>sys.stderr, "calculated stepsize as: %i" % step
+    else:
+        step = args.step
 
     lags = range(1, args.dist, step)
     lags.append(lags[-1] + step)
