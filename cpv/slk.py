@@ -79,6 +79,7 @@ def slk_chrom(chromlist, lag_max, acfs):
     """
     calculate the slk for a given chromosome
     """
+    n_bad = 0
     for xbed, xneighbors in walk(chromlist, lag_max):
 
         sigma = gen_sigma_matrix(xneighbors, acfs)
@@ -87,9 +88,13 @@ def slk_chrom(chromlist, lag_max, acfs):
 
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
                 r["p"])
-        if not r["OK"]:
+        if not r["OK"] and n_bad < 20:
             print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
                     (xbed["chrom"], xbed["start"], xbed["end"])
+            print >>sys.stderr, "# pvals:", pvals
+            n_bad += 1
+            if n_bad == 20:
+                print >>sys.stderr, "not reporting further un-invertibles"
 
 def _slk_chrom(args):
     return list(slk_chrom(*args))
