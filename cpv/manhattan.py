@@ -11,15 +11,19 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from itertools import groupby, cycle
 from operator import itemgetter
 import matplotlib
-import scipy.stats as ss
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 from cpv._common import bediter, get_col_num
 
-def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
-
+def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
+             bonferonni=False, regions=None):
+    """
+    regions is keyed by chromosome with [(start, stop), ...] extents of
+    the regions to highlight
+    """
     xs, ys, cs = [], [], []
+    region_xys = [] # highlight certain regions.
     colors = cycle(colors)
     chrom_centers = []
 
@@ -36,6 +40,11 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
         xs.extend(region_xs)
         ys.extend([r['p'] for r in rlist])
         cs.extend([color] * len(rlist))
+
+        if regions:
+            regions_bounds = regions[seqid]
+            region_xys.extend([(last_x + r['start'], r['p']) for r in rlist \
+                  if any((s <= r['start'] <= e) for s, e in regions_bounds)])
 
         # save the middle of the region to place the label
         chrom_centers.append((seqid, (region_xs[0] + region_xs[-1]) / 2))
@@ -58,11 +67,16 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
     else:
-        ax.scatter(xs, ys, s=2, c=cs, alpha=0.8, edgecolors='none')
+        ax.scatter(xs, ys, s=1.5, c=cs, alpha=0.8, edgecolors='none')
+
+    if regions:
+        rxs, rys = zip(*region_xys)
+        ax.scatter(rxs, rys, s=2, c='y', alpha=1.0, edgecolors='none')
 
     # plot 0.05 line after multiple testing. always nlog10'ed since
     # that's the space we're plotting in.
-    ax.axhline(y=-np.log10(bonferonni_p), color='0.5', linewidth=2)
+    if bonferonni:
+        ax.axhline(y=-np.log10(bonferonni_p), color='0.5', linewidth=2)
     plt.axis('tight')
     plt.xlim(0, xs[-1])
     plt.ylim(ymin=0)
@@ -74,13 +88,15 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
             % (ys > -np.log10(bonferonni_p)).sum()
 
-    ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
+    if False:
+        ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
 
-    pys = np.sort(10**-ys) # convert back to actual p-values
-    qqplot(ys, ax_qq)
+        pys = np.sort(10**-ys) # convert back to actual p-values
+        qqplot(ys, ax_qq)
 
-    ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
-    hist(pys, ax_hist)
+        ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
+        hist(pys, ax_hist)
+
     print >>sys.stderr, "saving to: %s" % image_path
     plt.savefig(image_path)
 
@@ -106,6 +122,7 @@ def main():
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--no-log", help="the p-value is already -log10'd, don't "
                 "re -log10", action='store_true', default=False)
+    p.add_argument("-b", help="plot a line for the bonferonni of 0.05")
     p.add_argument("--col", dest="col", help="index of the column containing"
                    " the the p-value", default=-1, type=int)
     p.add_argument("--colors", dest="colors", help="cycle through these colors",
@@ -119,6 +136,9 @@ def main():
     p.add_argument("--lines", default=False, dest="lines", action="store_true",
         help="plot the p-values as lines extending from the x-axis rather than"
              " points in space. plotting will take longer with this option.")
+    p.add_argument("--regions", dest="regions",
+                   help="points in these bed regions are colored differently")
+
     p.add_argument('bed_file', help="bed-file to plot")
 
     args = p.parse_args()
@@ -126,7 +146,8 @@ def main():
         sys.exit(not p.print_help())
     column = get_col_num(args.col)
     manhattan(args.bed_file, column, args.image, args.no_log, args.colors,
-              args.title, args.lines, args.ymax)
+              args.title, args.lines, args.ymax, regions=args.regions,
+             bonferonni=args.bonferonni)
 
 if __name__ == "__main__":
     main()
