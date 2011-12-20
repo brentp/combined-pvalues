@@ -11,13 +11,27 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from itertools import groupby, cycle
 from operator import itemgetter
 import matplotlib
-import scipy.stats as ss
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 from cpv._common import bediter, get_col_num
 
-def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
+def chr_cmp(a, b):
+    a, b = a[0], b[0]
+    a = a.lower().replace("_", ""); b = b.lower().replace("_", "")
+    achr = a[3:] if a.startswith("chr") else a
+    bchr = b[3:] if b.startswith("chr") else b
+
+    try:
+        return cmp(int(achr), int(bchr))
+    except ValueError:
+        if achr.isdigit() and not bchr.isdigit(): return -1
+        if bchr.isdigit() and not achr.isdigit(): return 1
+        # X Y
+        return cmp(achr, bchr)
+
+def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
+        bonferonni=False, regions=None):
 
     xs, ys, cs = [], [], []
     colors = cycle(colors)
@@ -25,13 +39,16 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
 
     last_x = 0
     nrows = 0
-    for seqid, rlist in groupby(bediter(fname, col_num),
-                                key=itemgetter('chrom')):
+    giter = [(seqid, list(rlist)) for seqid, rlist \
+        in groupby(bediter(fname, col_num), key=itemgetter('chrom'))]
+
+    region_xs, region_ys = [], []
+    for seqid, rlist in sorted(giter, cmp=chr_cmp):
         color = colors.next()
-        rlist = list(rlist)
         nrows += len(rlist)
         # since chroms are on the same plot. add this chrom to the end of the
         # last chrom
+
         region_xs = [last_x + r['start'] for r in rlist]
         xs.extend(region_xs)
         ys.extend([r['p'] for r in rlist])
@@ -74,6 +91,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
     print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
             % (ys > -np.log10(bonferonni_p)).sum()
 
+    """
     ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
 
     pys = np.sort(10**-ys) # convert back to actual p-values
@@ -81,10 +99,11 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax):
 
     ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
     hist(pys, ax_hist)
+    """
     print >>sys.stderr, "saving to: %s" % image_path
     plt.savefig(image_path)
 
-    return
+    return image_path
 
 def hist(pys, ax_hist):
     ax_hist.hist(pys, bins=40, color='0.75')
