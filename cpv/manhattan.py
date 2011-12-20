@@ -118,6 +118,13 @@ def qqplot(lpys, ax_qq):
     ax_qq.axis('tight')
     ax_qq.axes.set_frame_on(True)
 
+def read_regions(fregions):
+    regions = {}
+    for toks in (l.split("\t") for l in open(fregions) if l[0] != "#"):
+        if not toks[0] in regions: regions[toks[0]] = []
+        regions[toks[0]].append((int(toks[1]), int(toks[2])))
+    return regions
+
 def main():
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--no-log", help="the p-value is already -log10'd, don't "
@@ -144,9 +151,12 @@ def main():
     args = p.parse_args()
     if (not args.bed_file):
         sys.exit(not p.print_help())
+
     column = get_col_num(args.col)
+    regions = read_regions(args.regions)
+
     manhattan(args.bed_file, column, args.image, args.no_log, args.colors,
-              args.title, args.lines, args.ymax, regions=args.regions,
+              args.title, args.lines, args.ymax, regions=regions,
              bonferonni=args.bonferonni)
 
 if __name__ == "__main__":
