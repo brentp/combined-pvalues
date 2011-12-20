@@ -58,7 +58,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         ys.extend([r['p'] for r in rlist])
         cs.extend([color] * len(rlist))
 
-        if regions:
+        if regions and seqid in regions:
             regions_bounds = regions[seqid]
             region_xys.extend([(last_x + r['start'], r['p']) for r in rlist \
                   if any((s <= r['start'] <= e) for s, e in regions_bounds)])
@@ -84,11 +84,12 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
     else:
-        ax.scatter(xs, ys, s=1.5, c=cs, alpha=0.8, edgecolors='none')
+        ax.scatter(xs, ys, s=1.2, c=cs, edgecolors='none')
 
     if regions:
         rxs, rys = zip(*region_xys)
-        ax.scatter(rxs, rys, s=2, c='y', alpha=1.0, edgecolors='none')
+        if not no_log: rys = -np.log10(rys)
+        ax.scatter(rxs, rys, s=1.5, c='#ffff00', alpha=1.0, edgecolors='none')
 
     # plot 0.05 line after multiple testing. always nlog10'ed since
     # that's the space we're plotting in.
@@ -146,7 +147,8 @@ def main():
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--no-log", help="the p-value is already -log10'd, don't "
                 "re -log10", action='store_true', default=False)
-    p.add_argument("-b", help="plot a line for the bonferonni of 0.05")
+    p.add_argument("-b", dest="bonferonni", 
+            help="plot a line for the bonferonni of 0.05")
     p.add_argument("--col", dest="col", help="index of the column containing"
                    " the the p-value", default=-1, type=int)
     p.add_argument("--colors", dest="colors", help="cycle through these colors",
