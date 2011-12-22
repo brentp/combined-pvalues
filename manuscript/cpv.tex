@@ -1,0 +1,79 @@
+\documentclass{bioinfo}
+\copyrightyear{2012}
+\pubyear{2012}
+
+\begin{document}
+\firstpage{1}
+
+\title[comb-p]{Comb-p: A tool for combining spatially correlated p-values and assigning significance}
+\author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^{1,*}$, Katerina J. Kechris\,$^{2}$ and Co-Author\,$^2$}
+\address{$^{1}$Department of Medicine, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
+$^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
+}
+\history{Received on XXXXX; revised on XXXXX; accepted on XXXXX}
+\editor{Associate Editor: XXXXXXX}
+\maketitle
+\begin{abstract}
+
+\section{Summary:}
+\textit{comb-p} is set of command-line tools and a python library that accept
+BED files of p-values and 1) calculate autocorrelation. 2) Combine adjacent
+p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010}
+3) perform false discovery correction, 4) find regions, and 5) assign
+significance to those regions. The library provides great flexibility, for
+example for how far to look for autocorrelation, but automatically chooses 
+sensible defaults based on the structure of the input data.
+
+\section{Availability:}
+ \textit{comb-p} is maintained under the BSD license. The documentation and
+ implemntation are available at
+ \href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues}.
+\section{Contact:} \href{bpederse@gmail.com}{bpederse@gmail.com}
+\end{abstract}
+
+\section{Introduction}
+CHiP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
+autocorrelated.
+
+\section{Approach}
+blah blah blah
+
+\begin{methods}
+\section{Application}
+The \textit{combp-p} is implemented as a single command-line application that dispacthes to multiple sub-modules, and as a set of python packages. When run without arguments, the \textit{comb-p} executable displays the available modules and a short description:
+\begin{verbatim}
+  acf       - calculate autocorrelation within BED file
+  slk       - Stouffer-Liptak-Kechris correction of correlated p-values
+  fdr       - Benjamini-Hochberg correction of p-values
+  peaks     - find peaks in a BED file.
+  region_p  - generate SLK p-values for a region (of p-values)
+  hist      - plot a histogram of a column and check for uniformity.
+  splot     - a scatter plot of column(s) in a bed file for a given region.
+  manhattan - a manhattan plot of values in a BED file.
+\end{verbatim}
+\section{Conclusion}
+The \textit{comb-p} software is useful in contexts where there is autocorrelation among nearby p-values.
+
+\section*{Acknowledgement}
+
+\paragraph{Funding\textcolon} This work was supported by ???.
+
+%\bibliographystyle{natbib}
+%\bibliographystyle{achemnat}
+%\bibliographystyle{plainnat}
+%\bibliographystyle{abbrv}
+%\bibliographystyle{bioinformatics}
+
+%\bibliographystyle{plain}
+
+%\bibliography{Document}
+\begin{thebibliography}{}
+\bibitem[Kechris \textit{et al.}, 2010]{Kechris2010} Kechris, K.J. et al. (2010).
+Generalizing moving averages for tiling arrays using combined p-value
+statistic. {\it Statistical Applications in Genetics and Molecular Biology}
+{\bf 9}, Article 29.
+\bibitem[Quinlan and Hall, 2010]{Quinlan2010} Quinlan, A.R. and Hall, I.M. (2010) BEDTools: a flexible suite of utilities for comparing genomic features, {\it Bioinformatics}, {\bf 26}, 841-842.
+\bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it Genome Res.}, {\bf 12}, 996-1106.
+
+\end{thebibliography}
+\end{document}
