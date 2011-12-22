@@ -42,15 +42,17 @@ blah blah blah
 \section{Application}
 The \textit{combp-p} is implemented as a single command-line application that dispacthes to multiple sub-modules, and as a set of python packages. When run without arguments, the \textit{comb-p} executable displays the available modules and a short description:
 \begin{verbatim}
-  acf       - calculate autocorrelation within BED file
-  slk       - Stouffer-Liptak-Kechris correction of correlated p-values
-  fdr       - Benjamini-Hochberg correction of p-values
-  peaks     - find peaks in a BED file.
-  region_p  - generate SLK p-values for a region (of p-values)
-  hist      - plot a histogram of a column and check for uniformity.
-  splot     - a scatter plot of column(s) in a bed file for a given region.
-  manhattan - a manhattan plot of values in a BED file.
+acf      - autocorrelation within BED file
+slk      - Stouffer-Liptak-Kechris correction
+fdr      - Benjamini-Hochberg correction
+peaks    - find peaks in a BED file.
+region_p - SLK p-values for a region
+hist     - histogram of a p-values
+splot    - scatter plot of a region.
+manhattan - a manhattan plot
 \end{verbatim}
+\end{methods}
+
 \section{Conclusion}
 The \textit{comb-p} software is useful in contexts where there is autocorrelation among nearby p-values.
 
@@ -68,7 +70,7 @@ The \textit{comb-p} software is useful in contexts where there is autocorrelatio
 
 %\bibliography{Document}
 \begin{thebibliography}{}
-\bibitem[Kechris \textit{et al.}, 2010]{Kechris2010} Kechris, K.J. et al. (2010).
+\bibitem[Kechris {\it et~al}., 2010]{Kechris2010} Kechris, K.J. et al. (2010).
 Generalizing moving averages for tiling arrays using combined p-value
 statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 {\bf 9}, Article 29.
