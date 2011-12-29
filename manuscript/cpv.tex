@@ -6,7 +6,8 @@
 \firstpage{1}
 
 \title[comb-p]{Comb-p: A tool for combining spatially correlated p-values and assigning significance}
-\author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^{1,*}$, Katerina J. Kechris\,$^{2}$ and Co-Author\,$^2$}
+\author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^{1,*}$, Katerina J. Kechris\,$^{2}$,
+    Ivana Yang\,$^{1}$ and David Schwartz\,$^1$}
 \address{$^{1}$Department of Medicine, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
 $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
 }
@@ -16,24 +17,40 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 \begin{abstract}
 
 \section{Summary:}
-\textit{comb-p} is set of command-line tools and a python library that accept
-BED files of p-values and 1) calculate autocorrelation. 2) Combine adjacent
-p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010}
+\textit{comb-p} is set of command-line tools and a python library that
+manipulate BED files of p-values and 1) calculate autocorrelation. 2) Combine
+adjacent p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010}
 3) perform false discovery correction, 4) find regions, and 5) assign
-significance to those regions. The library provides great flexibility, for
-example for how far to look for autocorrelation, but automatically chooses 
-sensible defaults based on the structure of the input data.
+significance to those regions. In addition, a number of other tools are provided
+for visualization and assessment. The library provides flexibility at each
+step, for example for how far to look for auto-correlation. It defaults to
+sensible parameter choices that are based on the structure of the input data.
 
 \section{Availability:}
  \textit{comb-p} is maintained under the BSD license. The documentation and
- implemntation are available at
+ implementation are available at
  \href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues}.
 \section{Contact:} \href{bpederse@gmail.com}{bpederse@gmail.com}
 \end{abstract}
 
 \section{Introduction}
 CHiP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
-autocorrelated.
+auto-correlated. These technologies and many others generate values that can be
+compared or tested to generate p-values that are also auto-correlated. Due to the
+high-throughput nature of these methods, the significance of individual regions
+may be lost due to the multiple-testing correction on potentially millions of sites.
+Here, we build on the approach of combining p-values described in \citep{Kechris2010}.
+
+\citep{Fisher} developed an approach of combining p-values from independent tests
+to get a single meta-analysis test statistic with a chi-squared distribution 
+and degrees of freedom based on the number of tests being combined.
+\citep{Stouffer} developed a similar method where the p-values are converted
+to Z-scores and then summed and scaled to create a single combined Z-score.
+Stouffer's method lends itself well to the addition of weights on each p-value.
+
+Zaykin
+
+Kechris.
 
 \section{Approach}
 blah blah blah
