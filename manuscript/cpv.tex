@@ -7,7 +7,7 @@
 
 \title[comb-p]{Comb-p: A tool for combining spatially correlated p-values and assigning significance}
 \author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^{1,*}$, Katerina J. Kechris\,$^{2}$,
-    Ivana Yang\,$^{1}$ and David Schwartz\,$^1$}
+    Ivana V. Yang\,$^{1}$ and David A. Schwartz\,$^1$}
 \address{$^{1}$Department of Medicine, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
 $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
 }
@@ -20,15 +20,17 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 \textit{comb-p} is set of command-line tools and a python library that
 manipulate BED files of p-values and 1) calculate autocorrelation. 2) Combine
 adjacent p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010}
-3) perform false discovery correction, 4) find regions, and 5) assign
-significance to those regions. In addition, a number of other tools are provided
-for visualization and assessment. The library provides flexibility at each
-step, for example for how far to look for auto-correlation. It defaults to
+3) perform false discovery correction, 4) find troughs of low p-values, and 5)
+assign significance to those regions.
+In addition, a number of other tools are provided for visualization and
+assessment. The library provides flexibility at each
+step, for example in the distance to search for auto-correlation. It defaults to
 sensible parameter choices that are based on the structure of the input data.
 
 \section{Availability:}
  \textit{comb-p} is maintained under the BSD license. The documentation and
  implementation are available at
+
  \href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues}.
 \section{Contact:} \href{bpederse@gmail.com}{bpederse@gmail.com}
 \end{abstract}
@@ -41,23 +43,25 @@ high-throughput nature of these methods, the significance of individual regions
 may be lost due to the multiple-testing correction on potentially millions of sites.
 Here, we build on the approach of combining p-values described in \citep{Kechris2010}.
 
+\section{Approach}
+Here, we build on the approach of \citep{Kechris2010}..
+
 \citep{Fisher} developed an approach of combining p-values from independent tests
 to get a single meta-analysis test statistic with a chi-squared distribution 
 and degrees of freedom based on the number of tests being combined.
-\citep{Stouffer} developed a similar method where the p-values are converted
-to Z-scores and then summed and scaled to create a single combined Z-score.
+A similar method developed by \citep{Stouffer} first converts p-values
+to Z-scores which are then summed and scaled to create a single, combined Z-score.
 Stouffer's method lends itself well to the addition of weights on each p-value.
 
-Zaykin
+\citep{Zaykin} extended the weighting explicitly to deal with auto-correlation and
+\citep{Kechris2010} used that framework to create a sliding window correction where
+the p-value of each probe is adjusted by applying Stouffer's method to neighboring
+p-values as weighted according to the auto-correlation at their distance.
 
-Kechris.
-
-\section{Approach}
-blah blah blah
 
 \begin{methods}
 \section{Application}
-The \textit{combp-p} is implemented as a single command-line application that dispacthes to multiple sub-modules, and as a set of python packages. When run without arguments, the \textit{comb-p} executable displays the available modules and a short description:
+The \textit{comb-p} is implemented as a single command-line application that dispatches to multiple independent sub-modules, and as a set of python packages. When run without arguments, the \textit{comb-p} executable displays the available modules and a short description:
 \begin{verbatim}
 acf      - autocorrelation within BED file
 slk      - Stouffer-Liptak-Kechris correction
@@ -68,6 +72,13 @@ hist     - histogram of a p-values
 splot    - scatter plot of a region.
 manhattan - a manhattan plot
 \end{verbatim}
+
+Given a set of auto-correlated p-values in BED format, \textit{comb-p} first
+calculates the correlation at varying distance lags. Whereas \citep{Kechris2010}
+relied on fixed offsets of adjacent probes, \textit{comb-p} accepts
+a maxiumum base-pair distance and bins pairs of probes based on their
+distance, so a given probe my have multiple probes in each of a set of bins.
+
 \end{methods}
 
 \section{Conclusion}
