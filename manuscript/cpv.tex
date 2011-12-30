@@ -18,14 +18,15 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 
 \section{Summary:}
 \textit{comb-p} is set of command-line tools and a python library that
-manipulate BED files of p-values and 1) calculate autocorrelation. 2) Combine
-adjacent p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010}
+manipulate BED files of p-values and 1) calculate autocorrelation, 2) Combine
+adjacent p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010},
 3) perform false discovery correction, 4) find troughs of low p-values, and 5)
 assign significance to those regions.
 In addition, a number of tools are provided for visualization and
 assessment. The library provides sensible defaults for parameters at each
 step based on the structure of the input data, but these may also be customized
-by the user.
+by the user. We provide example uses on bisulfite-seq, ChIP-seq and tiled methylation
+probes.
 
 \section{Availability:}
  \textit{comb-p} is maintained under the BSD license. The documentation and
@@ -40,7 +41,7 @@ ChIP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
 auto-correlated. These technologies and many others generate values that can be
 compared or tested to generate p-values that are also auto-correlated. Due to the
 high-throughput nature of these methods, the significance of individual regions
-may be lost due to the multiple-testing correction on potentially millions of sites.
+may be obscured after multiple-testing correction on potentially millions of sites.
 Here, we build on the approach of combining p-values described in \citep{Kechris2010}.
 
 \section{Approach}
@@ -60,8 +61,15 @@ p-values as weighted according to the auto-correlation at their distance.
 
 \begin{methods}
 
+
 \section{Application}
-The \textit{comb-p} is implemented as a single command-line application that dispatches to multiple independent sub-modules, and as a set of python packages. When run without arguments, the \textit{comb-p} executable displays the available modules and a short description:
+\textit{comb-p} is implemented as a single command-line application that
+dispatches to multiple independent sub-modules, and as a set of python
+packages. Where possible, computationally-intensive parts of the algorithm
+are parallelized automatically--for the ACF and the SLK steps described below.
+This results in a speedup that is linear with the number of cores available.
+When run without arguments, the \textit{comb-p} executable displays the
+available programs and a short description:
 \begin{verbatim}
 acf      - autocorrelation within BED file
 slk      - Stouffer-Liptak-Kechris correction
@@ -75,9 +83,25 @@ manhattan - a manhattan plot
 
 Given a set of auto-correlated p-values in BED format, \textit{comb-p} first
 calculates the correlation at varying distance lags. Whereas \citep{Kechris2010}
-relied on fixed offsets of adjacent probes, \textit{comb-p} accepts
-a maxiumum base-pair distance and bins pairs of probes based on their
-distance, so a given probe may have multiple probes in each of a set of bins.
+and many ACF implementations rely on fixed offsets of adjacent probes,
+\textit{comb-p} accepts a maxiumum base-pair distance and bins pairs of probes
+based on their distance, so a given probe may have multiple probes in each of
+a set of bins. This is useful in cases where the probes generating the p-values
+are unevenly spaced. We refer to this set of lagged correlations as the ACF for
+auto-correlation function.
+
+Once the ACF has been calculated, it can be used to perform the
+Stouffer-Liptak-Kechris correction (\textit{slk}) where each p-value is
+adjusted according to the p-values in its neighborhood and the weight applied
+to each probe that neighborhood according to the ACF. The resulting BED file
+has the same number of rows with an additional column containing the corrected
+p-value. A given p-value will be pulled lower if it's neighbors also have low
+p-values and likely remain insignificant if the neighboring p-values are also 
+high.
+
+A q-value score based on the Benjamini-Hochberg false-discovery (FDR) correction
+ may be calculated. A peak-finding algorithm can then be used on either the FDR
+q-value, the \textit{slk}-corrected p
 
 \end{methods}
 
