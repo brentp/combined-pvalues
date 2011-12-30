@@ -5,7 +5,7 @@
 \begin{document}
 \firstpage{1}
 
-\title[comb-p]{Comb-p: A tool for combining spatially correlated p-values and assigning significance}
+\title[comb-p]{Comb-p: software for combining, analyzing, grouping, and correcting spatially correlated p-values}
 \author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^{1,*}$, Katerina J. Kechris\,$^{2}$,
     Ivana V. Yang\,$^{1}$ and David A. Schwartz\,$^1$}
 \address{$^{1}$Department of Medicine, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
@@ -29,16 +29,16 @@ by the user. We provide example uses on bisulfite-seq, ChIP-seq and tiled methyl
 probes.
 
 \section{Availability:}
- \textit{comb-p} is maintained under the BSD license. The documentation and
- implementation are available at
+\textit{comb-p} is maintained under the BSD license. The documentation and
+implementation are available at
 
- \href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues}.
+\href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues}.
 \section{Contact:} \href{bpederse@gmail.com}{bpederse@gmail.com}
 \end{abstract}
 
 \section{Introduction}
 ChIP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
-auto-correlated. These technologies and many others generate values that can be
+auto-correlated. The values from these and many other technologies can be
 compared or tested to generate p-values that are also auto-correlated. Due to the
 high-throughput nature of these methods, the significance of individual regions
 may be obscured after multiple-testing correction on potentially millions of sites.
@@ -56,20 +56,21 @@ Stouffer's method lends itself well to the addition of weights on each p-value.
 \citep{Zaykin} extended the weighting explicitly to deal with auto-correlation and
 \citep{Kechris2010} used that framework to create a sliding window correction where
 the p-value of each probe is adjusted by applying Stouffer's method to neighboring
-p-values as weighted according to the auto-correlation at their distance.
+p-values as weighted according to the observed auto-correlation at the appropriate
+distance.
 
 
 \begin{methods}
 
+\section{Implementation}
 
-\section{Application}
 \textit{comb-p} is implemented as a single command-line application that
 dispatches to multiple independent sub-modules, and as a set of python
 packages. Where possible, computationally-intensive parts of the algorithm
-are parallelized automatically--for the ACF and the SLK steps described below.
-This results in a speedup that is linear with the number of cores available.
+are parallelized automatically--for the ACF and the SLK steps described below
+--this results in a speedup that is linear with the number of cores available.
 When run without arguments, the \textit{comb-p} executable displays the
-available programs and a short description:
+available programs and a short description of each:
 \begin{verbatim}
 acf      - autocorrelation within BED file
 slk      - Stouffer-Liptak-Kechris correction
@@ -79,7 +80,12 @@ region_p - SLK p-values for a region
 hist     - histogram of a p-values
 splot    - scatter plot of a region.
 manhattan - a manhattan plot
+pipeline  - slk, fdr, peaks, region_p
 \end{verbatim}
+Though each of these tools may be used independently, the progressiong of
+\textit{acf}, \textit{slk}, \textit{fdr}, \textit{peaks}, \textit{region\_p}
+described below works well for our data [Supplemental]. These steps can
+be run successively with the single command: \textit{pipeline}.
 
 Given a set of auto-correlated p-values in BED format, \textit{comb-p} first
 calculates the correlation at varying distance lags. Whereas \citep{Kechris2010}
@@ -101,16 +107,55 @@ high.
 
 A q-value score based on the Benjamini-Hochberg false-discovery (FDR) correction
  may be calculated. A peak-finding algorithm can then be used on either the FDR
-q-value, the \textit{slk}-corrected p
+q-value, the \textit{slk}-corrected p-value, or even the original, uncorrected 
+p-value. We find that performing the \textit{slk} correction and the FDR correction
+before finding regions is the most stable and powerful.
+
+A p-value for each region can be assigned using the Stouffer-Liptak correction.
+This step varies from the \textit{slk} step in that the \textit{slk} step uses
+the ACF calculated out to a fixed lag where as the \textit{region\_p} step first
+calculates the ACF out to a distance equal to the largest region-size. The
+corrected p-value for each region is then calculated using the original p-values that
+fall within the region, and the portion of the ACF that extends to the distance
+spanned by that region. Because we use the original, uncorrected p-values in the
+calculation of significance for the region, we side-step issues of altering the
+distribution in both the \textit{slk} and FDR steps. The \textit{region\_p}
+program reports the \textit{slk} corrected p-value, and a further one-step
+Sidak \citep{Sidak}
+multiple-testing correction. The number of possible tests in the Sidak correction
+is the total bases covered by the input probes divided by the extent of the
+given region. In our simulations, this correction gives a more strigent p-value
+than simulations [Supplemental?].
+TODO: single plot with subplot for ACF, region in UCSC.
+
+\section{Application}
+Comprehensive, High-throughput Array for Relative Methylation or CHARM is a
+tiling array used to quantify methylation at CpG-rich sites \citep{Irizarry}.
+Adjacent probes are spatially auto-correlated due to the regional nature of
+methylation, and to the overlapping probes on the tiling array. In the
+Supplemental Info, we show the commands used to run \textit{comp-p} on data from
+??? . In that analysis, we find several interesting regions, including those
+associated with ??? [TODO: cite Ivana's LGRC/MRCA paper].
+
+Bisulfite-sequencing data is also used to uncover methylation. We analyze
+data from {\it Arabidopsis thaliana}, comparing ??? to ??? TODO and find
+that genes associated with ??? are hyper/hypo-methylated. This observation
+was previously reported in ??? TODO.
+
+ChIP-seq data is also known to be spatially autocorrelated. We analyzed data
+from the transcription factor ???, comparing ??? to ??? TODO, and find
+???
 
 \end{methods}
 
 \section{Conclusion}
-The \textit{comb-p} software is useful in contexts where there is autocorrelation among nearby p-values.
+The \textit{comb-p} software is useful in contexts where there is
+autocorrelation among nearby p-values. We have explained our implementation
+and demonstrated the utility on data from three different technologies.
 
 \section*{Acknowledgement}
 
-\paragraph{Funding\textcolon} This work was supported by ???.
+\paragraph{Funding\textcolon} This work was supported by ??? to ???.
 
 %\bibliographystyle{natbib}
 %\bibliographystyle{achemnat}
@@ -128,6 +173,13 @@ statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 {\bf 9}, Article 29.
 \bibitem[Quinlan and Hall, 2010]{Quinlan2010} Quinlan, A.R. and Hall, I.M. (2010) BEDTools: a flexible suite of utilities for comparing genomic features, {\it Bioinformatics}, {\bf 26}, 841-842.
 \bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it Genome Res.}, {\bf 12}, 996-1106.
+
+\bibitem[Sidak Year]{Sidak} Sidak TODO
+\bibitem[Fisher Year]{Fisher} Fisher, R.A. TODO
+\bibitem[Stouffer Year]{Stouffer} Stouffer TODO
+\bibitem[Zaykin Year]{Zaykin} Zaykin TODO
+\bibitem[Irizarry Year]{Irizarry} Irizarry TODO
+\bibitem[Pedersen Year]{Pedersen} Pedersen TODO
 
 \end{thebibliography}
 \end{document}
