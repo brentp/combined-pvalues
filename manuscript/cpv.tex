@@ -22,10 +22,10 @@ manipulate BED files of p-values and 1) calculate autocorrelation. 2) Combine
 adjacent p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010}
 3) perform false discovery correction, 4) find troughs of low p-values, and 5)
 assign significance to those regions.
-In addition, a number of other tools are provided for visualization and
-assessment. The library provides flexibility at each
-step, for example in the distance to search for auto-correlation. It defaults to
-sensible parameter choices that are based on the structure of the input data.
+In addition, a number of tools are provided for visualization and
+assessment. The library provides sensible defaults for parameters at each
+step based on the structure of the input data, but these may also be customized
+by the user.
 
 \section{Availability:}
  \textit{comb-p} is maintained under the BSD license. The documentation and
@@ -36,7 +36,7 @@ sensible parameter choices that are based on the structure of the input data.
 \end{abstract}
 
 \section{Introduction}
-CHiP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
+ChIP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
 auto-correlated. These technologies and many others generate values that can be
 compared or tested to generate p-values that are also auto-correlated. Due to the
 high-throughput nature of these methods, the significance of individual regions
@@ -44,7 +44,6 @@ may be lost due to the multiple-testing correction on potentially millions of si
 Here, we build on the approach of combining p-values described in \citep{Kechris2010}.
 
 \section{Approach}
-Here, we build on the approach of \citep{Kechris2010}..
 
 \citep{Fisher} developed an approach of combining p-values from independent tests
 to get a single meta-analysis test statistic with a chi-squared distribution 
@@ -60,6 +59,7 @@ p-values as weighted according to the auto-correlation at their distance.
 
 
 \begin{methods}
+
 \section{Application}
 The \textit{comb-p} is implemented as a single command-line application that dispatches to multiple independent sub-modules, and as a set of python packages. When run without arguments, the \textit{comb-p} executable displays the available modules and a short description:
 \begin{verbatim}
@@ -77,7 +77,7 @@ Given a set of auto-correlated p-values in BED format, \textit{comb-p} first
 calculates the correlation at varying distance lags. Whereas \citep{Kechris2010}
 relied on fixed offsets of adjacent probes, \textit{comb-p} accepts
 a maxiumum base-pair distance and bins pairs of probes based on their
-distance, so a given probe my have multiple probes in each of a set of bins.
+distance, so a given probe may have multiple probes in each of a set of bins.
 
 \end{methods}
 
