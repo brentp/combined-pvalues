@@ -51,7 +51,8 @@ to get a single meta-analysis test statistic with a chi-squared distribution
 and degrees of freedom based on the number of tests being combined.
 A similar method developed by \citep{Stouffer} first converts p-values
 to Z-scores which are then summed and scaled to create a single, combined Z-score.
-Stouffer's method lends itself well to the addition of weights on each p-value.
+Stouffer's method lends itself well to the addition of weights on each p-value
+\citep{Liptak}.
 
 \citep{Zaykin} extended the weighting explicitly to deal with auto-correlation and
 \citep{Kechris2010} used that framework to create a sliding window correction where
@@ -150,7 +151,7 @@ from the transcription factor ???, comparing ??? to ??? TODO, and find
 
 \section{Conclusion}
 The \textit{comb-p} software is useful in contexts where there is
-autocorrelation among nearby p-values. We have explained our implementation
+autocorrelation among nearby p-values. We have outlined our implementation
 and demonstrated the utility on data from three different technologies.
 
 \section*{Acknowledgement}
@@ -167,7 +168,7 @@ and demonstrated the utility on data from three different technologies.
 
 %\bibliography{Document}
 \begin{thebibliography}{}
-\bibitem[Kechris {\it et~al}., 2010]{Kechris2010} Kechris, K.J. et al. (2010).
+\bibitem[Kechris {\it et~al}., 2010]{Kechris2010} Kechris, K.J. et al. (2010)
 Generalizing moving averages for tiling arrays using combined p-value
 statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 {\bf 9}, Article 29.
@@ -175,8 +176,19 @@ statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 \bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it Genome Res.}, {\bf 12}, 996-1106.
 
 \bibitem[Sidak Year]{Sidak} Sidak TODO
-\bibitem[Fisher Year]{Fisher} Fisher, R.A. TODO
-\bibitem[Stouffer Year]{Stouffer} Stouffer TODO
+
+\bibitem[Fisher 1948]{Fisher} 
+Fisher, R.A. (1948)
+Questions and answers \#14.
+{\it The American Statistician}, {\bf 2}(5), 30-31.
+
+\bibitem[Stouffer \textit{et al.} 1949]{Stouffer}
+Stouffer, S.A. \textit{et~al.} (1949). \textit{The American Soldier},
+Princeton University Press, Princeton, NJ. Vol.1: Adjustment during Army Life.
+
+\bibitem[Liptak 1958]{Liptak}
+Liptak, T. (1958). On the combination of independent tests. {\it Magyar Tud. Akad. Mat. Kutato Int. Kozl.}, {bf 3}, 171-197.
+
 \bibitem[Zaykin Year]{Zaykin} Zaykin TODO
 \bibitem[Irizarry Year]{Irizarry} Irizarry TODO
 \bibitem[Pedersen Year]{Pedersen} Pedersen TODO
