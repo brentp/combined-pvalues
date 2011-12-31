@@ -17,13 +17,13 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 \begin{abstract}
 
 \section{Summary:}
-\textit{comb-p} is set of command-line tools and a python library that
-manipulate BED files of p-values and 1) calculate autocorrelation, 2) Combine
+\textit{comb-p} is command-line tool and a python library that
+manipulates BED files of p-values and 1) calculates autocorrelation, 2) Combines
 adjacent p-values based on the Stouffer-Liptak-Kechris correction \citep{Kechris2010},
-3) perform false discovery correction, 4) find troughs of low p-values, and 5)
-assign significance to those regions.
+3) performs false discovery correction, 4) finds troughs of adjacent low p-values,
+and 5) assigns significance to those regions.
 In addition, a number of tools are provided for visualization and
-assessment. The library provides sensible defaults for parameters at each
+assessment. The library sets sensible defaults for parameters at each
 step based on the structure of the input data, but these may also be customized
 by the user. We provide example uses on bisulfite-seq, ChIP-seq and tiled methylation
 probes.
@@ -47,7 +47,7 @@ Here, we build on the approach of combining p-values described in \citep{Kechris
 \section{Approach}
 
 \citep{Fisher} developed an approach of combining p-values from independent tests
-to get a single meta-analysis test statistic with a chi-squared distribution 
+to get a single meta-analysis test-statistic with a chi-squared distribution 
 and degrees of freedom based on the number of tests being combined.
 A similar method developed by \citep{Stouffer} first converts p-values
 to Z-scores which are then summed and scaled to create a single, combined Z-score.
@@ -67,9 +67,13 @@ distance.
 
 \textit{comb-p} is implemented as a single command-line application that
 dispatches to multiple independent sub-modules, and as a set of python
-packages. Where possible, computationally-intensive parts of the algorithm
-are parallelized automatically--for the ACF and the SLK steps described below
---this results in a speedup that is linear with the number of cores available.
+packages that may be used programatically. Where possible,
+computationally-intensive parts of the algorithm are parallelized
+automatically--for the ACF and the SLK steps described below--this
+results in a speedup that is linear with the number of cores available.
+In all cases the implementation has been tuned to minimize memory-use and
+computation time. All programs expect files simple BED format \citep{TODO-UCSC?}
+sorted by chromosome and start.
 When run without arguments, the \textit{comb-p} executable displays the
 available programs and a short description of each:
 \begin{verbatim}
@@ -83,7 +87,7 @@ splot    - scatter plot of a region.
 manhattan - a manhattan plot
 pipeline  - slk, fdr, peaks, region_p
 \end{verbatim}
-Though each of these tools may be used independently, the progressiong of
+Though each of these tools may be used independently, the progression of
 \textit{acf}, \textit{slk}, \textit{fdr}, \textit{peaks}, \textit{region\_p}
 described below works well for our data [Supplemental]. These steps can
 be run successively with the single command: \textit{pipeline}.
@@ -175,7 +179,10 @@ statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 \bibitem[Quinlan and Hall, 2010]{Quinlan2010} Quinlan, A.R. and Hall, I.M. (2010) BEDTools: a flexible suite of utilities for comparing genomic features, {\it Bioinformatics}, {\bf 26}, 841-842.
 \bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it Genome Res.}, {\bf 12}, 996-1106.
 
-\bibitem[Sidak Year]{Sidak} Sidak TODO
+\bibitem[Sidak 1967]{Sidak} 
+Šidàk, Z. (1967).
+Rectangular conﬁdence region for the means of multivariate normal distributions.
+\textit{Journal of the American Statistical Association}, {\bf 62}, 626-633.
 
 \bibitem[Fisher 1948]{Fisher} 
 Fisher, R.A. (1948)
