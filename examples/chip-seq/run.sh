@@ -86,10 +86,14 @@ bedtools unionbedg -header -names A3 A4 -i data/SRR31557{3,4}.$WINDOW.counts.bed
     | awk 'BEGIN{OFS=FS="\t"}
       (NR == 1){ print "A3","A4" } # r expects 1 fewer cols in the header.
       (NR > 1) { print $1":"$2"-"$3,$4,$5 }' \
-    > data/both.counts.$WINDOW..bed
+    > data/both.counts.$WINDOW.bed
 UNION
 
-echo "R --slave < scripts/run-deseq.R --args \
-        ~/tinker/bentley-chipseq/data/both.counts.bed \
-        > data/deseq.pvals.$WINDOW.txt" \
-    | bsub -R "rusage[mem=25000]" -J deseq -e deseq.err -o deseq.out
+        
+echo "R --slave < scripts/run-deseq.R --args ~/tinker/bentley-chipseq/data/both.counts.$WINDOW.bed \
+        | grep -v '^locfit' \
+        | awk 'BEGIN{FS=OFS=\"\t\"} # convert to bed.
+          (NR == 1){ print \"chrom\",\"start\",\"end\",\"pval\"; next }
+          { delete a; split(\$1, a, /[:-]/); print a[1],a[2],a[3],\$2 }' \
+        > data/deseq.pvals.$WINDOW.bed" \
+    | bsub -R "rusage[mem=25000]" -J deseq -e logs/deseq.err -o logs/deseq.out
