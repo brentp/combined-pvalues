@@ -25,8 +25,8 @@ set -e
 
 FASTA=~/data/hg19.fa
 THREADS=12
-#FQ=data/SRR315573.fastq
-FQ=data/SRR315574.fastq
+FQ=data/SRR315573.fastq
+#FQ=data/SRR315574.fastq
 GROUP=$(basename $FQ .fastq)
 <<DONE
 #bwa index -a bwtsw $FASTA
@@ -56,12 +56,12 @@ python scripts/plot-peaks.py data/$GROUP.counts.txt
 sort -k2,2n data/$GROUP.counts.txt | tail -n 5
 FIND_SHIFT
 
-#<<CORRECT
+<<CORRECT
 bamToBed -i data/$GROUP.q.bam \
     | awk -f scripts/correct-chip-offset.awk -v half=90 \
     | sort -k1,1 -k2,2n > data/$GROUP.shifted.bed
 exit;
-#CORRECT
+CORRECT
 
 <<CHECK_NEW_PEAKS
 for i in $(seq -20 3 60); do
@@ -71,7 +71,13 @@ for i in $(seq -20 3 60); do
 done
 python scripts/plot-peaks.py data/$GROUP.corrected.counts.txt
 CHECK_NEW_PEAKS
-STEP=100
-awk -v step=$STEP -f scripts/gen-regions.awk ~/data/hg19.genome \
+
+<<MAKE_WINDOW
+WINDOW=100
+# overlap is w - s
+bedtools makewindows -g ~/data/hg19.genome -w $WINDOW -s 80 \
     | bedtools intersect -a - -b data/$GROUP.shifted.bed -c -sorted \
-    | awk '($4 != 0)' > data/$GROUP.$STEP.counts.bed
+    | awk '($4 != 0)' > data/$GROUP.$WINDOW.counts.bed
+MAKE_WINDOW
+
+bedtools unionbedg -i data/SRR31557{3,4}.100.counts.bed > data/both.counts.bed
