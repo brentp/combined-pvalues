@@ -81,11 +81,15 @@ bedtools makewindows -g ~/data/hg19.genome -w $WINDOW -s 80 \
 exit
 MAKE_WINDOW
 
+<<UNION
 bedtools unionbedg -header -names A3 A4 -i data/SRR31557{3,4}.$WINDOW.counts.bed \
     | awk 'BEGIN{OFS=FS="\t"}
       (NR == 1){ print "A3","A4" } # r expects 1 fewer cols in the header.
       (NR > 1) { print $1":"$2"-"$3,$4,$5 }' \
-    > data/both.counts.bed
+    > data/both.counts.$WINDOW..bed
+UNION
 
-echo "R --slave < scripts/run-deseq.R --args ~/tinker/bentley-chipseq/data/both.counts.bed > data/deseq.pvals.txt" \
+echo "R --slave < scripts/run-deseq.R --args \
+        ~/tinker/bentley-chipseq/data/both.counts.bed \
+        > data/deseq.pvals.$WINDOW.txt" \
     | bsub -R "rusage[mem=25000]" -J deseq -e deseq.err -o deseq.out
