@@ -49,8 +49,6 @@ def _pipeline():
 
     p.add_argument("-c", dest="c", help="column number that has the value to"
                    "take the  acf", type=int, default=4)
-    p.add_argument("--tau", help="tau for the truncated product",
-                   type=float, default=0.1)
     p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
              " ACF calculation", type=int)
     p.add_argument("--step", dest="step", help="step size for bins in the"
