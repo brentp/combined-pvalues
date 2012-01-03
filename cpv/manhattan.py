@@ -137,6 +137,7 @@ def qqplot(lpys, ax_qq):
     ax_qq.axes.set_frame_on(True)
 
 def read_regions(fregions):
+    if not fregions: return None
     regions = {}
     for toks in (l.split("\t") for l in open(fregions) if l[0] != "#"):
         if not toks[0] in regions: regions[toks[0]] = []
