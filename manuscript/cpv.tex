@@ -57,7 +57,8 @@ to Z-scores which are then summed and scaled to create a single, combined Z-scor
 Stouffer's method lends itself well to the addition of weights on each p-value
 \citep{Liptak}.
 
-\citep{Zaykin} extended the weighting explicitly to deal with auto-correlation and
+\citep{Zaykin} introduced a method to use weights to perform dependence
+correction on correlated tests.
 \citep{Kechris2010} used that framework to create a sliding window correction where
 the p-value of each probe is adjusted by applying Stouffer's method to neighboring
 p-values as weighted according to the observed auto-correlation at the appropriate
@@ -175,10 +176,12 @@ and demonstrated the utility on data from three different technologies.
 
 %\bibliography{Document}
 \begin{thebibliography}{}
+
 \bibitem[Kechris {\it et~al}., 2010]{Kechris2010} Kechris, K.J. et al. (2010)
 Generalizing moving averages for tiling arrays using combined p-value
 statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 {\bf 9}, Article 29.
+
 \bibitem[Quinlan and Hall, 2010]{Quinlan2010} Quinlan, A.R. and Hall, I.M. (2010) BEDTools: a flexible suite of utilities for comparing genomic features, {\it Bioinformatics}, {\bf 26}, 841-842.
 \bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it Genome Res.}, {\bf 12}, 996-1106.
 
@@ -199,7 +202,9 @@ Princeton University Press, Princeton, NJ. Vol.1: Adjustment during Army Life.
 \bibitem[Liptak 1958]{Liptak}
 Liptak, T. (1958). On the combination of independent tests. {\it Magyar Tud. Akad. Mat. Kutato Int. Kozl.}, {bf 3}, 171-197.
 
-\bibitem[Zaykin Year]{Zaykin} Zaykin TODO
+\bibitem[Zaykin {\it et~al}., 2002]{Zaykin} Zaykin D.L. et al. (2002).
+Truncated product method for combining p-values. {\it Genetic Epidemiology},
+{\bf 22}, 170-185.
 \bibitem[Irizarry Year]{Irizarry} Irizarry TODO
 \bibitem[Pedersen Year]{Pedersen} Pedersen TODO
 
