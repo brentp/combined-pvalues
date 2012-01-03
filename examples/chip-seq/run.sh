@@ -25,8 +25,8 @@ set -e
 
 FASTA=~/data/hg19.fa
 THREADS=12
-#FQ=data/SRR315573.fastq
-FQ=data/SRR315574.fastq
+FQ=data/SRR315573.fastq
+#FQ=data/SRR315574.fastq
 GROUP=$(basename $FQ .fastq)
 <<DONE
 #bwa index -a bwtsw $FASTA
@@ -63,19 +63,10 @@ bamToBed -i data/$GROUP.q.bam \
 exit;
 CORRECT
 
-<<CHECK_NEW_PEAKS
-for i in $(seq -20 3 60); do
-    awk -f ~/src/bioawk/chipfrag.awk -v shift=$i -v pow=6 -v window=1 data/$GROUP.shifted.bed \
-        >> data/$GROUP.corrected.counts.txt
-    echo $i
-done
-python scripts/plot-peaks.py data/$GROUP.corrected.counts.txt
-CHECK_NEW_PEAKS
-
-WINDOW=100
+WINDOW=20
 <<MAKE_WINDOW
 # overlap is w - s
-bedtools makewindows -g ~/data/hg19.genome -w $WINDOW -s 80 \
+bedtools makewindows -g ~/data/hg19.genome -w $WINDOW -s 10 \
     | bedtools intersect -wa -a - -b data/$GROUP.shifted.bed -c -sorted \
     | awk '($4 != 0)' > data/$GROUP.$WINDOW.counts.bed
 exit
@@ -84,16 +75,23 @@ MAKE_WINDOW
 <<UNION
 bedtools unionbedg -header -names A3 A4 -i data/SRR31557{3,4}.$WINDOW.counts.bed \
     | awk 'BEGIN{OFS=FS="\t"}
-      (NR == 1){ print "A3","A4" } # r expects 1 fewer cols in the header.
-      (NR > 1) { print $1":"$2"-"$3,$4,$5 }' \
+      (NR == 1){ print "A3","A4" } # R expects 1 fewer cols in the header.
+      (NR > 1 && ($4 + $5) > 2) { print $1":"$2"-"$3,$4,$5 }' \
     > data/both.counts.$WINDOW.bed
 UNION
 
-        
-echo "R --slave < scripts/run-deseq.R --args ~/tinker/bentley-chipseq/data/both.counts.$WINDOW.bed \
+<<DESEQ        
+echo "R --slave < scripts/run-deseq.R --args data/both.counts.$WINDOW.bed \
         | grep -v '^locfit' \
         | awk 'BEGIN{FS=OFS=\"\t\"} # convert to bed.
-          (NR == 1){ print \"chrom\",\"start\",\"end\",\"pval\"; next }
+          (NR == 1){ print \"#chrom\",\"start\",\"end\",\"pval\"; next }
           { delete a; split(\$1, a, /[:-]/); print a[1],a[2],a[3],\$2 }' \
         > data/deseq.pvals.$WINDOW.bed" \
     | bsub -R "rusage[mem=25000]" -J deseq -e logs/deseq.err -o logs/deseq.out
+exit;
+DESEQ
+
+ 
+python ../../cpv/comb-p.py pipeline \
+    --dist 160 --step 40 --seed 0.01 -p data/comb-p.$WINDOW.40 \
+    data/deseq.pvals.$WINDOW.bed
