@@ -150,7 +150,7 @@ def main():
                 "re -log10", action='store_true', default=False)
     p.add_argument("-b", dest="bonferonni", 
             help="plot a line for the bonferonni of 0.05")
-    p.add_argument("--col", dest="col", help="index of the column containing"
+    p.add_argument("-c", "--col", dest="col", help="index of the column containing"
                    " the the p-value", default=-1, type=int)
     p.add_argument("--colors", dest="colors", help="cycle through these colors",
                 default="bk")
