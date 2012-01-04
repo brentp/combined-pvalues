@@ -110,7 +110,7 @@ Stouffer-Liptak-Kechris correction (\textit{slk}) where each p-value is
 adjusted according to the p-values in its neighborhood and the weight applied
 to each probe that neighborhood according to the ACF. The resulting BED file
 has the same number of rows with an additional column containing the corrected
-p-value. A given p-value will be pulled lower if it's neighbors also have low
+p-value. A given p-value will be pulled lower if its neighbors also have low
 p-values and likely remain insignificant if the neighboring p-values are also 
 high.
 
@@ -133,9 +133,7 @@ program reports the \textit{slk} corrected p-value, and a further one-step
 Sidak \citep{Sidak}
 multiple-testing correction. The number of possible tests in the Sidak correction
 is the total bases covered by the input probes divided by the extent of the
-given region. In our simulations, this correction gives a more strigent p-value
-than simulations [Supplemental?].
-TODO: single plot with subplot for ACF, region in UCSC.
+given region.
 
 \section{Application}
 Comprehensive, High-throughput Array for Relative Methylation or CHARM is a
