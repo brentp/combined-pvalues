@@ -24,7 +24,7 @@ for dist in 1 1000 10000000; do
     test $d -ne 1 && echo "ERROR" $d
 done
 
-./cpv/comb-p.py hist -c 5 cpv/tests/data/pvals.bed > t
+./cpv/comb-p hist -c 5 cpv/tests/data/pvals.bed > t
 
 # unittests.
 python cpv/tests/test.py
