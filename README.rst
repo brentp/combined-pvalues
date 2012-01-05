@@ -7,7 +7,7 @@ Invocation
 ==========
 The program is run with::
 
-   $ ./cpv/comb-p.py
+   $ comb-p
 
 This message is displayed::
 
@@ -27,11 +27,11 @@ This message is displayed::
 Where each of the listed modules indicates an available program.
 Running any of the above will result in a more detailed help message. e.g.::
 
-    $ cpv/comb-p.py acf -h
+    $ comb-p acf -h
 
 Gives::
 
-    usage: comb-p.py [-h] [-d D] [-c C] files [files ...]
+    usage: comb-p [-h] [-d D] [-c C] files [files ...]
 
        calculate the autocorrelation of a *sorted* bed file with a set
        of *distance* lags.
@@ -48,7 +48,7 @@ Gives::
 
 Indicating that it can be run as::
 
-    $ ./cpv/comb-p.py acf -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
+    $ .comb-p acf -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
 
 Each module is described in detail below.
 
@@ -183,7 +183,7 @@ ScatterPlot (splot)
 
 The command::
 
-    ./cpv/comb-p.py splot -c 5,6 data/pvals.adjusted.bed \
+    comb-p splot -c 5,6 data/pvals.adjusted.bed \
                                 -r chrY:2717613-2728613 \
                                 --labels original,adjusted
 

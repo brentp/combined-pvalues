@@ -1,0 +1,2 @@
+include README.rst
+include cpv/tests/data/*
