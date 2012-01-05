@@ -30,7 +30,7 @@ SEE: https://github.com/brentp/combined-pvalues for documentation
         sys.argv.pop(1)
         _pipeline()
     else:
-        module = __import__(sys.argv[1])
+        module = getattr(__import__('cpv', fromlist=[sys.argv[1]]), sys.argv[1])
         # remove the action
         sys.argv.pop(1)
         module.main()
