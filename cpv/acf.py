@@ -154,7 +154,7 @@ def main():
                    "take the  acf", type=int, default=4)
     p.add_argument("--full", dest="full", action="store_true",
                    default=False, help="do full autocorrelation (default"
-                   " is partial")
+                   " is partial)")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):
