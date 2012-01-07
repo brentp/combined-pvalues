@@ -125,7 +125,7 @@ def _pipeline():
     with open(args.prefix + ".regions-p.bed", "w") as fh:
         N = 0
         #fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\tsim_p\n")
-        fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\n")
+        fh.write("#chrom\tstart\tend\tmin_p\tn_probes\tslk_p\tslk_sidak_p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                args.prefix + ".slk.bed",
