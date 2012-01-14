@@ -138,9 +138,9 @@ calculation of significance for the region, we side-step issues of altering the
 distribution in both the \textit{slk} and FDR steps. The \textit{region\_p}
 program reports the \textit{slk} corrected p-value, and a further one-step
 Sidak \citep{Sidak}
-multiple-testing correction. The number of possible tests in the Sidak correction
-is the total bases covered by the input probes divided by the extent of the
-given region.
+multiple-testing correction. For a given region, the number of possible
+tests in the Sidak correction is the total bases covered by all input
+probes divided by the size of the given region.
 
 \section{Application}
 Comprehensive, High-throughput Array for Relative Methylation or CHARM is a
@@ -165,7 +165,8 @@ from the transcription factor ???, comparing ??? to ??? TODO, and find
 \section{Conclusion}
 The \textit{comb-p} software is useful in contexts where there is
 autocorrelation among nearby p-values. We have outlined our implementation
-and demonstrated the utility on data from three different technologies.
+and demonstrated the utility on data from three different technologies,
+each from a different statistical test.
 
 \section*{Acknowledgement}
 
