@@ -75,7 +75,7 @@ def gen_sigma_matrix(group, acfs, cached={}):
     """
     return a
 
-def slk_chrom(chromlist, lag_max, acfs):
+def slk_chrom(chromlist, lag_max, acfs, stringent):
     """
     calculate the slk for a given chromosome
     """
@@ -84,7 +84,8 @@ def slk_chrom(chromlist, lag_max, acfs):
 
         sigma = gen_sigma_matrix(xneighbors, acfs)
         pvals = [g['p'] for g in xneighbors]
-        r = stouffer_liptak(pvals, sigma)
+        # stringetn is True/False
+        r = stouffer_liptak(pvals, sigma, correction=stringent)
 
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
                 r["p"])
@@ -99,7 +100,7 @@ def slk_chrom(chromlist, lag_max, acfs):
 def _slk_chrom(args):
     return list(slk_chrom(*args))
 
-def adjust_pvals(fnames, col_num0, acfs):
+def adjust_pvals(fnames, col_num0, acfs, stringent):
     lag_max = acfs[-1][0][1]
 
     # parallelize if multiprocesing is installed.
@@ -113,8 +114,8 @@ def adjust_pvals(fnames, col_num0, acfs):
 
     arg_iter = []
     for fname in fnames:
-        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs) for key, chromlist in
-                        groupby(bediter(fname, col_num0),
+        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs, stringent) \
+                    for key, chromlist in groupby(bediter(fname, col_num0),
                             itemgetter("chrom"))))
 
     for results in imap(_slk_chrom, arg_iter):
@@ -125,7 +126,7 @@ def adjust_pvals(fnames, col_num0, acfs):
 def run(args):
     acf_vals = read_acf(args.acf)
     col_num = get_col_num(args.c)
-    for row in adjust_pvals(args.files, col_num, acf_vals):
+    for row in adjust_pvals(args.files, col_num, acf_vals, args.stringent):
         sys.stdout.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
 
 def main():
@@ -135,6 +136,8 @@ def main():
                    "correlations")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
             " acf", type=int, default=4)
+    p.add_argument("-s", dest="stringent", action="store_true", default=False,
+            help="use this flag if there is an abundance of low-pvalues.")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):

@@ -61,6 +61,8 @@ def _pipeline():
                  type=float)
     p.add_argument("-p", dest="prefix", help="prefix for output files",
                    default=None)
+    p.add_argument("-s", dest="stringent", action="store_true", default=False,
+            help="use this flag if there is an abundance of low-pvalues.")
 
     p.add_argument('bed_files', nargs='+', help='sorted bed file to process')
 
@@ -106,7 +108,8 @@ def _pipeline():
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
     with open(args.prefix + ".slk.bed", "w") as fh:
-        for row in slk.adjust_pvals(args.bed_files, col_num, acf_vals):
+        for row in slk.adjust_pvals(args.bed_files, col_num, acf_vals, 
+                args.stringent):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
 
