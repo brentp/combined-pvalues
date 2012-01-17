@@ -6,7 +6,7 @@ from numpy.linalg.linalg import LinAlgError
 qnorm = norm.ppf
 pnorm = norm.cdf
 
-def stouffer_liptak(pvals, sigma=None):
+def stouffer_liptak(pvals, sigma=None, correction=False):
     """
     The stouffer_liptak correction.
     >>> stouffer_liptak([0.1, 0.2, 0.8, 0.12, 0.011])
@@ -39,12 +39,11 @@ def stouffer_liptak(pvals, sigma=None):
             # cant do the correction non-invertible
             result["OK"] = False
         # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
-    """
-        denom = np.sqrt(np.power(sigma, 2).sum())
-        Cp = qvals.sum() / denom
-    else:
-    """
-    Cp = qvals.sum() / np.sqrt(len(qvals))
+        if correction:
+            denom = np.sqrt(np.power(sigma, 2).sum())
+            Cp = qvals.sum() / denom
+    if not correction:
+        Cp = qvals.sum() / np.sqrt(len(qvals))
 
     # get the right tail.
     pstar = 1 - pnorm(Cp)
