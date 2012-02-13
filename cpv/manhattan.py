@@ -84,12 +84,12 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
     else:
-        ax.scatter(xs, ys, s=1.2, c=cs, edgecolors='none')
+        ax.scatter(xs, ys, s=2.5, c=cs, edgecolors='none', alpha=0.6)
 
     if regions:
         rxs, rys = zip(*region_xys)
         if not no_log: rys = -np.log10(rys)
-        ax.scatter(rxs, rys, s=1.5, c='#ffff00', alpha=1.0, edgecolors='none')
+        ax.scatter(rxs, rys, s=3.5, c='#ff0000', edgecolors='none')
 
     # plot 0.05 line after multiple testing. always nlog10'ed since
     # that's the space we're plotting in.
