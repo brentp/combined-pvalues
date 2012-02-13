@@ -6,6 +6,7 @@ from _common import bediter
 from itertools import izip
 from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
 from _common import get_col_num
+import numpy as np
 
 def run(args):
     # get rid of N, just keep the correlation.
@@ -14,10 +15,16 @@ def run(args):
         print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
 
 def fdr(fbed_file, col_num, alpha):
-    pvals = [b["p"] for b in bediter(fbed_file, col_num)]
+    pvals = np.array([b["p"] for b in bediter(fbed_file, col_num)],
+                        dtype=np.float64)
     bh_pvals = fdrcorrection0(pvals, alpha=alpha,
             method='indep')[1]
-    for bh, l in izip(bh_pvals, open(fbed_file)):
+    fh = open(fbed_file)
+    line = fh.readline()
+    # drop header
+    if not (line[0] == "#" or line.split()[0] == "chrom"):
+        fh.seek(0)
+    for bh, l in izip(bh_pvals, fh):
         yield bh, l
 
 def main():
