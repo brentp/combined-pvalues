@@ -68,11 +68,13 @@ def _pipeline():
 
     args = p.parse_args()
 
+
     if not (args.prefix):
         sys.exit(p.print_help())
 
     if not args.threshold:
         args.threshold = args.seed
+    assert op.exists(args.bed_files[0])
 
     col_num = get_col_num(args.c)
     if args.step is None:
