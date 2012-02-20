@@ -26,7 +26,7 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
     {'p': 0.5...}
     """
     L = len(pvals)
-    pvals = np.asarray(pvals)
+    pvals = np.array(pvals, dtype=np.float64)
     qvals = qnorm(1 - pvals, loc=0, scale=1).reshape(L, 1)
     # dont do the correction unless sigma is specified.
     result = {"OK": True}
@@ -51,7 +51,7 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
     if np.isnan(pstar):
         print >>sys.stderr, "BAD:", pvals, sigma
         pstar = np.median(pvals)
-        result["OK"] = False
+        result["OK"] = True
     result.update({"C": Cp, "p": pstar})
     return result
 
