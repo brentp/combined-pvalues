@@ -127,7 +127,7 @@ def run(args):
     acf_vals = read_acf(args.acf)
     col_num = get_col_num(args.c)
     for row in adjust_pvals(args.files, col_num, acf_vals, args.stringent):
-        sys.stdout.write("%s\t%i\t%i\t%.3g\t%.3g\n" % row)
+        sys.stdout.write("%s\t%i\t%i\t%.5g\t%.5g\n" % row)
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
