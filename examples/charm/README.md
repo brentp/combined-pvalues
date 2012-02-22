@@ -85,7 +85,7 @@ $ intersectBed -a data/t-dmrs.txt -b tissue.filtered.bed  \
 $ python ../damid/ttest.py overlap.txt no-overlap.txt 
 (25.948028554040935, 1.2957717193202179e-145)
 ```
-So the p-values of 1.296e-145 indicates that we can enrich for
+So the p-value of 1.296e-145 indicates that we can enrich for
 lower q-values from the Irizarry data by intersecting with our
 DMR's. So the Irizarry DMR's that overlap with ours are less
 likely to be false discoveries.
