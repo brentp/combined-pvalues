@@ -8,17 +8,15 @@ BEGIN {
 }
 
 {
-    $4 = "."
-	if ( $6 == "+" ) { 
+	if ( $4 == "+" ) { 
 		# positive strand
         $2 += half
         $3 += half
-		fwd[$2 + shift]++
 	} else { 
 		# negative strand
         $2 -= half
-        $3 -= half
         if($2 < 0){ next; }
+        $3 -= half
 	} 
     print $0
 }
