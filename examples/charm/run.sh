@@ -7,6 +7,8 @@
 # wget http://rafalab.jhsph.edu/data/shores/natgen2009.csv
 # wget http://rafalab.jhsph.edu/data/shores/natgen2009.tgz
 
+# wget -O data/t-dmrs.xls http://www.nature.com/ng/journal/v41/n2/extref/ng.298-S3.xls
+
 <<NORMALIZE
 R --slave --args data/natgen2009.csv data/methp.txt \
     SampleID quantile < scripts/charm.normalize.R
@@ -38,6 +40,7 @@ COL=${COLS[$LSB_JOBINDEX]}
 PRE=data/quantile/$COL/$COL
 mkdir -p data/quantile/$COL
 
+<<DONE
 comb-p pipeline \
     -c $LSB_JOBINDEX \
     -s \
@@ -45,6 +48,7 @@ comb-p pipeline \
     --dist 80 --step 40 \
     -p $PRE \
     data/pvalues.bed
+DONE
 
-awk 'NR == 1 || ($5 > % && $7 < 0.001)' ${PRE}.regions-p.bed \
+awk 'NR == 1 || ($5 > 5 && $7 < 0.001)' ${PRE}.regions-p.bed \
     > ${PRE}.sig.regions.bed
