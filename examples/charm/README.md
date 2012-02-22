@@ -39,7 +39,7 @@ To compare to Irizarry, we filter `comb-p` candidate DMR's to those
 awk '$7 < 0.1 || $5 > 8' data/quantile/p.disease/p.disease.regions-p.bed \
     > comb-p.filtered.bed
 ```
-This gives 3105 DMR's compared to Irizarry's 2707. Of those 2289 overla
+This gives 3105 DMR's compared to Irizarry's 2707. Of those 2289 overlap,
 meaning 85% of Irizarry's DMR's are represented in the `comb-p` set.
 
 ```Shell
