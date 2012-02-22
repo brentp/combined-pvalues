@@ -59,7 +59,7 @@ def _pipeline():
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
-    p.add_argument("-p", dest="prefix", help="prefix for output files",
+    p.add_argument("-p" "--prefix", help="prefix for output files",
                    default=None)
     p.add_argument("-s", dest="stringent", action="store_true", default=False,
             help="use this flag if there is an abundance of low-pvalues.")
@@ -129,7 +129,6 @@ def _pipeline():
 
     with open(args.prefix + ".regions-p.bed", "w") as fh:
         N = 0
-        #fh.write("#chrom\tstart\tend\tmin-p\tn-probes\tslk-p\tslk-sidak-p\tsim_p\n")
         fh.write("#chrom\tstart\tend\tmin_p\tn_probes\tslk_p\tslk_sidak_p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
