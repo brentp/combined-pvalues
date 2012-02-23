@@ -28,8 +28,10 @@ manipulates BED files of possibly irregularly spaced p-values and
 In addition, tools are provided for visualization and
 assessment. The library sets sensible defaults for parameters at each
 step based on the structure of the input data, but these may also be customized
-by the user. We provide example uses on bisulfite-seq, ChIP-seq and tiled methylation
-probes each with p-values from a different statistical test. Because the library
+by the user. We provide validation and example uses on bisulfite-seq with p-values
+from fisher's exact test,
+tiled methylation probes using a linear model, and Dam-ID for chromatin binding
+using t-statistics [TODO Katerina, correct?]. Because the library
 accepts input in a simple, standardized format and is unaffected by the origin
 of the p-values, it can be used for a wide variety of applications.
 
@@ -44,13 +46,13 @@ implementation are available at
 \end{abstract}
 
 \section{Introduction}
-ChIP-seq, bisulfite-seq, and tiling arrays generate data that is spatially
-auto-correlated. The values from these and many other technologies can be
-compared or tested to generate p-values that are also auto-correlated. Due to the
-high-throughput nature of these methods, the significance of individual regions
-may be lost after multiple-testing correction on potentially millions of sites.
-Here, we build on the approach of combining p-values described in \citealp{Kechris2010}.
-that mitigates this loss by accounting for autocorrelation.
+Methylation data and data from tiling arrays generate spatially auto-correlated
+values. Such data can be compared or tested to generate p-values that are also
+auto-correlated. Due to the high-throughput nature of these methods, the
+significance of individual regions may be lost after multiple-testing correction
+on potentially millions of sites. Here, we build on the approach of combining
+p-values described in \citealp{Kechris2010}.  that mitigates this loss by
+accounting for autocorrelation.
 \section{Approach}
 Fisher \citep{Fisher} developed an approach of combining p-values from independent tests
 to get a single meta-analysis test-statistic with a chi-squared distribution
@@ -99,7 +101,7 @@ pipeline  - slk, fdr, peaks, region_p
 \end{verbatim}
 Though each of these tools may be used independently, the progression of
 \textit{acf}, \textit{slk}, \textit{fdr}, \textit{peaks}, \textit{region\_p}
-described below works well for our data [Supplemental]. These steps can
+described below works well for the examples presented. These steps can
 be run successively with the single command: \textit{pipeline}.
 
 Given a set of auto-correlated p-values in BED format, \textit{comb-p} first
@@ -115,11 +117,11 @@ function.
 Once the ACF has been calculated, it can be used to perform the
 Stouffer-Liptak-Kechris correction (\textit{slk}) where each p-value is
 adjusted according to the adjacent p-values and the weight of each of
-those neighboring probes is determine from ACF. The resulting BED file
+those neighboring probes is determine from the ACF. The resulting BED file
 has the same number of rows with an additional column containing the corrected
 p-value. A given p-value will be pulled lower if its neighbors also have low
-p-values and likely remain insignificant if the neighboring p-values are also
-high.
+p-values (and little autocorrelation) and likely remain insignificant if the
+neighboring p-values are also high.
 
 A q-value score based on the Benjamini-Hochberg false-discovery (FDR) correction
  may be calculated. A peak-finding algorithm can then be used on either the FDR
@@ -143,22 +145,38 @@ tests in the Sidak correction is the total bases covered by all input
 probes divided by the size of the given region.
 
 \section{Application}
-Comprehensive, High-throughput Array for Relative Methylation or CHARM is a
-tiling array used to quantify methylation at CpG-rich sites \citep{Irizarry}.
-Adjacent probes are spatially auto-correlated due to the regional nature of
-methylation, and to the overlapping probes on the tiling array. In the
-Supplemental Info, we show the commands used to run \textit{comp-p} on data from
-??? . In that analysis, we find several interesting regions, including those
-associated with ??? [TODO: cite Ivana's LGRC/MRCA paper].
+We extend 3 previously published analyses to demonstrate the utility and
+breadth of use of \textit{comb-p} and to validate against the
+published data. The full set of commands used to run each of these analyses
+is availalable in the corresponding subdirectory at:
+https://github.com/brentp/combined-pvalues/tree/master/examples
 
-Bisulfite-sequencing data is also used to uncover methylation. We analyze
-data from {\it Arabidopsis thaliana}, comparing ??? to ??? TODO and find
+Comprehensive, High-throughput Array for Relative Methylation or CHARM is a
+tiling array used to quantify methylation at CpG-rich sites \citep{Irizarry2008}.
+Adjacent probes are spatially auto-correlated due to the regional nature of
+methylation, and to the overlapping probes on the tiling array.
+We run \textit{comp-p} on data from
+\citealp{Irizarry2009} containing probe data for tumor and normal samples from
+a variety of tissues. \textit{comb-p} finds 85\% of the
+tumor-specific differentially methylated regions (DMR's) reported by
+\citealp{Irizarry2009} and 75\% of the tissue-specific DMR's reported.
+While these overlaps depend on the chosen parameters, we show that the Irizarry
+DMR's that overlap with the \textit{comb-p} DMR's have signficantly (t-test,
+p=1.296e-145) lower FDR values (as reported by Irizarry) than those that do not,
+indicating that \textit{comb-p} is finding the most significant DMR's.
+
+Bisulfite-sequencing data is also used to measure methylation across the genome.
+We analyze data from {\it Arabidopsis thaliana}, comparing ??? to ??? TODO and find
 that genes associated with ??? are hyper/hypo-methylated. This observation
 was previously reported in ??? TODO.
 
-ChIP-seq data is also known to be spatially autocorrelated. We analyzed data
-from the transcription factor ???, comparing ??? to ??? TODO, and find
-???
+DamID technology can be used to measure protein binding sites \citealp{Steensel2001}.
+We recreate analysis of citealp{Kechris2010}, using the p-values from their moderated
+t-statistics. Of Kechris' 878 regions, 695 (79\%) are represented in the comb-p regions.
+The Kechris regions that overlap the \textit{comb-p} regions have a higher reported
+enrichment [TODO Katerina, is it correct to say it's an enrichment score?] score than
+those that do not (t-test, p=2.98e-59), indicating that \textit{comb-p} is finding the
+best regions among those reported by Kechris.
 
 \end{methods}
 
@@ -166,7 +184,8 @@ from the transcription factor ???, comparing ??? to ??? TODO, and find
 The \textit{comb-p} software is useful in contexts where there is
 autocorrelation among nearby p-values. We have outlined our implementation
 and demonstrated the utility on data from three different technologies,
-each from a different statistical test.
+each from a different statistical test. We have also validated our method
+using previously published results from those same studies.
 
 \section*{Acknowledgement}
 
@@ -187,7 +206,6 @@ Generalizing moving averages for tiling arrays using combined p-value
 statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 {\bf 9}, Article 29.
 
-\bibitem[Quinlan and Hall, 2010]{Quinlan2010} Quinlan, A.R. and Hall, I.M. (2010) BEDTools: a flexible suite of utilities for comparing genomic features, {\it Bioinformatics}, {\bf 26}, 841-842.
 \bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it Genome Res.}, {\bf 12}, 996-1106.
 
 \bibitem[Sidak, 1967]{Sidak} 
@@ -212,14 +230,17 @@ Akad. Mat. Kutato Int. Kozl.}, {\bf 3}, 171-197.
 Truncated product method for combining p-values. {\it Genetic Epidemiology},
 {\bf 22}, 170-185.
 
-\bibitem[Irizarry {\t et~al}., 2008]{Irizarry2008} Irizarry R.A. et al.
+\bibitem[Irizarry {\it et~al}., 2008]{Irizarry2008} Irizarry, R.A. et al.
 (2008). Comprehensive high-throughput arrays for relative methylation (CHARM).
 {\it Genome Research}, {\bf 18}, 780-790.
 
-\bibitem[Irizarry {\t et~al}., 2009]{Irizarry2009} Irizarry R.A. et al.
+\bibitem[Irizarry {\it et~al}., 2009]{Irizarry2009} Irizarry, R.A. et al.
 (2009). The human colon cancer methylome shows similar hypo- and
 hypermethylation at conserved tissue-specific CpG island shores.
 {\it Nature Genetics}, {\bf 41}, 178-186.
+
+\bibitem[van Steensel {\it et~al}]{Steensel2001}van Steensel, B., Delrow, J. and Henikoff, S. (2001): Chromatin Profiling Using Targeted DNA Adenine Methyltransferase,
+{\it Nature Genetics}, {\bf 27}, 304–308.
 
 \end{thebibliography}
 \end{document}
