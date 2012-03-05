@@ -59,7 +59,7 @@ def _pipeline():
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
-    p.add_argument("-p" "--prefix", dest="prefix",
+    p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
 
     p.add_argument("-s", dest="stringent", action="store_true", default=False,
