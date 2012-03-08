@@ -21,6 +21,12 @@ for i in 1 2 3 4 5; do
     wait
 
 done
+
+wget -O - \
+   "ftp://ftp.arabidopsis.org/home/tair/Genes/TAIR10_genome_release/TAIR10_gff3/TAIR10_GFF3_genes.gff" \
+    | perl -pe 's/^Chr/chr/' \
+    | grep -v chromosome > data/arabidopsis_thaliana.gff
+
 exit;
 DONE
 <<REF
@@ -66,9 +72,16 @@ echo "python run-fisher.py data/embryo.meth.bed  data/endosperm.meth.bed \
 
 FISHER
 
+<<COMBP
 comb-p pipeline -c 4 --dist 300 \
         --step 60 --seed 0.01 \
         -p data/cpv \
         data/embryo-endo.fisher.bed
+COMBP
 
-awk '$7 < 0.05 && $5 > 3' data/cpv.regions-p.bed > data/cpv.regions-p.sig.bed
+# print only the needed columns from the regions with low p-values
+echo $'#chrom\tstart\tend\tslk_sidak_region_p' > data/ee.regions.bed
+awk 'BEGIN{OFS="\t"} $7 < 0.01 && $5 > 3 { print $1, $2, $3, $7} ' data/cpv.regions-p.bed \
+    | sort -k1,1 -k2,2n >> data/ee.regions.bed
+
+python intersect.py data/ee.regions.bed > data/ee.annotated.regions.bed
