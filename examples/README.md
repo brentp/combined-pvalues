@@ -37,7 +37,7 @@ Science, 324, 1451-1454.
 DamId
 -----
 
-An example using t-test p-values from DamID technology as reported ind
+An example using t-test p-values from DamID technology as reported in
 
 ```
 Kechris, K.J. et al. (2010)
