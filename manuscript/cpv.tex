@@ -39,7 +39,11 @@ of the p-values, it can be used for a wide variety of applications.
 \textit{comb-p} is maintained under the BSD license. The documentation and
 implementation are available at
 
-\href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues}.
+\href{https://github.com/brentp/combined-pvalues}{https://github.com/brentp/combined-pvalues} .
+Descriptions of examples and the scripts used to run them are at:
+
+\href{https://github.com/brentp/combined-pvalues/tree/master/examples/}{https://github.com/brentp/combined-pvalues/tree/master/examples/} .
+
 \section{Contact:} \href{bpederse@gmail.com}{bpederse@gmail.com},
 \href{katerina.kechris@ucdenver.edu}{katerina.kechris@ucdenver.edu}
 
@@ -49,21 +53,21 @@ implementation are available at
 Methylation data and data from tiling arrays generate spatially auto-correlated
 values. Such data can be compared or tested to generate p-values that are also
 auto-correlated. Due to the high-throughput nature of these methods, the
-significance of individual regions may be lost after multiple-testing correction
+significance of individual regions may be dampened after multiple-testing correction
 on potentially millions of sites. Here, we build on the approach of combining
-p-values described in \citealp{Kechris2010}.  that mitigates this loss by
+p-values described in \cite{Kechris2010} that mitigates this loss by
 accounting for autocorrelation.
 \section{Approach}
-Fisher \citep{Fisher} developed an approach of combining p-values from independent tests
+\cite{Fisher} developed an approach of combining p-values from independent tests
 to get a single meta-analysis test-statistic with a chi-squared distribution
 and degrees of freedom based on the number of tests being combined.
-A similar method developed by Stouffer \citep{Stouffer} first converts p-values
+A similar method developed by \cite{Stouffer} first converts p-values
 to Z-scores which are then summed and scaled to create a single, combined Z-score.
 Stouffer's method lends itself well to the addition of weights on each p-value
 \citep{Liptak}.
 
-\citealp{Zaykin2002} introduced a method to use weights to perform dependence
-correction on correlated tests. \citealp{Kechris2010} used that framework to create
+\cite{Zaykin2002} introduced a method to use weights to perform dependence
+correction on correlated tests. \cite{Kechris2010} used that framework to create
 a sliding window correction where each p-value is adjusted by
 applying Stouffer's method to neighboring p-values as weighted according to the
 observed auto-correlation at the appropriate distance.
@@ -71,7 +75,7 @@ observed auto-correlation at the appropriate distance.
 Here, we by provide a generic, efficient, and customizable implementation
 of these methods with additions including handling variably spaced probes,
 a peak finder for dynamically sized regions, and a means to calculate a
-p-value for each peak.
+p-value for each peak. We refer to this implemenation as {\textit comb-p}.
 
 \begin{methods}
 
@@ -124,7 +128,7 @@ p-values (and little autocorrelation) and likely remain insignificant if the
 neighboring p-values are also high.
 
 A q-value score based on the Benjamini-Hochberg false-discovery (FDR) correction
- may be calculated. A peak-finding algorithm can then be used on either the FDR
+ may be calculated. The peak-finding algorithm can then be used on either the FDR
 q-value, the \textit{slk}-corrected p-value, or on the original p-value.
 We find that performing the \textit{slk} correction and the FDR correction
 before finding regions is the most stable and powerful.
@@ -139,7 +143,7 @@ spanned by that region. Because we use the original, uncorrected p-values in the
 calculation of significance for the region, we side-step issues of altering the
 distribution in both the \textit{slk} and FDR steps. The \textit{region\_p}
 program reports the \textit{slk} corrected p-value, and a further one-step
-Sidak \citep{Sidak}
+\cite{Sidak}
 multiple-testing correction. For a given region, the number of possible
 tests in the Sidak correction is the total bases covered by all input
 probes divided by the size of the given region.
@@ -156,26 +160,25 @@ tiling array used to quantify methylation at CpG-rich sites \citep{Irizarry2008}
 Adjacent probes are spatially auto-correlated due to the regional nature of
 methylation, and to the overlapping probes on the tiling array.
 We run \textit{comp-p} on data from
-\citealp{Irizarry2009} containing probe data for tumor and normal samples from
+\cite{Irizarry2009} containing probe data for tumor and normal samples from
 a variety of tissues. \textit{comb-p} finds 85\% of the
 tumor-specific differentially methylated regions (DMR's) reported by
-\citealp{Irizarry2009} and 75\% of the tissue-specific DMR's reported.
+\cite{Irizarry2009} and 75\% of the tissue-specific DMR's reported.
 While these overlaps depend on the chosen parameters, we show that the Irizarry
 DMR's that overlap with the \textit{comb-p} DMR's have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those that do not,
 indicating that \textit{comb-p} is finding the most significant DMR's.
 
-Bisulfite-sequencing data from \citealp{Hsieh2009} is also used to measure
+Bisulfite-sequencing is also used to measure
 methylation across the genome.
-We analyze data from {\it Arabidopsis thaliana} using MethylCoder
-\citep{Pedersen2011} to map the converted reads to the genome. In
-comparing endosperm to
+We analyze data described in \cite{Hsieh2009} from {\it Arabidopsis
+ thaliana}. We use MethylCoder \citep{Pedersen2011} to map the converted reads
+to the genome. In comparing endosperm to
 embryo, we find differentially methylated regions associated with genes
 enriched for gene ontologies related to the ribosome (p < 1e-3).
-This observation was previously reported in TODO.
 
-DamID technology can be used to measure protein binding sites \citealp{Steensel2001}.
-We recreate analysis of citealp{Kechris2010}, using the p-values from their moderated
+DamID technology can be used to measure protein binding sites \cite{Steensel2001}.
+We recreate analysis of \cite{Kechris2010}, using the p-values from their moderated
 t-statistics. Of Kechris' 878 regions, 695 (79\%) are represented in the comb-p regions.
 The Kechris regions that overlap the \textit{comb-p} regions have a higher reported
 enrichment [TODO Katerina, is it correct to say it's an enrichment score?] score than
@@ -247,10 +250,10 @@ hypermethylation at conserved tissue-specific CpG island shores.
 (2011). MethylCoder: software pipeline for bisulfite-treated sequences.
 {\it Bioinformatics}, {\bf 27}, 2435-2436.
 
-\bibitem[van Steensel {\it et~al}]{Steensel2001}van Steensel, B., Delrow, J. and Henikoff, S. (2001): Chromatin Profiling Using Targeted DNA Adenine Methyltransferase,
+\bibitem[van Steensel {\it et~al}., 2001]{Steensel2001}van Steensel, B., Delrow, J. and Henikoff, S. (2001): Chromatin Profiling Using Targeted DNA Adenine Methyltransferase,
 {\it Nature Genetics}, {\bf 27}, 304–308.
 
-\bibitem[Hsieh {\it et~al}]{Hsieh2009} Hsieh, T.F. et al. (2009). Genome-Wide Demethylation of Arabidopsis Endosperm.
+\bibitem[Hsieh {\it et~al}., 2009]{Hsieh2009} Hsieh, T.F. et al. (2009). Genome-Wide Demethylation of Arabidopsis Endosperm.
 {\it Science}, {\bf 324}, 1451-1454.
 
 \end{thebibliography}

@@ -33,6 +33,7 @@ Hsieh, T.F. et al. (2009). Genome-Wide Demethylation of Arabidopsis Endosperm.
 Science, 324, 1451-1454.
 
 ```
+The example is here: https://github.com/brentp/combined-pvalues/tree/master/examples/bs-seq
 
 DamId
 -----
@@ -45,3 +46,4 @@ Generalizing moving averages for tiling arrays using combined p-value
 statistic. Statistical Applications in Genetics and Molecular Biology
 9, Article 29.
 ```
+The example is here: https://github.com/brentp/combined-pvalues/tree/master/examples/damid
