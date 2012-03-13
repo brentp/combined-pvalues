@@ -12,17 +12,18 @@ model = lm(methp ~ DiseaseState + TissueType, data=df)
 ```
 
 in the R programming language before sending to comb-p.
-By adding each tissue, we can find tissue-specific DMR's more specific
+It's also possible to find tissue-specific DMR's more specific
 than DMR's that vary among the tissues.
 
 ```R
 model = lm(methp ~ DiseaseState + colon + frontalcortex + liver + spleen)
 ```
 
-We fit this model at each of the 2.1 million probes of the CHARM array.
-We can run comb-p on any of the tissue-specific p-values. Here, for the
-purpose of validation and demonstration, we find disease-specific DMRs
-(from DiseaseState) and compare to Irizarry et al's c-dmrs and we find
+However, we do not report these per-tissue DMR's.
+
+We fit the first model at each of the 2.1 million probes of the CHARM array.
+Here, for the purpose of validation and demonstration, we find disease-specific 
+DMRs (from DiseaseState) and compare to Irizarry et al's c-dmrs and we find
 tissue-specific DMR's and compare to Irizarry et al's t-dmrs.
 
 The full pipeline can be found in:
