@@ -30,3 +30,17 @@ p-values for each putative region.
 The final file `data/data/ee.annotated.regions.bed` lists only the regions with
 a corrected p-values < 0.01 containing more that 3 CpG's. Each of those regions
 is reported along with the nearest gene and the distance to that gene.
+
+Here is a manhattan plot created with the command:
+
+```Shell
+comb-p manhattan \
+    data/cpv.slk.sorted.bed -c 4 \
+    --image data/bs-seq.manhattan.png
+```
+
+which creates the image
+![Manhattan Plot of P-values]( "Manhattan Plot")
+
+In it, we can see that there are few, very strong peaks. These are pulled out
+by `comb-p`.
