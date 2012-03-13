@@ -40,7 +40,7 @@ comb-p manhattan \
 ```
 
 which creates the image
-![Manhattan Plot of P-values]( "Manhattan Plot")
+![Manhattan Plot of P-values](https://github.com/brentp/combined-pvalues/raw/master/examples/bs-seq/data/bs-seq.manhattan.png "Manhattan Plot")
 
 In it, we can see that there are few, very strong peaks. These are pulled out
 by `comb-p`.
