@@ -54,7 +54,16 @@ a t-test directly and we pull the t-score from the linear model.
 Tissue-Specific t-dmrs
 ----------------------
 
-We again filter our tissue-specific DMR's to get 11,061 to compare to
+We can use the manhattan plot to get a view of the p-values with the command:
+
+```Shell
+comb-p manhattan data/pvalues.bed -c 5 --image data/manhattan.tissue.png
+```
+to create this plot:
+![Manhattan Plot of P-values](https://github.com/brentp/combined-pvalues/raw/master/examples/charm/data/manhattan.tissue.png "Manhattan Plot") 
+
+We can see that there are *many* significant single probes.
+We find tissue-specific DMRs and filter to get 11,061 to compare to
 Irizarry's 16,379.
 This time we filter to a corrected p-value of 0.05 and require at least
 8 probes in the DMR.
