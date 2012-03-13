@@ -88,9 +88,9 @@ not.
 
 ```Shell
 $ intersectBed -a data/t-dmrs.txt -b tissue.filtered.bed -v \
-      | cut -f 4 > overlap.txt                    
+      | cut -f 4 > no-overlap.txt                    
 $ intersectBed -a data/t-dmrs.txt -b tissue.filtered.bed  \
-      | cut -f 4 > no-overlap.txt
+      | cut -f 4 > overlap.txt
 
 $ python ../damid/ttest.py overlap.txt no-overlap.txt 
 (25.948028554040935, 1.2957717193202179e-145)
