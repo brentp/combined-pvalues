@@ -35,7 +35,7 @@ Disease-Specific c-dmrs
 -----------------------
 
 To compare to Irizarry, we filter `comb-p` candidate DMR's to those
-with a p-values less than 0.1 and with more than 8 probes in the DMR.
+with Sidak corrected region p-values less than 0.1 and with more than 8 probes in the DMR.
 
 ```Shell
 awk '$7 < 0.1 || $5 > 8' data/quantile/p.disease/p.disease.regions-p.bed \
@@ -65,7 +65,7 @@ to create this plot:
 We can see that there are *many* significant single probes.
 We find tissue-specific DMRs and filter to get 11,061 to compare to
 Irizarry's 16,379.
-This time we filter to a corrected p-value of 0.05 and require at least
+This time we filter to a corrected region p-value of 0.05 and require at least
 8 probes in the DMR.
 
 ```Shell

@@ -6,7 +6,11 @@ Their p-values ::
     wget http://amc-sandbox.ucdenver.edu/~brentp/2012/comb-p/data/probes.sorted.bed
 
 
-We run `comb-p` on the p-values with a seed of 0.1 and a maximum distance
+We run `comb-p` on the p-values with a seed of 0.1, indicating that we'll
+require an slk and FDR corrected p-value of 0.1 or less to start a region.
+A maximum distance (--dist) of 1600 indicates that it will look 1600 bases
+for another p-value of 0.1 or less to extend the region.
+
 of 1600. ::
 
     comb-p pipeline \

@@ -21,10 +21,11 @@ comb-p pipeline -c 4 --dist 300 \
 
 where `embryo-endo.fisher.bed` contains the p-values from the comparison
 of methylation between endopserm and embryo.
-This comparison requires a p-value of 0.01 to start a region and looks up
-to 300 bases to find another value of 0.01 to extend the region.
+This comparison requires a (slk and FDR corrected) q-value of 0.01 or less to
+start a region and looks up
+to 300 bases to find another value of at most 0.01 to extend the region.
 
-The file `data/cpv.regions-p.bed` the contains the final SLK and Sidak adjusted
+The file `data/cpv.regions-p.bed` then contains the final SLK and Sidak adjusted
 p-values for each putative region.
 
 The final file `data/data/ee.annotated.regions.bed` lists only the regions with
