@@ -78,10 +78,10 @@ auto-correlation calculations and multiple-testing corrections for peaks
 different technologies.
 
 \section{Approach}
-Many tiling array studies relying on two-sample comparisons are
+Tiling array studies relying on two-sample comparisons may be
 amenable to the calculation of sliding window averages of log ratios,
 t-statistics or other two-sample test statistics. However,
-more complex study designs may need to include covariates and report
+more complex study designs often require covariates and report
 p-values from linear models or other statistical tests.
 
 We utilize a method of calculating 'moving averages' of p-values that
@@ -119,7 +119,7 @@ study design and generated from any software or statistical test.
 calculates the correlation at varying distance lags (here: autocorrelation - ACF).
  Whereas Kechris'
 \citep{Kechris2010} and many ACF implementations rely on fixed offsets
-of adjacent probes, \textit{comb-p} accepts a maxiumum base-pair
+of adjacent probes, \textit{comb-p} accepts a maximum base-pair
 distance and a bin size for pairing of probes based on their distance,
 so a given probe may have multiple probes in each set of
 bins. This is useful in cases where the probes generating the p-values
@@ -157,9 +157,9 @@ the distance spanned by that region. Because we use the original,
 uncorrected p-values in the calculation of significance for the peak,
 we side-step issues of altering the distribution in both the
 \textit{slk} and FDR steps. The \textit{region\_p} program reports the
-\textit{slk} corrected p-value, and a further one-step \cite{Sidak}
-multiple-testing correction accounts for all possible regions of that
-size in the genome. For a given region, the number of possible tests
+\textit{slk} corrected p-value, and a one-step \cite{Sidak}
+multiple-testing correction.
+For a given region, the number of possible tests
 in the \v{S}id\'{a}k correction is the total bases covered by all input probes
 divided by the size of the given region.
 
@@ -168,7 +168,7 @@ dispatches to multiple independent sub-modules, and as a set of python
 packages that may be used programatically. Where possible,
 computationally-intensive algorithms are parallelized
 automatically--for the ACF and the SLK steps described below--this
-results in a speed-up that is linear with the number of cores available.
+results in a speed-up that is nearly linear with the number of cores available.
 In all cases the implementation has been tuned to minimize memory-use and
 computation time.
 
@@ -200,7 +200,7 @@ https://github.com/brentp/combined-pvalues/tree/master/examples
 
 Comprehensive, High-throughput Array for Relative Methylation (CHARM)
 is a tiling array used to quantify methylation at CpG-rich sites
-\citep{Irizarry2008}.  Adjacent probes are spatially auto-correlated
+\citep{Irizarry2008}.  Adjacent probes are correlated
 due to the regional nature of methylation, and to the overlapping
 probes on the tiling array.  The CHARM study reported in
 \cite{Irizarry2009} contains probe data for tumor and normal samples
@@ -217,11 +217,9 @@ p=1.296e-145) lower FDR values (as reported by Irizarry) than those
 that do not, indicating that \textit{comb-p} is reporting the best regions.
 
 Bisulfite-sequencing (BS-Seq) is also used to measure methylation across the
-genome. The BS-Seq data
-has counts for methylated and un-methylated cytosines.  We
-analyze data described in \cite{Hsieh2009} from {\it Arabidopsis
+genome.  We analyze data described in \cite{Hsieh2009} from {\it Arabidopsis
 thaliana} using MethylCoder \citep{Pedersen2011} to map the
-bisulfite treated reads to the genome. At each location,
+bisulfite-treated reads to the genome. At each location,
 we use Fisher's exact test to obtain p-values for the counts of
 converted and un-coverted cytosines between endosperm and embryo. We find
 differentially methylated regions between these two tissues associated
