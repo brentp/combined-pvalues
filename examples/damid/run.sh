@@ -13,4 +13,4 @@ comb-p pipeline \
     probes.sorted.bed
 
 # the regions from Kechris' paper to compare to
-wget http://amc-sandbox.ucdenver.edu/~brentp/2012/comb-p/data/kechris.regions.be
+wget http://amc-sandbox.ucdenver.edu/~brentp/2012/comb-p/data/kechris.regions.bed
