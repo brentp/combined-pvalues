@@ -27,11 +27,11 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 \begin{abstract}
 
 \section{Summary:}
-\textit{comb-p} is command-line tool and a python library that
+\textit{comb-p} is a command-line tool and a python library that
 manipulates BED files of possibly irregularly spaced p-values and
 1) calculates autocorrelation,
 2) combines adjacent p-values,
-3) performs false discovery correction,
+3) performs false discovery adjustment,
 4) finds regions of enrichment (i.e., series of adjacent low p-values), and
 5) assigns significance to those regions.
 In addition, tools are provided for visualization and
@@ -62,7 +62,7 @@ Descriptions of examples and the scripts used to run them are at:
 There are a variety of high-throughput technologies that generate
 genome-wide data to study processes such as DNA-binding, methylation
 status and histone modifications. These technologies include tiling
-arrays and sequence-based assays. These high-througput data
+arrays and sequence-based assays. These high-throughput data
 are often auto-correlated across
 the genome, making inferences difficult, and the significance of
 individual regions may be dampened after multiple-testing correction
@@ -71,10 +71,10 @@ In these studies, hypotheses tests can be performed at each location to
 generate p-values for evaluating the effects of interest. For this
 purpose, \cite{Kechris2010} developed a method for combining p-values
 in sliding windows and accounting for spatial correlations across the
-genome. Here, we build on this approach by developing a software tool
+genome. Here, we build on this approach with software
 that allows for uneven data structure across the genome, more general
-auto-correlation calculations, multiple testing corrections for peaks
-(i.e., genomic regions of enrichment) and applications to a variety of
+auto-correlation calculations and multiple-testing corrections for peaks
+(i.e., genomic regions of enrichment) with applications to a variety of
 different technologies.
 
 \section{Approach}
@@ -104,8 +104,8 @@ Here, we provide a generic, efficient, and customizable implementation
 of these methods with additions including handling variably spaced
 probes, a peak finder for dynamically sized regions, and a means to
 calculate a p-value for each peak, adjusted for multiple
-comparisons. We refer to this implemenation as \textit{comb-p} and
-illustrate applications using three different technologies.
+comparisons. We refer to this implementation as \textit{comb-p} and
+illustrate its application using three different technologies.
 
 \begin{methods}
 
@@ -214,8 +214,7 @@ the tissue-specific T-DMR's reported.  While these overlaps depend on
 the chosen parameters, we show that the Irizarry DMR's that overlap
 with the \textit{comb-p} DMR's have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those
-that do not, indicating that \textit{comb-p} is
-is improving the selection for known targets.
+that do not, indicating that \textit{comb-p} is reporting the best regions.
 
 Bisulfite-sequencing (BS-Seq) is also used to measure methylation across the
 genome. The BS-Seq data
@@ -223,7 +222,7 @@ has counts for methylated and un-methylated cytosines.  We
 analyze data described in \cite{Hsieh2009} from {\it Arabidopsis
 thaliana} using MethylCoder \citep{Pedersen2011} to map the
 bisulfite treated reads to the genome. At each location,
-we use a Fisher's exact test to obtain p-values for the counts of
+we use Fisher's exact test to obtain p-values for the counts of
 converted and un-coverted cytosines between endosperm and embryo. We find
 differentially methylated regions between these two tissues associated
 with genes enriched for gene ontologies related to the ribosome (p=
@@ -285,7 +284,7 @@ statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 \bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it
 Genome Res.}, {\bf 12}, 996-1106.
 
-\bibitem[Sidak, 1967]{Sidak}
+\bibitem[\v{S}id\'{a}k, 1967]{Sidak}
 \v{S}id\'{a}k, Z. (1967).
 Rectangular confidence region for the means of multivariate normal distributions.
 \textit{Journal of the American Statistical Association}, {\bf 62}, 626-633.
