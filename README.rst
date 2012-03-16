@@ -1,4 +1,4 @@
-A library to calculate, adjust, manipulate and adjust p-values in BED files.
+A library to combine, analyze, group and correct p-values in BED files.
 Unique tools involve correction for spatial autocorrelation tests.
 This is useful for ChIP-Seq probes and Tiling arrays, or any data with spatial
 correlation.
@@ -36,9 +36,11 @@ This message is displayed::
        slk   - Stouffer-Liptak-Kechris correction of spatially correlated p-values
        fdr   - Benjamini-Hochberg correction of p-values
        peaks - find peaks in a BED file.
-       region_p - generate p-values for a region (of p-values) by simulation.**
-       hist  - plot a histogram of a column and check for uniformity.
-       splot - a scatter plot of column(s) in a bed file for a given region.
+       region_p  - generate SLK p-values for a region (of p-values)
+       hist      - plot a histogram of a column and check for uniformity.
+       splot     - a scatter plot of column(s) in a bed file for a given region.
+       manhattan - a manhattan plot of values in a BED file.
+
 
     NOTE: most of these assume *sorted* BED files.
 
@@ -62,7 +64,7 @@ Gives::
       -h, --help  show this help message and exit
       -d D        start:stop:stepsize of distance. e.g. 15:500:50 means check acf
                   at distances of:[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]
-      -c C        column number that has the value to take the acf
+      -c C        column number with p-values for acf calculations
 
 
 Indicating that it can be run as::
@@ -107,7 +109,7 @@ on the p-values in column 5, the command would look something like:
 
     $ python cpv/acf.py -d 1:500:50 -c 5 data/pvals.bed > data/acf.txt
 
-The ACF step something like::
+The ACF will look something like::
 
     # {link}
     lag_min lag_max correlation N
@@ -121,19 +123,19 @@ The ACF step something like::
     351 401 0.04592 2505
     401 451 0.03923 2972
 
-Where the first column indicates the lag-bin, the second is the
+Where the first and second columns indicate the lag-bin, the third is the
 autocorrelation at that lag, and the last is the number of pairs used in
 calculating the autocorrelation.
-If that number is too small, the correlation values may be un-reliable.
+If that number is too small, the correlation values may be unreliable.
 We expect the correlation to decrease with increase lag (unless there is some
 periodicity).
 
 The first line of the output is a link to an image of the ACF data represented
-in the table. It looks something like with parameter (-d 1:500:60):
+in the table. For parameter -d 1:500:60 it looks like:
 
 .. image:: https://raw.github.com/brentp/combined-pvalues/master/data/1_500_60.png
 
-Or, with more bins (-d 1:500:30)
+Or, with more bins -d 1:500:30:
 
 .. image:: https://raw.github.com/brentp/combined-pvalues/master/data/1_500_30.png
 
@@ -166,7 +168,7 @@ A call like::
    in the step above.
  + outputs a new BED file with columns:
 
-*chr*, *start*, *end*, *pval*, *stouffer-pval*
+*chr*, *start*, *end*, *pval*, *combined-pval*
 
 Benjamini-Hochberg Correction
 -----------------------------
@@ -187,10 +189,10 @@ can find the extent of any regions using::
     $ python cpv/peaks.py --dist 500 --seed 0.1 \
                      data/pvals.adjusted.bed > data/pvals.regions.bed
 
-where the seed inidicates a minimum value that must be see to start a region.
+where the seed inidicates a minimum p-value to start a region.
 Again, *-c* can be used to indicate the column containing the p-values
 (defaults to last column)`--dist` tells the program to merge peaks (in this case
-troughs) within 150 bases of the other.
+troughs) within 500 bases of the other.
 The output file is a BED file with each region and the lowest (currently)
 p-value in the region.
 
