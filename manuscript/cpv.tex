@@ -8,7 +8,7 @@
 \title[comb-p]{Comb-p: software for combining, analyzing, grouping, and correcting spatially correlated p-values}
 \author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^1$\footnote{to whom correspondence should be addressed},
  David A. Schwartz\,$^1$,
-    Ivana V. Yang\,$^1$,\footnote{The authors wish it to be known that in their opinion,
+    Ivana V. Yang\,$^1$\footnote{The authors wish it to be known that in their opinion,
 the last two authors should be regarded as joint Last Authors.}
 
 and Katerina J.  Kechris\,$^2$\footnotemark[2]{}
@@ -82,29 +82,29 @@ Many tiling array studies relying on two-sample comparisons are
 amenable to the calculation of sliding window averages of log ratios,
 t-statistics or other two-sample test statistics. However,
 more complex study designs may need to include covariates and report
-p-values linear models or other statistical tests.
+p-values from linear models or other statistical tests.
 
-We utilize a method of calculating 'moving averages' of p-values
-that does not depend on the
-test used to generate the p-values. \cite{Fisher} developed an
-approach of combining p-values from independent tests to get a single
-meta-analysis test-statistic with a chi-squared distribution and
-degrees of freedom based on the number of tests being combined.  A
-similar method developed by \cite{Stouffer} and \cite{Liptak} first
-converts p-values to Z-scores which are then summed and scaled to create a single, combined
-Z-score.  The Stouffer-Liptak method lends itself well to the addition of
-weights on each p-value. \cite{Zaykin2002} introduced a
-method to use weights to perform dependence correction on correlated
-tests. \cite{Kechris2010} used that framework to create a sliding
-window correction where each p-value is adjusted by applying
-Stouffer's method to neighboring p-values as weighted according to the
-observed auto-correlation at the appropriate distance.
+We utilize a method of calculating 'moving averages' of p-values that
+does not depend on the test used to generate the p-values. \cite{Fisher}
+developed an approach of combining p-values from independent tests to
+get a single meta-analysis test-statistic with a chi-squared
+distribution and degrees of freedom based on the number of tests being
+combined.  A similar method developed by \cite{Stouffer} and
+\cite{Liptak} first converts p-values to Z-scores which are then summed
+and scaled to create a single, combined Z-score.  The Stouffer-Liptak
+method lends itself well to the addition of weights on each p-value.
+\cite{Zaykin2002} introduced a method to use weights to perform a
+dependence correction on correlated tests. \cite{Kechris2010} used that
+framework to create a sliding window correction where each p-value is
+adjusted by applying the Stouffer-Liptak method to neighboring p-values
+as weighted according to the observed auto-correlation at the
+appropriate lag.
 
 Here, we provide a generic, efficient, and customizable implementation
 of these methods with additions including handling variably spaced
 probes, a peak finder for dynamically sized regions, and a means to
 calculate a p-value for each peak, adjusted for multiple
-comparisons. We refer to this implemenation as {\textit comb-p} and
+comparisons. We refer to this implemenation as \textit{comb-p} and
 illustrate applications using three different technologies.
 
 \begin{methods}
@@ -116,7 +116,7 @@ All programs within \textit{comb-p} expect files in simple BED format
 Additional columns contain the p-value(s) of interest based on the
 study design and generated from any software or statistical test.
 \textit{comb-p} first
-calculates the correlation at varying distance lags (referred to as ACF).
+calculates the correlation at varying distance lags (here: autocorrelation - ACF).
  Whereas Kechris'
 \citep{Kechris2010} and many ACF implementations rely on fixed offsets
 of adjacent probes, \textit{comb-p} accepts a maxiumum base-pair
@@ -160,7 +160,7 @@ we side-step issues of altering the distribution in both the
 \textit{slk} corrected p-value, and a further one-step \cite{Sidak}
 multiple-testing correction accounts for all possible regions of that
 size in the genome. For a given region, the number of possible tests
-in the Sidak correction is the total bases covered by all input probes
+in the \v{S}id\'{a}k correction is the total bases covered by all input probes
 divided by the size of the given region.
 
 \textit{comb-p} is implemented as a single command-line application that
@@ -214,8 +214,8 @@ the tissue-specific T-DMR's reported.  While these overlaps depend on
 the chosen parameters, we show that the Irizarry DMR's that overlap
 with the \textit{comb-p} DMR's have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those
-that do not, indicating that \textit{comb-p} is finding the most
-significant DMR's.
+that do not, indicating that \textit{comb-p} is
+is improving the selection for known targets.
 
 Bisulfite-sequencing (BS-Seq) is also used to measure methylation across the
 genome. The BS-Seq data
@@ -282,11 +282,11 @@ Generalizing moving averages for tiling arrays using combined p-value
 statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 {\bf 9}, Article 29.
 
-\bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it 
+\bibitem[Kent \textit{et al.}, 2002]{Kent2002} Kent, W.J. et al. (2002) The human genome browser at UCSC. {\it
 Genome Res.}, {\bf 12}, 996-1106.
 
 \bibitem[Sidak, 1967]{Sidak}
-Sidàk, Z. (1967).
+\v{S}id\'{a}k, Z. (1967).
 Rectangular confidence region for the means of multivariate normal distributions.
 \textit{Journal of the American Statistical Association}, {\bf 62}, 626-633.
 
