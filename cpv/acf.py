@@ -150,8 +150,8 @@ def main():
             " %(default)s means check acf at distances of:"
             "[15, 65, 115, 165, 215, 265, 315, 365, 415, 465]",
             type=str, default="15:500:50")
-    p.add_argument("-c", dest="c", help="column number that has the value to"
-                   "take the  acf", type=int, default=4)
+    p.add_argument("-c", dest="c", help="column number with p-values for acf "
+                   "calculations", type=int, default=4)
     p.add_argument("--full", dest="full", action="store_true",
                    default=False, help="do full autocorrelation (default"
                    " is partial)")
