@@ -7,8 +7,9 @@
 
 \title[comb-p]{Comb-p: software for combining, analyzing, grouping, and correcting spatially correlated p-values}
 \author[Pedersen \textit{et~al}]{Brent S. Pedersen\,$^{1,*}$,
-Katerina J.  Kechris\,$^{2,*}$,
-    Ivana V. Yang\,$^{1}$ and David A. Schwartz\,$^1$}
+ David A. Schwartz\,$^{1}$,
+    Ivana V. Yang\,$^{1,*}$
+and Katerina J.  Kechris\,$^{2,*}$}
 \address{$^{1}$Department of Medicine, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, 
 USA\\
 $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
@@ -22,7 +23,7 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 \textit{comb-p} is command-line tool and a python library that
 manipulates BED files of possibly irregularly spaced p-values and
 1) calculates autocorrelation,
-2) Combines adjacent p-values,
+2) combines adjacent p-values,
 3) performs false discovery correction,
 4) finds regions of enrichment (i.e., series of adjacent low p-values), and
 5) assigns significance to those regions.
@@ -197,30 +198,30 @@ is a tiling array used to quantify methylation at CpG-rich sites
 due to the regional nature of methylation, and to the overlapping
 probes on the tiling array.  The CHARM study reported in
 \cite{Irizarry2009} contains probe data for tumor and normal samples
-from a variety of tissues. Using this data, we fit a linear model in R
+from a variety of tissues. Using these data, we fit a linear model in R
 \citep{R} to
 obtain p-values for the significance of tumor or tissue-specific
 effects on methylation status at each probe.  We then run
 \textit{comp-p}, which finds 85\% of the tumor-specific differentially
-methylated regions (DMR's) reported by \cite{Irizarry2009} and 75\% of
-the tissue-specific DMR's reported.  While these overlaps depend on
+methylated regions (C-DMR's) reported by \cite{Irizarry2009} and 75\% of
+the tissue-specific T-DMR's reported.  While these overlaps depend on
 the chosen parameters, we show that the Irizarry DMR's that overlap
 with the \textit{comb-p} DMR's have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those
 that do not, indicating that \textit{comb-p} is finding the most
 significant DMR's.
 
-Bisulfite-sequencing is also used to measure methylation across the
-genome. The BS data
+Bisulfite-sequencing (BS-Seq) is also used to measure methylation across the
+genome. The BS-Seq data
 has counts for methylated and un-methylated cytosines.  We
 analyze data described in \cite{Hsieh2009} from {\it Arabidopsis
 thaliana} using MethylCoder \citep{Pedersen2011} to map the
 bisulfite treated reads to the genome. At each location,
 we use a Fisher's exact test to obtain p-values for the counts of
-converted and un-coverted Cytosines between endosperm and embryo. We find
+converted and un-coverted cytosines between endosperm and embryo. We find
 differentially methylated regions between these two tissues associated
 with genes enriched for gene ontologies related to the ribosome (p=
-1e-3)[TODO: Ivana ribosome related to growth or something?].
+1e-3).
 
 DamID technology followed by tiling arrays can be used to map genomic
 regions bound by DNA-binding proteins \citep{Steensel2001}.  We
@@ -251,7 +252,8 @@ previously published results from those same studies.
 
 \section*{Acknowledgement}
 
-\paragraph{Funding\textcolon} This work was supported by grant from NIH to KK (AA016922) and  ???.
+\paragraph{Funding\textcolon} This work was supported by grants from NIH to KK (AA016922)
+and DS and IVY (HL101251).
 
 %\bibliographystyle{natbib}
 %\bibliographystyle{achemnat}
