@@ -38,7 +38,7 @@ The example is here: https://github.com/brentp/combined-pvalues/tree/master/exam
 DamId
 -----
 
-An example using t-test p-values from DamID technology as reported in
+An example using t-test p-values from DamID technology followed by tiling arrays as reported in:
 
 ```
 Kechris, K.J. et al. (2010)
