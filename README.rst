@@ -3,6 +3,25 @@ Unique tools involve correction for spatial autocorrelation tests.
 This is useful for ChIP-Seq probes and Tiling arrays, or any data with spatial
 correlation.
 
+Installation
+============
+
+run::
+
+    sudo python setup.py install
+
+to have `comb-p` installed on your path.
+Otherwise, you can use the python scripts in the cpv subdirectory.
+E.g.
+::
+
+    python cpv/peaks.py
+
+corresponds to the command::
+
+    comb-p peaks
+
+
 Invocation
 ==========
 The program is run with::
@@ -211,35 +230,13 @@ coverage. The extra columns added to the output file are the Stouffer-Liptak
 p-value of the region and the Sidak correction of that p-value.
 
 
-In addition, we can report by simulation a *p-value* for the region.
-Zaykin et al. (2002. Truncated Product Method for Combining p-values)
-indicates a Monte-Carlo simulation strategy implement in region_p. The procedure
-for each region is to::
+An invocation::
 
- + set Wo = product(p for p in region if p <= tau)
- + N times do:
-   - generate len(region) uniform random numbers, R*
-   - convert R* to a correlated set of values, R using the correlation matrix
-     (eqn 4 from Zaykin)
-   - set w = product(p for p in R if p <= tau)
-   - if w <= Wo, A += 1
- + report A / N as the p-value
-
-This adds a column for a Zaykin p-value. An invocation::
-
-   $ python cpv/region_p.py -p data/pvals.bed \
-                         -r data/regions.bed \
-                         -t 0.1 \
-                         -s 50 \
-                         -N 100 -c 5 > data/regions.sig.bed
+   $ comb-p region_p -p data/pvals.bed \
+                     -r data/regions.bed \
+                     -s 50 \
+                     -c 5 > data/regions.sig.bed
 
 Will extract p-values from column 5 of pvals.bed for lines within regions in
 regions.bed. It will set tau to (-t) 0.1, use a step-size of 50 for the ACF
-calculation, perform 1000 monte-carlo simulations.
-
-TODO
-====
-
- 1. Handle outliers in ACF calc...?
-
- 2. PCA, choose grouping column (for coloring) and p-columns?
+calculation.
