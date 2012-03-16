@@ -133,7 +133,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                    formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--acf", dest="acf", help="acf file containing the lagged "
-                   "correlations")
+                   "correlations. This tells the program the max distance "
+                   "as well as the distance lags.")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
             " acf", type=int, default=4)
     p.add_argument("-s", dest="stringent", action="store_true", default=False,
