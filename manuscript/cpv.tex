@@ -29,7 +29,7 @@ $^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical
 \section{Summary:}
 \textit{comb-p} is a command-line tool and a python library that
 manipulates BED files of possibly irregularly spaced p-values and
-1) calculates autocorrelation,
+1) calculates auto-correlation,
 2) combines adjacent p-values,
 3) performs false discovery adjustment,
 4) finds regions of enrichment (i.e., series of adjacent low p-values), and
@@ -116,7 +116,7 @@ All programs within \textit{comb-p} expect files in simple BED format
 Additional columns contain the p-value(s) of interest based on the
 study design and generated from any software or statistical test.
 \textit{comb-p} first
-calculates the correlation at varying distance lags (here: autocorrelation - ACF).
+calculates the correlation at varying distance lags (here: auto-correlation - ACF).
  Whereas Kechris'
 \citep{Kechris2010} and many ACF implementations rely on fixed offsets
 of adjacent probes, \textit{comb-p} accepts a maximum base-pair
@@ -131,7 +131,7 @@ adjusted according to the adjacent p-values and the weight of each of
 those neighboring probes is determined from the ACF. The resulting BED file
 has an additional column containing the corrected p-value.
 A given p-value will be pulled lower if its neighbors also have low
-p-values (and little autocorrelation) and likely remain insignificant if the
+p-values (and little auto-correlation) and likely remain insignificant if the
 neighboring p-values are also high.
 
 A q-value score based on the Benjamini-Hochberg false-discovery (FDR)
@@ -188,7 +188,7 @@ pipeline  - slk, fdr, peaks, region_p
 
 Though each of these tools may be used independently, the progression of
 \textit{acf}, \textit{slk}, \textit{fdr}, \textit{peaks}, \textit{region\_p}
-described below works well for the examples presented. These steps can
+works well for the examples presented. These steps can
 be run successively with the single command: \textit{pipeline}.
 
 \section{Application}
@@ -221,7 +221,7 @@ genome.  We analyze data described in \cite{Hsieh2009} from {\it Arabidopsis
 thaliana} using MethylCoder \citep{Pedersen2011} to map the
 bisulfite-treated reads to the genome. At each location,
 we use Fisher's exact test to obtain p-values for the counts of
-converted and un-coverted cytosines between endosperm and embryo. We find
+converted and un-converted cytosines between endosperm and embryo. We find
 differentially methylated regions between these two tissues associated
 with genes enriched for gene ontologies related to the ribosome (p=
 1e-3).
@@ -252,11 +252,11 @@ selecting for known targets.
 \section{Conclusion}
 
 The \textit{comb-p} software is useful in contexts where p-values are
-generated across the genome and where there is autocorrelation among
+generated across the genome and where there is auto-correlation among
 nearby p-values. We have outlined our implementation and demonstrated
 the utility on data from three different technologies each from a
 different statistical test. We have also validated our method using
-previously published results from those same studies.
+previously published results from those studies.
 
 \section*{Acknowledgement}
 
