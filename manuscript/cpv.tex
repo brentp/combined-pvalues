@@ -84,7 +84,7 @@ t-statistics or other two-sample test statistics. However,
 more complex study designs often require covariates and report
 p-values from linear models or other statistical tests.
 
-We utilize a method of calculating 'moving averages' of p-values that
+We utilize a method 'moving averages' of p-values that
 does not depend on the test used to generate the p-values. \cite{Fisher}
 developed an approach of combining p-values from independent tests to
 get a single meta-analysis test-statistic with a chi-squared
@@ -94,8 +94,8 @@ combined.  A similar method developed by \cite{Stouffer} and
 and scaled to create a single, combined Z-score.  The Stouffer-Liptak
 method lends itself well to the addition of weights on each p-value.
 \cite{Zaykin2002} introduced a method to use weights to perform a
-dependence correction on correlated tests. \cite{Kechris2010} used that
-framework to create a sliding window correction where each p-value is
+dependence correction on correlated tests. \cite{Kechris2010} used
+a sliding window correction where each p-value is
 adjusted by applying the Stouffer-Liptak method to neighboring p-values
 as weighted according to the observed auto-correlation at the
 appropriate lag.
@@ -173,19 +173,7 @@ In all cases the implementation has been tuned to minimize memory-use and
 computation time.
 
 When run without arguments, the \textit{comb-p} executable displays the
-available programs and a short description of each:
-\begin{verbatim}
-acf      - autocorrelation within BED file
-slk      - Stouffer-Liptak-Kechris correction
-fdr      - Benjamini-Hochberg correction
-peaks    - find peaks in a BED file.
-region_p - SLK p-values for a region
-hist     - histogram of a p-values
-splot    - scatter plot of a region.
-manhattan - a manhattan plot
-pipeline  - slk, fdr, peaks, region_p
-\end{verbatim}
-
+available programs and a short description of each.
 Though each of these tools may be used independently, the progression of
 \textit{acf}, \textit{slk}, \textit{fdr}, \textit{peaks}, \textit{region\_p}
 works well for the examples presented. These steps can
@@ -331,10 +319,9 @@ Smyth, G. K. (2005) Limma: linear models for microarray data. In: Bioinformatics
 Chromatin Profiling Using Targeted DNA Adenine Methyltransferase,
 {\it Nature Genetics}, {\bf 27}, 304-308.
 
-\bibitem[Stouffer \textit{et al.}, 1949]{Stouffer}
+\bibitem[Stouffer \textit{et~al.}, 1949]{Stouffer}
 Stouffer, S.A. \textit{et~al.} (1949) \textit{The American Soldier},
 Princeton University Press, Princeton, NJ. Vol.1: Adjustment during Army Life.
-
 
 \bibitem[Zaykin {\it et~al}., 2002]{Zaykin2002} Zaykin, D.L. et al. (2002)
 Truncated product method for combining p-values. {\it Genetic Epidemiology},
