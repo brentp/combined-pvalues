@@ -21,9 +21,10 @@ R --slave --args data/natgen2009.csv data/methp.txt \
 sed -i "1s/^/ID\t/" data/methp.txt
 NORMALIZE
 <<FIT
+mkdir -p data/fit
 NCOL=2162407
 STEP=8000
-for i in (awk -v cols=$NCOL -v step=$STEP 'BEGIN{for(i=2;i<cols;i+=step){print i }}'); do
+for i in `awk -v cols=$NCOL -v step=$STEP 'BEGIN{for(i=2;i<cols;i+=step){print i }}'`; do
     start=$i
     end=($i + $STEP - 1)
     nf=data/fit/$start-$end.split
