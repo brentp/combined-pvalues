@@ -27,7 +27,7 @@ NCOL=2162407
 STEP=8000
 for i in `awk -v cols=$NCOL -v step=$STEP 'BEGIN{for(i=2;i<cols;i+=step){print i }}'`; do
     start=$i
-    end=($i + $STEP - 1)
+    end=$(($i + $STEP - 1))
     nf=data/fit/$start-$end.split
     bedp=data/fit/$start-$end.bed
     cut -f 1,$start-$end data/methp.txt > $nf
