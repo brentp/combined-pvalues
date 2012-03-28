@@ -8,6 +8,8 @@ set -e
 <<GET
 cd data
 wget http://rafalab.jhsph.edu/data/shores/natgen2009.csv
+mkdir -p xys/ 
+cd xys/
 wget http://rafalab.jhsph.edu/data/shores/natgen2009.tgz
 tar xzvf natgen2009.tgz
 
