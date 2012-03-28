@@ -4,6 +4,7 @@
 #BSUB -o logs/combp.%I.%J.out
 #BSUB -n 12
 
+mkdir -p logs/
 set -e
 <<GET
 cd data
