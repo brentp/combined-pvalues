@@ -4,12 +4,16 @@
 #BSUB -o logs/combp.%I.%J.out
 #BSUB -n 12
 
-# wget http://rafalab.jhsph.edu/data/shores/natgen2009.csv
-# wget http://rafalab.jhsph.edu/data/shores/natgen2009.tgz
+set -e
+<<GET
+cd data
+wget http://rafalab.jhsph.edu/data/shores/natgen2009.csv
+wget http://rafalab.jhsph.edu/data/shores/natgen2009.tgz
+tar xzvf natgen2009.tgz
 
-# wget -O data/t-dmrs.xls http://www.nature.com/ng/journal/v41/n2/extref/ng.298-S3.xls
+GET
 
-<<NORMALIZE
+#<<NORMALIZE
 R --slave --args data/natgen2009.csv data/methp.txt \
     SampleID quantile < scripts/charm.normalize.R
 sed -i "1s/^/ID\t/" data/methp.txt

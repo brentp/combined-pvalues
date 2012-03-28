@@ -7,8 +7,9 @@ colname = commandArgs(TRUE)[3] # e.g. Barcode
 method = commandArgs(TRUE)[4] # quantile or sqn
 
 pd = read.delim(sample_description, sep=",")
+print(pd$Filename[[1]])
 dat = readCharm(files=pd$Filename, sampleKey=pd,
-                path="/vol2/home/brentp/src/combined-pvalues/examples/charm/data")
+                path="./data/xys/")
 
 # need this since pmQuality is not exported.
 #attach(getNamespace("charm"))
