@@ -12,7 +12,11 @@ echo $SECTION
 
 if [ "$SECTION" = "GET" ]; then
 cd data
-wget http://rafalab.jhsph.edu/data/shores/natgen2009.csv
+
+# remove extra space and save.
+wget -O - http://rafalab.jhsph.edu/data/shores/natgen2009.csv \
+    | perl -pe 's/,\s/,/' > data/natgen2009.csv
+
 mkdir -p xys/ 
 cd xys/
 wget http://rafalab.jhsph.edu/data/shores/natgen2009.tgz
@@ -36,7 +40,6 @@ NCOL=2162407
 STEP=8000
 
 # get rid of errant space that messes up matching.
-perl -pi -e 's/\s//' data/natgen2009.csv
 for i in `awk -v cols=$NCOL -v step=$STEP 'BEGIN{for(i=2;i<cols;i+=step){print i }}'`; do
     start=$i
     end=$(($i + $STEP - 1))
