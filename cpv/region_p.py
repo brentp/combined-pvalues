@@ -46,7 +46,7 @@ def gen_correlated(sigma, n, observed=None):
 
 def sl_sim(sigma, ps, nsims, sample_distribution=None):
     N = 0
-    print "nsims:", nsims
+    print >>sys.stderr, "nsims:", nsims
     w0 = stouffer_liptak(ps, sigma)["p"]
     # TODO parallelize here.
     for i in range(10):
@@ -197,8 +197,8 @@ def region_p(fpvals, fregions, col_num, nsims, step):
         result = [region_line, slk_p, sidak_slk_p]
  
         # corroborate those with p-values < 0.1 by simulation
-        """
-        if sidak_slk_p < 0.1:
+        #"""
+        if nsims > 0:
 
             # adjust nsims so it's an adjusted p-value.
             q_nsims = int(0.5 + total_coverage / float(region_len))
@@ -208,8 +208,8 @@ def region_p(fpvals, fregions, col_num, nsims, step):
             result.append(sim_p)
         else:
             result.append("NA")
-        """
-        result.append("NA")
+        #"""
+        #result.append("NA")
         yield result
 
 def main():
@@ -222,7 +222,7 @@ def main():
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
     p.add_argument("-N", dest="N", help="number of simulations to perform",
-                   type=int, default=2000)
+                   type=int, default=0)
     p.add_argument("-c", dest="c", help="column number containing the p-value"
                    " of interest", type=int, default=-1)
     args = p.parse_args()
