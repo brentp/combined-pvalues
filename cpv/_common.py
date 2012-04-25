@@ -33,7 +33,9 @@ def bediter(fname, col_num):
     for l in reader(fname, header=False):
         if l[0][0] == "#": continue
         p = float(l[col_num])
-        if p == 1: p-= 1e-8 # the stouffer correction doesnt like values == 1
+        if p == 1: p-= 1e-23 # the stouffer correction doesnt like values == 1
+        if p == 0: p = 1e-23 # the stouffer correction doesnt like values == 0
+
         yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
                 "p": p} # "stuff": l[3:][:]}
 
