@@ -28,6 +28,9 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
     L = len(pvals)
     pvals = np.array(pvals, dtype=np.float64)
     qvals = qnorm(1 - pvals, loc=0, scale=1).reshape(L, 1)
+    if any(np.isinf(qvals)):
+        raise Exception("bad values")
+
     # dont do the correction unless sigma is specified.
     result = {"OK": True}
     if not sigma is None:
@@ -36,13 +39,18 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
             Cm1 = np.asmatrix(C).I # C^-1
             # qstar
             qvals = Cm1 * qvals
-        except LinAlgError:
+            result["OK"] = True
+        except LinAlgError, e:
+            print >>sys.stderr, e
             # cant do the correction non-invertible
+            sigma *= 0.95
+            np.fill_diagonal(sigma, 0.99)
             result["OK"] = False
+
         # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
-        if correction:
-            denom = np.sqrt(np.power(sigma, 2).sum())
-            Cp = qvals.sum() / denom
+    if correction:
+        denom = np.sqrt(np.power(sigma, 2).sum())
+        Cp = qvals.sum() / denom
     if not correction:
         Cp = qvals.sum() / np.sqrt(len(qvals))
 

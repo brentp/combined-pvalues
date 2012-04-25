@@ -51,7 +51,7 @@ def walk(chromlist, lag_max):
         yield xbed, L[imin: imax]
 
 def gen_sigma_matrix(group, acfs, cached={}):
-    a = np.eye(len(group))
+    a = np.eye(len(group), dtype=np.float64)
     group = enumerate(group)
     for (i, ibed), (j, jbed) in combinations(group, 2):
         # j is always right of i. but could overlap
