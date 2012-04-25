@@ -47,6 +47,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         in groupby(bediter(fname, col_num), key=itemgetter('chrom'))]
 
     region_xs, region_ys = [], []
+    new_bounds = []
     for seqid, rlist in sorted(giter, cmp=chr_cmp):
         color = colors.next()
         nrows += len(rlist)
@@ -62,6 +63,9 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
             regions_bounds = regions[seqid]
             region_xys.extend([(last_x + r['start'], r['p']) for r in rlist \
                   if any((s <= r['start'] <= e) for s, e in regions_bounds)])
+            # adjust the bounds of each region based on chrom.
+            new_bounds.extend([(last_x + s, last_x + e) 
+                            for s, e in regions_bounds])
 
         # save the middle of the region to place the label
         chrom_centers.append((seqid, (region_xs[0] + region_xs[-1]) / 2))
@@ -81,15 +85,15 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         plt.title(title)
 
     ax.set_ylabel('' if no_log else '-log10(p)')
+    if regions:
+        for s, e in new_bounds:
+            ax.axvspan(s - 55, e + 10, facecolor='#f30000', ec='#f30000', alpha=0.3,
+                    zorder=0)
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
     else:
-        ax.scatter(xs, ys, s=2.5, c=cs, edgecolors='none', alpha=0.6)
+        ax.scatter(xs, ys, s=3.5, c=cs, edgecolors='none', alpha=0.6, zorder=1)
 
-    if regions:
-        rxs, rys = zip(*region_xys)
-        if not no_log: rys = -np.log10(rys)
-        ax.scatter(rxs, rys, s=3.5, c='#ff0000', edgecolors='none')
 
     # plot 0.05 line after multiple testing. always nlog10'ed since
     # that's the space we're plotting in.
