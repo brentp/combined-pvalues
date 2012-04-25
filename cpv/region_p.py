@@ -148,7 +148,8 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
         while (prow["chrom"] != rchrom or prow["start"] < rstart):
             prow = piter.next()
             if prow is None: break
-        while (rchrom, rend) >= (prow["chrom"], prow["end"]):
+
+        while prow is not None and (rchrom, rend) >= (prow["chrom"], prow["end"]):
             prows.append(prow)
             prow = piter.next()
             if prow is None: break
