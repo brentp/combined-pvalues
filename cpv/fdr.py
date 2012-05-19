@@ -14,15 +14,14 @@ def run(args):
        col_null = get_col_num(args.null)
        # TODO: call qvality.
 
-    for bh, l in fdr(args.bed_file, col_num, args.alpha):
+    for bh, l in fdr(args.bed_file, col_num):
         print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
 
-def fdr(fbed_file, col_num, alpha):
+def fdr(fbed_file, col_num):
     from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
     pvals = np.array([b["p"] for b in bediter(fbed_file, col_num)],
                         dtype=np.float64)
-    bh_pvals = fdrcorrection0(pvals, alpha=alpha,
-            method='indep')[1]
+    bh_pvals = fdrcorrection0(pvals, method='indep')[1]
     fh = open(fbed_file)
     line = fh.readline()
     # drop header
@@ -41,8 +40,6 @@ def main():
              for shuffled data. if given, qvality (which must be on the path)
              is used to do the correction. Otherwise, Benjamini-Hochberg is
              used""")
-    p.add_argument("--alpha", dest="alpha", default=0.05, type=float, help="cutoff"
-            " for significance after benjamini hochberg FDR correction")
     p.add_argument('bed_file', help='bed file to correct')
     args = p.parse_args()
     return run(args)
