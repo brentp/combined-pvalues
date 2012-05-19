@@ -30,10 +30,10 @@ def _qvality(fbed_file, col_num, col_null):
 
 
 def fdr(fbed_file, col_num):
-    from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
+    from scikits.statsmodels.stats import multicomp as multitest
     pvals = np.array([b["p"] for b in bediter(fbed_file, col_num)],
                         dtype=np.float64)
-    bh_pvals = fdrcorrection0(pvals, method='indep')[1]
+    bh_pvals = multitest.multipletests(pvals, method='fdr_bh')[1]
     fh = open(fbed_file)
     line = fh.readline()
     # drop header
