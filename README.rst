@@ -3,6 +3,14 @@ Unique tools involve correction for spatial autocorrelation tests.
 This is useful for ChIP-Seq probes and Tiling arrays, or any data with spatial
 correlation.
 
+About
+=====
+
+The manuscript (under review) is available here:
+	http://dl.dropbox.com/u/88537/cpv-submission.pdf
+It includes an explanation of 3 examples in the examples directory
+of this repository.
+
 Installation
 ============
 
