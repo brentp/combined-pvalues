@@ -4,17 +4,21 @@ perform Benjamini-Hochberg FDR correction on a BED file with p-values.
 import argparse
 from _common import bediter
 from itertools import izip
-from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
 from _common import get_col_num
 import numpy as np
 
 def run(args):
     # get rid of N, just keep the correlation.
     col_num = get_col_num(args.c)
+    if args.null is not None:
+       col_null = get_col_num(args.null)
+       # TODO: call qvality.
+
     for bh, l in fdr(args.bed_file, col_num, args.alpha):
         print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
 
 def fdr(fbed_file, col_num, alpha):
+    from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
     pvals = np.array([b["p"] for b in bediter(fbed_file, col_num)],
                         dtype=np.float64)
     bh_pvals = fdrcorrection0(pvals, alpha=alpha,
@@ -32,6 +36,11 @@ def main():
                    formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("-c", dest="c", help="column number of the pvalues",
                    type=int, default=-1)
+    p.add_argument("--null", type=int,
+        help="""(optional) column number of the pvalues under the null, e.g.
+             for shuffled data. if given, qvality (which must be on the path)
+             is used to do the correction. Otherwise, Benjamini-Hochberg is
+             used""")
     p.add_argument("--alpha", dest="alpha", default=0.05, type=float, help="cutoff"
             " for significance after benjamini hochberg FDR correction")
     p.add_argument('bed_file', help='bed file to correct')
