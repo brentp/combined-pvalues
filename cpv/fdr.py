@@ -11,11 +11,23 @@ def run(args):
     # get rid of N, just keep the correlation.
     col_num = get_col_num(args.c)
     if args.null is not None:
-       col_null = get_col_num(args.null)
-       # TODO: call qvality.
+        col_null = get_col_num(args.null)
+        for qval, pep, l in _qvality(args.bed_file, col_num, col_null):
+            print "%s\t%.4g\t%4g" % (l.rstrip("\r\n"), qval, pep)
+    else:
+        for bh, l in fdr(args.bed_file, col_num):
+            print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
 
-    for bh, l in fdr(args.bed_file, col_num):
-        print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
+def _qvality(fbed_file, col_num, col_null):
+   from qvality import qvality
+
+   ps = [b['p'] for b in bediter(fbed_file, col_num)]
+   nulls = [b['p'] for b in bediter(fbed_file, col_null)]
+   fh = open(fbed_file)
+   line = fh.readline()
+   for (pval, pep, qval), l in izip(qvality(ps, nulls, r=None), fh):
+       yield qval, pep, l
+
 
 def fdr(fbed_file, col_num):
     from scikits.statsmodels.sandbox.stats.multicomp import fdrcorrection0
