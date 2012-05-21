@@ -19,7 +19,7 @@ def run(args):
         for qval, l in obs_fdr(args.bed_file, col_num, col_null):
             print "%s\t%.4g" % (l.rstrip("\r\n"), qval)
     else:
-        for bh, l in obs_fdr(args.bed_file, col_num):
+        for bh, l in fdr(args.bed_file, col_num):
             print "%s\t%.4g" % (l.rstrip("\r\n"), bh)
 
 def _qvality(fbed_file, col_num, col_null):
@@ -28,7 +28,7 @@ def _qvality(fbed_file, col_num, col_null):
    ps = [b['p'] for b in bediter(fbed_file, col_num)]
    nulls = [b['p'] for b in bediter(fbed_file, col_null)]
    fh = open(fbed_file)
-   line = fh.readline()
+   drop_header(fh)
    for (pval, pep, qval), l in izip(qvality(ps, nulls, r=None), fh):
        yield qval, pep, l
 
@@ -36,10 +36,11 @@ def obs_fdr(fbed_file, col_num, col_null):
    ps = [b['p'] for b in bediter(fbed_file, col_num)]
    nulls = [b['p'] for b in bediter(fbed_file, col_null)]
    fh = open(fbed_file)
-   line = fh.readline()
+   drop_header(fh)
    for qval, l in izip(relative_fdr(ps, nulls), fh):
        yield qval, l
 
+# TODO (if null is None: null = 1 / np.arange(len(observed))
 def relative_fdr(observed, null):
     observed = np.asarray(observed)
     null = np.asarray(null)
@@ -55,16 +56,18 @@ def relative_fdr(observed, null):
     corrected[corrected > 1] = 1
     return corrected[obs_unsort_ind]
 
+def drop_header(fh):
+    line = fh.readline()
+    if not (line[0] == "#" or line.split()[0] == "chrom"):
+        fh.seek(0)
+
 def fdr(fbed_file, col_num):
     from scikits.statsmodels.stats import multicomp as multitest
     pvals = np.array([b["p"] for b in bediter(fbed_file, col_num)],
                         dtype=np.float64)
     bh_pvals = multitest.multipletests(pvals, method='fdr_bh')[1]
     fh = open(fbed_file)
-    line = fh.readline()
-    # drop header
-    if not (line[0] == "#" or line.split()[0] == "chrom"):
-        fh.seek(0)
+    drop_header(fh)
     for bh, l in izip(bh_pvals, fh):
         yield bh, l
 
