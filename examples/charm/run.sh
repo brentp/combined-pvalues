@@ -4,18 +4,18 @@
 #BSUB -o logs/combp.%I.%J.out
 #BSUB -n 12
 
-mkdir -p logs/
+mkdir -p logs/ 
+mkdir -p data
 set -e
 
 SECTION=$1
 echo $SECTION
 
 if [ "$SECTION" = "GET" ]; then
-cd data
 
 # remove extra space and save.
 wget -O - http://rafalab.jhsph.edu/data/shores/natgen2009.csv \
-    | perl -pe 's/,\s/,/' > data/natgen2009.csv
+    | perl -pe 's/,\s/,/' > natgen2009.csv
 
 mkdir -p xys/ 
 cd xys/
