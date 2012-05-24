@@ -117,7 +117,7 @@ def _pipeline():
         print >>sys.stderr, "wrote: %s" % fh.name
 
     with open(args.prefix + ".fdr.bed", "w") as fh:
-        for bh, l in fdr.fdr(args.prefix + ".slk.bed", -1, 0.05):
+        for bh, l in fdr.fdr(args.prefix + ".slk.bed", -1):
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
 
