@@ -46,9 +46,10 @@ def qvality(pvals, null=None, **kwargs):
         peps.append(pep)
         qs.append(q)
     # make sure they are sorted.
-    for i, pset in enumerate((ps, peps, qs)):
+    for i, pset in enumerate((ps, qs)):
         assert all(a >= b for a, b in zip(pset[1:], pset[:-1])), (i, pset[:10], pset[-10:], len(pset))
     p.wait()
+    print >>sys.stderr, p.stderr.read()
     if p.returncode != 255: # ?
         print >>sys.stderr, p.stderr.read(), p.returncode
 
