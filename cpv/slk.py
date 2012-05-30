@@ -114,8 +114,9 @@ def adjust_pvals(fnames, col_num0, acfs, stringent):
 
     arg_iter = []
     for fname in fnames:
+        # 9e-17 seems to be limit of precision
         arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs, stringent) \
-                    for key, chromlist in groupby(bediter(fname, col_num0),
+                    for key, chromlist in groupby(bediter(fname, col_num0, 9e-17),
                             itemgetter("chrom"))))
 
     for results in imap(_slk_chrom, arg_iter):

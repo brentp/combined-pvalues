@@ -24,8 +24,7 @@ def get_col_num(c):
     """
     return c if c < 0 else (c - 1)
 
-# 9e-17 seems to be limit of precision
-def bediter(fname, col_num, delta=9e-17):
+def bediter(fname, col_num, delta=9e-99):
     """
     iterate over a bed file. turn col_num into a float
     and the start, stop column into an int and yield a dict
