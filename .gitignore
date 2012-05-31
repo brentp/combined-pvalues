@@ -1,3 +1,7 @@
 *.pyc
 data/
 manuscript/
+build/
+dist/
+*.egg-info/
+*.bed
