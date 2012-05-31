@@ -92,7 +92,7 @@ def slk_chrom(chromlist, lag_max, acfs, stringent):
         if not r["OK"] and n_bad < 20:
             print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
                     (xbed["chrom"], xbed["start"], xbed["end"])
-            print >>sys.stderr, "# pvals:", pvals
+            print >>sys.stderr, "# pvals:", pvals[:20] + "..." 
             n_bad += 1
             if n_bad == 20:
                 print >>sys.stderr, "not reporting further un-invertibles"
@@ -114,7 +114,7 @@ def adjust_pvals(fnames, col_num0, acfs, stringent):
 
     arg_iter = []
     for fname in fnames:
-        # 9e-17 seems to be limit of precision
+        # 9e-17 seems to be limit of precision for cholesky.
         arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs, stringent) \
                     for key, chromlist in groupby(bediter(fname, col_num0, 9e-17),
                             itemgetter("chrom"))))

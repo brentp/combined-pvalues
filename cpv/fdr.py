@@ -38,14 +38,15 @@ def obs_fdr(fbed_file, col_num, col_null=None):
     ps = [b['p'] for b in bediter(fbed_file, col_num)]
     if col_null is None:
         # Benjamini-Hochberg.
-        print >>sys.stderr, "BH"
-        nulls = np.arange(1, len(ps) + 1) / float(len(ps))
+        nulls = np.arange(1, len(ps) + 1, dtype=np.float64) / float(len(ps))
     else:
         nulls = [b['p'] for b in bediter(fbed_file, col_null)]
     fh = open(fbed_file)
     drop_header(fh)
     for qval, l in izip(relative_fdr(ps, nulls), fh):
         yield qval, l
+
+fdr = obs_fdr
 
 def relative_fdr(observed, null):
     observed = np.asarray(observed)
