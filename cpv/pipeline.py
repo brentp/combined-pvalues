@@ -2,14 +2,8 @@ import sys
 import os.path as op
 
 def main():
-    return _pipeline()
-
-def _pipeline():
-    sys.path.insert(0, op.join(op.dirname(__file__), ".."))
-    from cpv import acf, slk, fdr, peaks, region_p, stepsize
-    from _common import get_col_num
     import argparse
-    import operator
+    from _common import get_col_num
 
     p = argparse.ArgumentParser(description=__doc__,
                    formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -45,19 +39,25 @@ def _pipeline():
     assert op.exists(args.bed_files[0])
 
     col_num = get_col_num(args.c)
-    if args.step is None:
-        step = stepsize.stepsize(args.bed_files, col_num)
-        print >>sys.stderr, "calculated stepsize as: %i" % step
-    else:
-        step = args.step
+    return pipeline(col_num, args.step, args.dist, args.prefix,
+            args.threshold, args.seed,
+            args.bed_files, args.stringent)
 
-    lags = range(1, args.dist, step)
+def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, stringent=False):
+    sys.path.insert(0, op.join(op.dirname(__file__), ".."))
+    from cpv import acf, slk, fdr, peaks, region_p, stepsize
+    import operator
+    if step is None:
+        step = stepsize.stepsize(bed_files, col_num)
+        print >>sys.stderr, "calculated stepsize as: %i" % step
+
+    lags = range(1, dist, step)
     lags.append(lags[-1] + step)
 
     # go out to max requested distance but stop once an autocorrelation 
     # < 0.05 is added.
     
-    putative_acf_vals = acf.acf(args.bed_files, lags, col_num, simple=False)
+    putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False)
     acf_vals = []
     for a in putative_acf_vals:
         # a is ((lmin, lmax), (corr, N))
@@ -68,40 +68,40 @@ def _pipeline():
         if a[1][0] < 0.08 and len(acf_vals): break
 
     # save the arguments that this was called with.
-    with open(args.prefix + ".args.txt", "w") as fh:
+    with open(prefix + ".args.txt", "w") as fh:
         print >>fh, " ".join(sys.argv[1:]) + "\n"
         import datetime
         print >>fh, "date: %s" % datetime.datetime.today()
 
-    with open(args.prefix + ".acf.txt", "w") as fh:
+    with open(prefix + ".acf.txt", "w") as fh:
         acf_vals = acf.write_acf(acf_vals, fh)
         print >>sys.stderr, "wrote: %s" % fh.name
-    print >>sys.stderr, "ACF:\n", open(args.prefix + ".acf.txt").read()
-    with open(args.prefix + ".slk.bed", "w") as fh:
-        for row in slk.adjust_pvals(args.bed_files, col_num, acf_vals, 
-                args.stringent):
+    print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
+    with open(prefix + ".slk.bed", "w") as fh:
+        for row in slk.adjust_pvals(bed_files, col_num, acf_vals, 
+                stringent):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
 
-    with open(args.prefix + ".fdr.bed", "w") as fh:
-        for bh, l in fdr.fdr(args.prefix + ".slk.bed", -1):
+    with open(prefix + ".fdr.bed", "w") as fh:
+        for bh, l in fdr.fdr(prefix + ".slk.bed", -1):
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
 
-    fregions = args.prefix + ".regions.bed"
+    fregions = prefix + ".regions.bed"
     with open(fregions, "w") as fh:
-        peaks.peaks(args.prefix + ".fdr.bed", -1, args.threshold, args.seed,
+        peaks.peaks(prefix + ".fdr.bed", -1, threshold, seed,
             step, fh, operator.le)
     n_regions = sum(1 for _ in open(fregions))
     print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
 
-    with open(args.prefix + ".regions-p.bed", "w") as fh:
+    with open(prefix + ".regions-p.bed", "w") as fh:
         N = 0
         fh.write("#chrom\tstart\tend\tmin_p\tn_probes\tslk_p\tslk_sidak_p\n")
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
-                               args.prefix + ".slk.bed",
-                               args.prefix + ".regions.bed", -2,
+                               prefix + ".slk.bed",
+                               prefix + ".regions.bed", -2,
                                0, step):
             if sim_p != "NA":
                 sim_p = "%.4g" % sim_p
