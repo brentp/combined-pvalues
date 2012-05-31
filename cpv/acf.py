@@ -8,7 +8,6 @@ from chart import chart
 import sys
 import numpy as np
 from itertools import groupby, izip, chain
-from operator import itemgetter
 from _common import bediter, pairwise, get_col_num
 
 def create_acf_list(lags):
