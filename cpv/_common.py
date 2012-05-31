@@ -24,7 +24,7 @@ def get_col_num(c):
     """
     return c if c < 0 else (c - 1)
 
-def bediter(fname, col_num, delta=9e-99):
+def bediter(fname, col_num, delta=None):
     """
     iterate over a bed file. turn col_num into a float
     and the start, stop column into an int and yield a dict
