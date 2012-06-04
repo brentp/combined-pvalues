@@ -117,10 +117,11 @@ calculates the correlation at varying distance lags
 (here: auto-correlation - ACF).
  Whereas Kechris'
 \citep{Kechris2010} and many ACF implementations rely on fixed offsets
-of adjacent probes, \textit{comb-p} accepts a maximum base-pair
-distance and a bin size for pairing of probes based on their distance,
-so a given probe may have multiple probes in each set of
-bins. This is useful in cases where the probes generating the p-values
+of adjacent probes, \textit{comb-p} accepts a maximum
+distance and a single offset that segments the space into intervals.
+If a given probe is 40 bases away from two (or more) other probes, then it will
+appear more than once in the interval that contains probe-pairs at
+40 bases. This is useful in cases where the probes generating the p-values
 are unevenly spaced, as is common with methylation arrays.
 
 Once the ACF has been calculated, it can be used to perform the
