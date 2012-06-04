@@ -28,7 +28,7 @@ for p_cutoff in prange:
     for n_cutoff in nrange:
         n_actual = sum(1 for a in actual if a[0] <= p_cutoff and a[1] >= n_cutoff)
         n_shuff = sum(1 for s in shuff if s[0] <= p_cutoff and s[1] >= n_cutoff)
-        best_rates.append((float(n_shuff) / n_actual, p_cutoff, n_cutoff, n_actual, n_shuff))
+        best_rates.append((n_shuff / float(n_actual + n_shuff), p_cutoff, n_cutoff, n_actual, n_shuff))
 
 best_rates.sort()
 n = 0
