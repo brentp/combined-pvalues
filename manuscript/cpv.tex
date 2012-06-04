@@ -134,18 +134,23 @@ p-values (and little auto-correlation) and likely remain insignificant if the
 neighboring p-values are also high.
 
 A q-value score based on the Benjamini-Hochberg false-discovery (FDR)
-correction may be calculated. The peak-finding algorithm can then be
+correction or on a null-model may then be calculated. The peak-finding
+algorithm can then be
 used to find enrichment regions or \textit{peaks} on either the FDR
 q-value, the \textit{slk}-corrected p-value, or on the original
 p-value.  We find that performing the \textit{slk} correction and the
 FDR correction before finding peaks is the most stable and
 powerful.
 
-A p-value for each peak can be assigned using the Stouffer-Liptak
-correction. This step first calculates the ACF out to the distance
-of the largest region-size of all predicted peaks. The corrected
-p-value for each peak is then calculated using the original p-values
-that fall within the peak and the ACF.
+A p-value for each region can be assigned using the Stouffer-Liptak
+correction.
+Note that the first ACF calculated
+above was only out to the distance specified and may not extend far enough
+to cover the longer regions).
+Therefore, this step first calculates the ACF out to a distance equal
+to the length of the longest region. The corrected
+p-value for each region is then calculated using the original p-values
+that fall within the peak and the full ACF.
 Because we use the original,
 uncorrected p-values in the calculation of significance for the peak,
 we side-step issues of altering the distribution in both the
@@ -283,8 +288,8 @@ statistic. {\it Statistical Applications in Genetics and Molecular Biology}
 Genome Res.}, {\bf 12}, 996-1106.
 
 \bibitem[Liptak, 1958]{Liptak}
-Liptak, T. (1958) On the combination of independent tests. {\it Magyar Tud.
-Akad. Mat. Kutato Int. Kozl.}, {\bf 3}, 171-197.
+Liptak, T. (1958) On the combination of independent tests.
+{\it Magyar Tudomanyos. Akademia Matematikai Kutato Intezetenek Kozlemenyei}, {\bf 3}, 171-197.
 
 \bibitem[Pedersen {\it et~al}., 2011]{Pedersen2011} Pedersen, B.S. et al.
 (2011) MethylCoder: software pipeline for bisulfite-treated sequences.
