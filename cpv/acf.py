@@ -7,6 +7,7 @@ from array import array
 from chart import chart
 import sys
 import numpy as np
+import scipy.stats as ss
 from itertools import groupby, izip, chain
 from operator import itemgetter
 from _common import bediter, pairwise, get_col_num
@@ -111,10 +112,11 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
             print >>sys.stderr, "no values found at lag: %i-%i. skipping" \
                     % (lmin, lmax)
             continue
+        slope, intercept, corr, p_val, stderr = ss.linregress(xs, ys)
         if simple:
-            acf_res[(lmin, lmax)] = np.corrcoef(xs, ys)[0, 1]
+            acf_res[(lmin, lmax)] = corr
         else:
-            acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs))
+            acf_res[(lmin, lmax)] = (corr, len(xs), p_val)
     return sorted(acf_res.items())
 
 def run(args):
@@ -137,9 +139,9 @@ def write_acf(acf_vals, out):
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print >>out, "#", chart(values, xlabels)
-    print >> out, "#lag_min\tlag_max\tcorrelation\tN"
+    print >> out, "#lag_min\tlag_max\tcorrelation\tN\tp"
     for k,v in sorted(acf_vals):
-        print >> out, "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
+        print >> out, "%i\t%i\t%.4g\t%i\t%.4g" % (k[0], k[1], v[0], v[1], v[2])
         simple_acf.append((k, v[0]))
     return simple_acf
 
