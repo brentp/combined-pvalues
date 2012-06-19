@@ -8,11 +8,14 @@ mkdir -p logs/
 mkdir -p data
 set -e
 
+H=/home/brentp/src/combined-pvalues/examples/charm
+cd $H
+
 SECTION=$1
 echo $SECTION
 
 if [ "$SECTION" = "GET" ]; then
-
+cd data
 # remove extra space and save.
 wget -O - http://rafalab.jhsph.edu/data/shores/natgen2009.csv \
     | perl -pe 's/,\s/,/' > natgen2009.csv
@@ -46,11 +49,11 @@ for i in `awk -v cols=$NCOL -v step=$STEP 'BEGIN{for(i=2;i<cols;i+=step){print i
     nf=data/fit/$start-$end.split
     bedp=data/fit/$start-$end.bed
     cut -f 1,$start-$end data/methp.txt > $nf
-    echo "R --slave < scripts/fit.lm.R --args $nf > $bedp" \
-        | bsub -J "$start-$end" \
+    echo "cd $H; ~/installed/bin/R --slave < scripts/fit.lm.R --args $nf > $bedp" \
+        | qsub  \
         -e logs/$start-$end.err \
         -o logs/$start-$end.out \
-        -R "rusage[mem=7]"
+        #-R "rusage[mem=7]"
 done
 exit;
 fi
@@ -65,7 +68,7 @@ fi
 
 if [ "$SECTION" = "COMB" ]; then
 
-COLS=(fake chrom start end p.disease p.tissue p.colon p.frontalcortex p.liver p.spleen)
+COLS=(fake chrom start end p.disease p.tissue p.shuff.disease p.shuff.tissue)
 COL=${COLS[$LSB_JOBINDEX]}
 
 PRE=data/quantile/$COL/$COL
