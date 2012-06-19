@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+import ez_setup
+ez_setup.use_setuptools()
 
-from distutils.core import setup
+
+from setuptools import setup
 
 setup(name='cpv',
       version='0.1',
@@ -10,6 +13,7 @@ setup(name='cpv',
       license='MIT',
       url='https://github.com/brentp/combined-pvalues',
       packages=['cpv', 'cpv.tests'],
+      install_requires=['scipy', 'numpy', 'toolshed'],
       scripts=['cpv/comb-p'],
       long_description=open('README.rst').read(),
       classifiers=["Topic :: Scientific/Engineering :: Bio-Informatics"],

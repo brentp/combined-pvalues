@@ -24,7 +24,7 @@ def get_col_num(c):
     """
     return c if c < 0 else (c - 1)
 
-def bediter(fname, col_num):
+def bediter(fname, col_num, delta=None):
     """
     iterate over a bed file. turn col_num into a float
     and the start, stop column into an int and yield a dict
@@ -33,7 +33,10 @@ def bediter(fname, col_num):
     for l in reader(fname, header=False):
         if l[0][0] == "#": continue
         p = float(l[col_num])
-        if p == 1: p-= 1e-8 # the stouffer correction doesnt like values == 1
+        if not delta is None:
+            if p > 1 - delta: p-= delta # the stouffer correction doesnt like values == 1
+            if p < delta: p = delta # the stouffer correction doesnt like values == 0
+
         yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
                 "p": p} # "stuff": l[3:][:]}
 

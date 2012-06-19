@@ -4,8 +4,9 @@ import re
 
 header = open(sys.argv[1]).readline().rstrip()
 print header + "\tnearest\tgene"
+# calling bedtools
 for r in reader("|closestBed -a %s -b data/arabidopsis_thaliana.gff -d -t all \
-                 | groupBy -g 1,2,3,4,5 -c 8,15,14 -o collapse,min,collapse" \
+                 | groupBy -g 1,2,3,4 -c 7,14,13 -o collapse,min,collapse" \
                  % sys.argv[1], header=False):
     names = ",".join(set(re.findall("(?:ID|Name|Parent)=(\w+)", r[-1])))
     r[-1] = names

@@ -1,50 +1,87 @@
-#PBS -o logs/map-sperm.log.out
-#PBS -e logs/map-sperm.log.err
-#PBS -N sperm
+#BSUB -J combp
+#BSUB -n 12
+#BSUB -e logs/combp.err
+#BSUB -o logs/combp.out
 
-set -e
-HERE=/home/brentp/src/methylcode/fisher-project
-H=$HERE
+READSA=reads/2_endosperm
+READSB=reads/2_embryo
 <<DONE
-python $HERE/../gsnap-meth.py -r $HERE/../reference/thaliana_v10.fasta --out-dir $HERE/data/sperm --extra-args "--quality-protocol sanger" $HERE/data/sperm-new.fastq > $HERE/data/sperm/sperm.per-base.txt
+
+rm -f $READSA*
+rm -f $READSB*
+#mkdir -p reads/
+
+for i in 1 2 3 4 5; do
+    wget -O - http://dzlab.pmb.berkeley.edu:8080/work/GEO_submission/raw/WT_endosperm_BS_seq_raw_batch-${i}.1.fastq >> ${READSA}_1.fastq &
+    wget -O - http://dzlab.pmb.berkeley.edu:8080/work/GEO_submission/raw/WT_endosperm_BS_seq_raw_batch-${i}.2.fastq >> ${READSA}_2.fastq
+    wait
+
+    wget -O - http://dzlab.pmb.berkeley.edu:8080/work/GEO_submission/raw/Embryo_BS_seq_raw_batch-${i}.1.fastq >> ${READSB}_1.fastq &
+    wget -O - http://dzlab.pmb.berkeley.edu:8080/work/GEO_submission/raw/Embryo_BS_seq_raw_batch-${i}.2.fastq >> ${READSB}_2.fastq
+    wait
+
+done
+
+wget -O - \
+   "ftp://ftp.arabidopsis.org/home/tair/Genes/TAIR10_genome_release/TAIR10_gff3/TAIR10_GFF3_genes.gff" \
+    | perl -pe 's/^Chr/chr/' \
+    | grep -v chromosome > data/arabidopsis_thaliana.gff
+
+exit;
 DONE
-
-<<DONE
-for grp in sperm veg; do
-    for ctx in CG CHG CHH; do
-        awk -v ctx=$ctx 'BEGIN{OFS=FS="\t"}($5 ~ ctx){ print $1,$2-1,$2,$3,$4,$5 }' data/$grp/$grp.per-base.txt  > data/$grp/$grp.$ctx.bed
-    done
+<<REF
+mkdir -p reference && cd reference
+rm -f thaliana_v10.fasta
+for i in `seq 1 5` C M
+do 
+        wget -O - ftp://ftp.arabidopsis.org/home/tair/Sequences/whole_chromosomes/TAIR10_chr${i}.fas >> thaliana_v10.fasta
 done
+perl -pi -e "s/^>([^\s]+).*/>\1/;tr/C/c/" thaliana_v10.fasta
 
-for ctx in CG CHG CHH; do
-    echo "python $H/run-fisher.py $H/data/veg/veg.$ctx.bed $H/data/sperm/sperm.$ctx.bed > $H/data/p.$ctx.fisher.bed" | qsub
-done
+REF
 
+<<GSNAP
+mkdir -p data/\$(basename $READSA)
+echo "python gsnap-meth.py \
+    -r reference/thaliana_v10.fasta \
+    -t 12 --out-dir data/$(basename $READSA) \
+    --extra-args '--npaths 1 --quiet-if-excessive' \
+    ${READSA}_1.fastq \
+    > data/\$(basename ${READSA}).meth.txt" \
+    | bsub -n 12 -J endosperm -e logs/endo.err -o logs/endo.out
+exit;
+mkdir -p data/\$(basename $READSB)
+echo "python gsnap-meth.py \
+    -r reference/thaliana_v10.fasta \
+    -t 12 --out-dir data/\$(basename $READSB) \
+    --extra-args '--npaths 1 --quiet-if-excessive' \
+    ${READSB}_1.fastq \
+    > data/\$(basename ${READSB}).meth.txt" \
+    | bsub -n 12 -J embryo -e logs/embryo.err -o logs/embryo.out
+GSNAP
+<<FISHER
 
-for ctx in CHG CHH; do
-    python ~/src/combined-pvalues/cpv/comb-p.py pipeline -c 4 --dist 300 \
-        --step 60 --seed 0.01  data/p.$ctx.fisher.bed -p data/cpv.$ctx
-    <<DONE
-    awk 'BEGIN{OFS="\t"}($7 < 0.01 && $5 > 6 || NR == 1){ print $1,$2,$3,$5,$7 }' data/cpv.CG.regions-p.bed > data/cpv.CG.regions-sig.bed
-    DONE
-    awk '$7 < 0.05 && $5 > 6 || NR == 1'  data/cpv.$ctx.regions-p.bed \
-                | cut -f 1-3,5,7 > data/$ctx.regions.bed
+awk 'BEGIN{OFS=FS="\t"}($5 ~ /^CG/){ print $1,$2-1,$2,$3,$4,$5 }' \
+    data/2_endosperm.meth.txt > data/endosperm.meth.bed
 
-    python intersect.py data/$ctx.regions.bed > data/$ctx.genes.bed
-done
+awk 'BEGIN{OFS=FS="\t"}($5 ~ /^CG/){ print $1,$2-1,$2,$3,$4,$5 }' \
+    data/2_embryo.meth.txt > data/embryo.meth.bed
+echo "python run-fisher.py data/embryo.meth.bed  data/endosperm.meth.bed \
+    | sort -k1,1 -k2,2n > data/embryo-endo.fisher.bed" \
+    | bsub -o logs/fisher.log -e logs/fisher.err
 
-echo	"#chrom	start	end	n-probes	slk-sidak-p	nearest	gene	cs	ts" > $H/data/cpv.CG.sperm.annotated.bed
-echo	"#chrom	start	end	n-probes	slk-sidak-p	nearest	gene	cs	ts" > $H/data/cpv.CG.veg.annotated.bed
-for chrom in `seq 1 5`; do
-  grep "^chr${chrom}" $H/data/sperm/sperm.CG.bed | bedtools intersect -header -a $H/data/cpv.CG.annotated.bed -b - -wo > tmp
-  bedtools groupby -g 1,2,3,4,5,6,7 -c 11,12 -o sum,sum -i tmp >> $H/data/cpv.CG.sperm.annotated.bed
-  grep "^chr${chrom}" $H/data/veg/veg.CG.bed | bedtools intersect -header -a $H/data/cpv.CG.annotated.bed -b - -wo > tmp
-  bedtools groupby -g 1,2,3,4,5,6,7 -c 11,12 -o sum,sum -i tmp >> $H/data/cpv.CG.veg.annotated.bed
-done;
+FISHER
 
-DONE
+<<COMBP
+comb-p pipeline -c 4 --dist 300 \
+        --step 60 --seed 0.01 \
+        -p data/cpv \
+        data/embryo-endo.fisher.bed
+COMBP
 
-paste $H/data/cpv.CG.sperm.annotated.bed $H/data/cpv.CG.veg.annotated.bed \
-    | awk 'BEGIN{OFS=FS="\t"}
-(NR == 1) { print $1,$2,$3,$4,$5,$6,$7,"sperm-meth","veg-meth" }
-(NR > 1) { print $1,$2,$3,$4,$5,$6,$7,$8/($8 + $9),$17/($17 + $18) }' > $H/data/methp.CG.annotated.bed
+# print only the needed columns from the regions with low p-values
+echo $'#chrom\tstart\tend\tslk_sidak_region_p' > data/ee.regions.bed
+awk 'BEGIN{OFS="\t"} $7 < 0.01 && $5 > 3 { print $1, $2, $3, $7} ' data/cpv.regions-p.bed \
+    | sort -k1,1 -k2,2n >> data/ee.regions.bed
+
+python intersect.py data/ee.regions.bed > data/ee.annotated.regions.bed
