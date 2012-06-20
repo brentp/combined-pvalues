@@ -100,6 +100,48 @@ lower q-values from the Irizarry data by intersecting with our
 DMR's. So the Irizarry DMR's that overlap with ours are less
 likely to be false discoveries.
 
+
+Shuffling
+---------
+
+We can shuffle the clinical data (DiseaseStatus and TissueType relative
+to the lab data and check what the pipeline will call.
+In fact, when running comb-p on shuffled data, it finds *no* DMR's.
+This indicates a false discovery rate of essentially 0.
+We did this with a command like
+
+```Shell
+$ comb-p pipeline -c 6 -s --seed 0.0005 --dist 80 --step 40 -p $PREFIX $SHUFFLED_PVALS
+```
+The shuffled p-values were generated with the script:
+https://github.com/brentp/combined-pvalues/blob/master/examples/charm/scripts/fit.lm.R
+
+Power
+-----
+Conversely, we can show that we find more total probes that are differentially
+methylated when using our SLK method than using a simple FDR correction.
+
+```Shell
+$ python ../../cpv/fdr.py -c 4 /tmp/pvalues.bed | awk '$8 < 0.0005' | wc -l
+1238
+```
+shows that there are 1238 probes with a p-value less than our chosen cutoff.
+However, if we count the total number of probes in regions with a corrected
+p-value less then 0.05 (note the distinction between probe and region
+p-values):
+
+```Shell
+$ awk 'BEGIN{sum=0}(NR > 1 && $7 < 0.05){ sum += $5; }END{ print sum }' /tmp/p.disease.regions-p.bed 
+31514
+```
+We have a much larger number *31,514* vs *1,238*. (The number is higher if we
+don't limit to significant regions).
+
+Of course, this is necessary in studies where we have smaller differences and the original
+p-values at each probe are not low enough to survive multiple-testing correction.
+In fact, in most cases, we find 0 probes with a Benjamini-Hochberg q-value <
+0.05.
+
 Further Exploration
 -------------------
 
