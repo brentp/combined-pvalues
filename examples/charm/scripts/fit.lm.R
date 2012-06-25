@@ -27,8 +27,8 @@ names = colnames(data)
 
 
 write(paste("#chrom", "start", "end", "p.disease", "p.tissue", 
-    paste("p-shuff-tiss", 1:20, sep="-", collapse="\t"),
     paste("p-shuff-disease", 1:20, sep="-", collapse="\t"),
+    paste("p-shuff-tiss", 1:20, sep="-", collapse="\t"),
  #"p.colon", "p.frontalcortex", "p.liver", "p.spleen", 
         sep="\t"), stdout())
 for (i in 2:ncol(data)) {
