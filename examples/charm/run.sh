@@ -8,8 +8,8 @@ mkdir -p logs/
 mkdir -p data
 set -e
 
-H=/home/brentp/src/combined-pvalues/examples/charm
-cd $H
+#H=/home/brentp/src/combined-pvalues/examples/charm
+#cd $H
 
 SECTION=$1
 echo $SECTION
@@ -48,12 +48,12 @@ for i in `awk -v cols=$NCOL -v step=$STEP 'BEGIN{for(i=2;i<cols;i+=step){print i
     end=$(($i + $STEP - 1))
     nf=data/fit/$start-$end.split
     bedp=data/fit/$start-$end.bed
-    cut -f 1,$start-$end data/methp.txt > $nf
-    echo "cd $H; ~/installed/bin/R --slave < scripts/fit.lm.R --args $nf > $bedp" \
-        | qsub  \
+    #cut -f 1,$start-$end data/methp.txt > $nf
+    echo "~/local/bin/R --slave < scripts/fit.lm.R --args $nf > $bedp" \
+        | bsub  \
         -e logs/$start-$end.err \
         -o logs/$start-$end.out \
-        #-R "rusage[mem=7]"
+        -R "rusage[mem=7]"
 done
 exit;
 fi
