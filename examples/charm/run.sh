@@ -1,4 +1,4 @@
-#BSUB -J combp[4-9]
+#BSUB -J combp[4-44]
 #BSUB -R rusage[mem=6]
 #BSUB -e logs/combp.%I.%J.err
 #BSUB -o logs/combp.%I.%J.out
@@ -68,8 +68,16 @@ fi
 
 if [ "$SECTION" = "COMB" ]; then
 
-COLS=(fake chrom start end p.disease p.tissue p.shuff.disease p.shuff.tissue)
+LSB_JOBINDEX=28
+COLS=(fake chrom start end p.disease p.tissue)
 COL=${COLS[$LSB_JOBINDEX]}
+if [[ $LSB_JOBINDEX -gt 5 ]]; then
+    COL="p.disease-$LSB_JOBINDEX"
+fi
+
+if [[ $LSB_JOBINDEX -gt 25 ]]; then
+    COL="p.tissue-$LSB_JOBINDEX"
+fi
 
 PRE=data/quantile/$COL/$COL
 mkdir -p data/quantile/$COL
