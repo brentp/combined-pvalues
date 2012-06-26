@@ -7,7 +7,7 @@ df = df[seq(2, nrow(df), 2),]
 df$TissueType = factor(df$TissueType)
 df$DiseaseState = factor(df$DiseaseState)
 
-set.seed(42)
+set.seed(44)
 for(i in seq(1, 20)){
     order1 = sample(1:nrow(df), nrow(df))
     df[,paste("shuff_tissue", i, sep="_")] = df$TissueType[order1]
@@ -24,6 +24,7 @@ for (tiss in c("colon", "frontalcortex", "liver", "spleen")) {
 data = read.delim(fname, header=T, sep="\t")
 stopifnot(all(df$SampleID == data$ID))
 names = colnames(data)
+message(names[1:10])
 
 
 write(paste("#chrom", "start", "end", "p.disease", "p.tissue", 
@@ -44,11 +45,11 @@ for (i in 2:ncol(data)) {
     p.shuff.tissue = rep(NA, 20)
     p.shuff.disease = rep(NA, 20)
     # shuffled
-    for(i in 1:20){
-        m = lm(as.formula(paste("methp ~ shuff_disease_", i, " + shuff_tissue_", i, sep="")), data=df)
+    for(j in 1:20){
+        m = lm(as.formula(paste("methp ~ shuff_disease_", j, " + shuff_tissue_", j, sep="")), data=df)
         r = drop1(m, ~ ., test="F")
-        p.shuff.tissue[i] = format(r[paste("shuff_tissue_", i, sep=""), "Pr(>F)"], digits=4)
-        p.shuff.disease[i] = format(r[paste("shuff_disease_", i, sep=""), "Pr(>F)"], digits=4)
+        p.shuff.tissue[j] = format(r[paste("shuff_tissue_", j, sep=""), "Pr(>F)"], digits=4)
+        p.shuff.disease[j] = format(r[paste("shuff_disease_", j, sep=""), "Pr(>F)"], digits=4)
     }
 
 
