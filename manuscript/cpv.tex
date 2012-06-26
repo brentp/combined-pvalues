@@ -17,7 +17,7 @@ and Katerina J.  Kechris\,$^2$\footnotemark[2]{}
 
 \address{$^{1}$Department of Medicine, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045,
 USA\\
-$^{2}$Department of Statistics, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
+$^{2}$Department of Biostatistics and Informatics, University of Colorado, Denver, Anschutz Medical Campus, Aurora CO 80045, USA\\
 }
 
 
@@ -134,8 +134,8 @@ p-values (and little auto-correlation) and likely remain insignificant if the
 neighboring p-values are also high.
 
 A q-value score based on the Benjamini-Hochberg false-discovery (FDR)
-correction or on a null-model may then be calculated. The peak-finding
-algorithm can then be
+correction or on a null-model from shuffled data may then be calculated.
+The peak-finding algorithm can then be
 used to find enrichment regions or \textit{peaks} on either the FDR
 q-value, the \textit{slk}-corrected p-value, or on the original
 p-value.
@@ -144,7 +144,7 @@ Once the regions are identified, a p-value for each region can be assigned
 using the Stouffer-Liptak correction.
 Note that the first ACF calculated
 above was only out to the distance specified and may not extend far enough
-to cover the longer regions).
+to cover the longer regions.
 Therefore, this step first calculates the ACF out to a distance equal
 to the length of the longest region. The corrected
 p-value for each region is then calculated using the original p-values
@@ -204,8 +204,8 @@ runs of shuffled of CHARM data (33 of those come from 2 of the sets, likely
 because those shuffles of the clinical data happen to coincide well
 with the case-control status of the original data). This gives a false
 discovery rate of 0.0016.
-We also show that \textit{comb-p} recovers more significant probes than
-a simple FDR correction on the original p-values.
+We found that \textit{comb-p} recovers more significant
+probes than a simple FDR correction on the original p-values.
 
 
 DamID technology followed by tiling arrays can be used to map genomic
