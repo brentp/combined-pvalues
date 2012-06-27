@@ -163,9 +163,10 @@ divided by the size of the given region.
 dispatches to multiple independent sub-modules, and as a set of python
 packages that may be used programatically. Where possible,
 computationally-intensive algorithms are parallelized
-automatically--for the ACF and the SLK steps described below--this
+automatically--for the ACF and the \textit{slk} steps in the analyses
+described below--this
 results in a speed-up that is nearly linear with the number of cores available.
-In all cases the implementation has been tuned to minimize memory use and
+The implementation has been tuned to minimize memory use and
 computation time.
 
 When run without arguments, the \textit{comb-p} executable displays the
@@ -199,8 +200,8 @@ the parameter-choice, we show that the Irizarry DMRs that overlap
 with the \textit{comb-p} DMRs have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those
 that do not, indicating that \textit{comb-p} is reporting the best regions.
-Finally, we show that our method yields only 37 false-positive DMRs on 20
-runs of shuffled of CHARM data (33 of those come from 2 of the sets, likely
+We also show that our method yields only 37 false-positive DMRs on 20
+runs of shuffled of CHARM data (33 of those come from 2 of the sets,
 because those shuffles of the clinical data happen to coincide well
 with the case-control status of the original data). This gives a false
 discovery rate of 0.0016.
@@ -222,7 +223,7 @@ each peak. The published peaks overlappng the \textit{comb-p} regions
 have a higher score than those that do not (t-test, p=2.98e-59),
 indicating that \textit{comb-p}
 is finding the best regions among those previously reported.
-In addition, \textit{comb-p} also have a higher target enrichment
+In addition, \textit{comb-p} regions also yield a higher target enrichment
 score based on proximity to known Ci genes, indicating that \textit{comb-p}
 is selecting for known targets.
 
