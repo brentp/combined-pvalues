@@ -165,7 +165,7 @@ packages that may be used programatically. Where possible,
 computationally-intensive algorithms are parallelized
 automatically--for the ACF and the SLK steps described below--this
 results in a speed-up that is nearly linear with the number of cores available.
-In all cases the implementation has been tuned to minimize memory-use and
+In all cases the implementation has been tuned to minimize memory use and
 computation time.
 
 When run without arguments, the \textit{comb-p} executable displays the
@@ -185,7 +185,7 @@ https://github.com/brentp/combined-pvalues/tree/master/examples
 Comprehensive, High-throughput Array for Relative Methylation (CHARM)
 is a tiling array used to quantify methylation at CpG-rich sites
 \citep{Irizarry2008}.  Adjacent probes are correlated
-due to the regional nature of methylation, and to the overlapping
+due to the regional nature of methylation and to the overlapping
 probes on the tiling array.  The CHARM study reported in
 \cite{Irizarry2009} contains probe data for tumor and normal samples
 from a variety of tissues. Using these data, we fit a linear model in R
@@ -193,13 +193,13 @@ from a variety of tissues. Using these data, we fit a linear model in R
 obtain p-values for the significance of tumor or tissue-specific
 effects on methylation status at each probe.  We then run
 \textit{comb-p}, which finds 85\% of the tumor-specific differentially
-methylated regions (C-DMR's) reported by \cite{Irizarry2009} and 75\% of
-the tissue-specific T-DMR's reported.  While these overlaps depend on
-the parameter-choice, we show that the Irizarry DMR's that overlap
-with the \textit{comb-p} DMR's have signficantly (t-test,
+methylated regions (C-DMRs) reported by \cite{Irizarry2009} and 75\% of
+the tissue-specific T-DMRs reported.  While these overlaps depend on
+the parameter-choice, we show that the Irizarry DMRs that overlap
+with the \textit{comb-p} DMRs have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those
 that do not, indicating that \textit{comb-p} is reporting the best regions.
-Finally, we show that our method yields only 37 false-positive DMR's on 20
+Finally, we show that our method yields only 37 false-positive DMRs on 20
 runs of shuffled of CHARM data (33 of those come from 2 of the sets, likely
 because those shuffles of the clinical data happen to coincide well
 with the case-control status of the original data). This gives a false
@@ -249,8 +249,8 @@ previously published results from those studies.
 
 \section*{Acknowledgement}
 \paragraph{Funding\textcolon}
-This work was supported by the National Institute of Health grant AA016922 to KK
-, HL101251 to DAS and IVY and N01-AI90052 and RC2-HL101715 to DAS.
+This work was supported by the National Institute of Health grants
+AA016922 to KK, HL101251 to DAS and IVY and AI90052 and HL101715 to DAS.
 
 %\bibliographystyle{natbib}
 %\bibliographystyle{achemnat}
