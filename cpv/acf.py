@@ -66,7 +66,7 @@ def merge_acfs(unmerged):
             uxys = {}
     return merged
 
-def acf(fnames, lags, col_num0, partial=True, simple=False):
+def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     """
     calculate the correlation of the numbers in `col_num0` from the bed files
     in `fnames` at various lags. The lags are specified by distance. Partial
@@ -111,6 +111,8 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
             print >>sys.stderr, "no values found at lag: %i-%i. skipping" \
                     % (lmin, lmax)
             continue
+        if mlog:
+            xs, ys = -np.log10(xs), -np.log10(ys)
         slope, intercept, corr, p_val, stderr = ss.linregress(xs, ys)
         if simple:
             acf_res[(lmin, lmax)] = corr
@@ -156,6 +158,9 @@ def main():
     p.add_argument("--full", dest="full", action="store_true",
                    default=False, help="do full autocorrelation (default"
                    " is partial)")
+    p.add_argument("--mlog", dest="mlog", action="store_true",
+                   default=False, help="do the correlation on the -log10 of"
+                   "the p-values. Default is to do it on the raw values")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):
