@@ -63,9 +63,9 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, stringent=
         # a is ((lmin, lmax), (corr, N))
         # this heuristic seems to work. stop just above the 0.08 correlation
         # lag.
-        if a[1][0] < 0.08 and len(acf_vals) > 2: break
+        if a[1][0] < 0.04 and len(acf_vals) > 2: break
         acf_vals.append(a)
-        if a[1][0] < 0.08 and len(acf_vals): break
+        if a[1][0] < 0.04 and len(acf_vals): break
 
     # save the arguments that this was called with.
     with open(prefix + ".args.txt", "w") as fh:
