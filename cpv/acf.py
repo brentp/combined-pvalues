@@ -7,6 +7,7 @@ from array import array
 from chart import chart
 import sys
 import numpy as np
+import scipy.stats as ss
 from itertools import groupby, izip, chain
 from _common import bediter, pairwise, get_col_num
 
@@ -65,7 +66,7 @@ def merge_acfs(unmerged):
             uxys = {}
     return merged
 
-def acf(fnames, lags, col_num0, partial=True, simple=False):
+def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     """
     calculate the correlation of the numbers in `col_num0` from the bed files
     in `fnames` at various lags. The lags are specified by distance. Partial
@@ -110,10 +111,13 @@ def acf(fnames, lags, col_num0, partial=True, simple=False):
             print >>sys.stderr, "no values found at lag: %i-%i. skipping" \
                     % (lmin, lmax)
             continue
+        if mlog:
+            xs, ys = -np.log10(xs), -np.log10(ys)
+        slope, intercept, corr, p_val, stderr = ss.linregress(xs, ys)
         if simple:
-            acf_res[(lmin, lmax)] = np.corrcoef(xs, ys)[0, 1]
+            acf_res[(lmin, lmax)] = corr
         else:
-            acf_res[(lmin, lmax)] = (np.corrcoef(xs, ys)[0, 1], len(xs))
+            acf_res[(lmin, lmax)] = (corr, len(xs), p_val)
     return sorted(acf_res.items())
 
 def run(args):
@@ -136,9 +140,9 @@ def write_acf(acf_vals, out):
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print >>out, "#", chart(values, xlabels)
-    print >> out, "#lag_min\tlag_max\tcorrelation\tN"
+    print >> out, "#lag_min\tlag_max\tcorrelation\tN\tp"
     for k,v in sorted(acf_vals):
-        print >> out, "%i\t%i\t%.4g\t%i" % (k[0], k[1], v[0], v[1])
+        print >> out, "%i\t%i\t%.4g\t%i\t%.4g" % (k[0], k[1], v[0], v[1], v[2])
         simple_acf.append((k, v[0]))
     return simple_acf
 
@@ -154,6 +158,9 @@ def main():
     p.add_argument("--full", dest="full", action="store_true",
                    default=False, help="do full autocorrelation (default"
                    " is partial)")
+    p.add_argument("--mlog", dest="mlog", action="store_true",
+                   default=False, help="do the correlation on the -log10 of"
+                   "the p-values. Default is to do it on the raw values")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):

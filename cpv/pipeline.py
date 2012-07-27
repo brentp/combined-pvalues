@@ -26,6 +26,10 @@ def main():
     p.add_argument("-s", dest="stringent", action="store_true", default=False,
             help="use this flag if there is an abundance of low-pvalues.")
 
+    p.add_argument("--mlog", dest="mlog", action="store_true",
+                   default=False, help="do the correlation on the -log10 of"
+                   "the p-values. Default is to do it on the raw values")
+
     p.add_argument('bed_files', nargs='+', help='sorted bed file to process')
 
     args = p.parse_args()
@@ -41,9 +45,10 @@ def main():
     col_num = get_col_num(args.c)
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
-            args.bed_files, args.stringent)
+            args.bed_files, args.stringent, args.mlog)
 
-def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, stringent=False):
+def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files,
+        stringent=False, mlog=False):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize
     import operator
@@ -54,10 +59,11 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, stringent=
     lags = range(1, dist, step)
     lags.append(lags[-1] + step)
 
-    # go out to max requested distance but stop once an autocorrelation 
+    # go out to max requested distance but stop once an autocorrelation
     # < 0.05 is added.
-    
-    putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False)
+
+    putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False,
+                                mlog=mlog)
     acf_vals = []
     for a in putative_acf_vals:
         # a is ((lmin, lmax), (corr, N))
@@ -78,7 +84,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, stringent=
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
     with open(prefix + ".slk.bed", "w") as fh:
-        for row in slk.adjust_pvals(bed_files, col_num, acf_vals, 
+        for row in slk.adjust_pvals(bed_files, col_num, acf_vals,
                 stringent):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
