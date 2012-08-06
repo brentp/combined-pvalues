@@ -158,6 +158,9 @@ multiple-testing correction.
 For a given region, the number of possible tests
 in the \v{S}id\'{a}k correction is the total bases covered by all input probes
 divided by the size of the given region.
+In short, we define the extents of the region using the FDR q-values,
+then we define the significance of the regions using the SLK correction
+of the original p-values.
 
 \textit{comb-p} is implemented as a single command-line application that
 dispatches to multiple independent sub-modules, and as a set of python
