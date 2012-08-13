@@ -13,6 +13,7 @@ set -e
 #cd $H
 
 SECTION=$1
+SECTION=COMB
 echo $SECTION
 
 if [ "$SECTION" = "GET" ]; then
@@ -84,6 +85,7 @@ fi
 PRE=data/quantile/$COL/$COL
 mkdir -p data/quantile/$COL
 
+<<DONE
 comb-p pipeline \
     -c $LSB_JOBINDEX \
     -s \
@@ -94,6 +96,10 @@ comb-p pipeline \
 
     awk 'NR == 1 || ($5 > 5 && $7 < 0.001)' ${PRE}.regions-p.bed \
             > ${PRE}.sig.regions.bed
+DONE
+# to check for # false positives on just the raw p-values
+
+comb-p peaks -c $LSB_JOBINDEX --seed 0.0005 --dist 80 $data/pvalues.bed | awk '$4 < 0.001 && $5 > 5' $PRE.peaks;
 exit;
 
 fi
@@ -118,6 +124,15 @@ exit;
 
 fi
 
+if [ "$SECTION" = "PEAKS_RAW" ]; then
+    f=data/pvalues.bed
+    echo "
+    comb-p peaks -c 6 --seed 0.0005 --dist 80 $f > ${f/bed/peaks};
+    comb-p region_p -r ${f/bed/peaks} -p $f -s 40 -c 6 > data/raw.peaks.bed;
+    "| bsub -J comb-p-peaks -e logs/comb-peaks.err -o logs/comb-peaks.out
+    awk '$7 < 1' data/raw.peaks.bed # none !
+    exit;
+fi
 
 echo "send in a section to run, e.g.: bash run.sh FIT"
 echo "sections should be run in order:
