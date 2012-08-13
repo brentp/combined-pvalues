@@ -11,6 +11,8 @@ The manuscript (under review) is available here:
 It includes an explanation of 3 examples in the examples directory
 of this repository.
 
+The software is distributed under the MIT license.
+
 Installation
 ============
 
