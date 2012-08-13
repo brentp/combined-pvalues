@@ -123,6 +123,32 @@ https://github.com/brentp/combined-pvalues/blob/master/examples/charm/scripts/fi
 We then count only the regions that are significant after the SLK-Sidak
 correction.
 
+We also show that *not* applying the pipeline results in more false positive
+DMRs. If we run only the peak finding.
+
+```Shell
+$ comb-p peaks -c $LSB_JOBINDEX --seed 0.0005 --dist 80 data/pvalues.bed > $PRE.peaks;
+```
+without the corrections that would normally be applied in the pipeline, we
+find 18654 peaks in the shuffled data--relative to only 37 before.
+
+```Shell
+$ wc -l data/quantile/p.disease-*/p.disease-*.peaks
+``` 
+
+We can limit those by requiring more than a single probe in the DMR and this drops
+the number to 254.
+
+```Shell
+awk '$5 > 1' data/quantile/p.disease-*/p.disease-*.peaks | wc -l
+```
+In this case, if we apply the same to the real, unshuffled data, then we find 
+also more putative DMR's. Below we do a more stringent test using the FDR.
+Since this dataset is on tumor vs normal, we see large changes, but for many
+real-world datasets, this correction is required in order to find regions of
+smaller changes.
+
+
 Power
 -----
 Conversely, we can show that we find more total probes that are differentially
