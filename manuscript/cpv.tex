@@ -203,11 +203,11 @@ the parameter-choice, we show that the Irizarry DMRs that overlap
 with the \textit{comb-p} DMRs have signficantly (t-test,
 p=1.296e-145) lower FDR values (as reported by Irizarry) than those
 that do not, indicating that \textit{comb-p} is reporting the best regions.
-We also show that our method yields only 37 false-positive DMRs on 20
+We also show that our method yields only 39 false-positive DMRs on 20
 runs of shuffled of CHARM data (33 of those come from 2 of the sets,
 because those shuffles of the clinical data happen to coincide well
 with the case-control status of the original data). This gives a false
-discovery rate of 0.0016.
+discovery rate of 0.0008  ((39 / 20) / 2328) for reasonable cutoffs.
 We found that \textit{comb-p} recovers more significant
 probes than a simple FDR correction on the original p-values.
 We also found that the process of segmenting the genome into smaller chunks and
