@@ -231,7 +231,13 @@ indicating that \textit{comb-p}
 is finding the best regions among those previously reported.
 In addition, \textit{comb-p} regions also yield a higher target enrichment
 score based on proximity to known Ci genes, indicating that \textit{comb-p}
-is selecting for known targets.
+is selecting for known targets. The corrected p-value
+reported by \textit{comb-p} can be used as a filter to extract regions of
+interest; we calculated the enrichment ratio of the number of observed to expected
+Ci target genes at various \textit{comb-p} corrected p-value cutoffs. For a cutoff
+of 0.1, the enrichment is 2.41, this enrichment increases to 3.46 and 5.29 for more
+stringent cutoffs of 1e-3 and 1e-4 respectively.
+
 
 Bisulfite-sequencing (BS-Seq) is also used to measure methylation across the
 genome. As another example of the flexibility of our method, we demonstrate
