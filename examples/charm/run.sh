@@ -99,7 +99,11 @@ comb-p pipeline \
 DONE
 # to check for # false positives on just the raw p-values
 
-comb-p peaks -c $LSB_JOBINDEX --seed 0.0005 --dist 80 $data/pvalues.bed | awk '$4 < 0.001 && $5 > 5' $PRE.peaks;
+# only print out the FDR column
+comb-p fdr -c $LSB_JOBINDEX data/pvalues.bed | awk 'BEGIN{OFS=FS="\t"}{ print $1,$2,$3,$NF }' > $PRE.fdr
+comb-p peaks -c $LSB_JOBINDEX --seed 0.0005 --dist 80 data/pvalues.bed > $PRE.peaks;
+comb-p peaks -c 4 --seed 0.0005 --dist 80 $PRE.fdr > $PRE.fdr.peaks;
+
 exit;
 
 fi
