@@ -107,11 +107,14 @@ Shuffling
 We can shuffle the clinical data (DiseaseStatus and TissueType relative
 to the lab data and check what the pipeline will call.
 In fact, when running comb-p on shuffled data, it most often finds *no*
-DMR's. On 20 repeats of randomly shuffled data, we find a total of only
-37 false-positive DMR's; 34 of those come from 2 of the random sets,
+DMR's. 
+When requiring at least 5 probes and a corrected p-value of < 0.05, we find
+2328 DMRs in the real data for disease status.
+On 20 repeats of randomly shuffled data, with the same cutoffs, we find a total of only
+39 false-positive DMR's; 34 of those come from 2 of the random sets,
 indicating that they happened to coincide fairly well with the case-control
 status of the original data.
-This indicates a false discovery rate of essentially 0.0016.
+This indicates a false discovery rate of essentially 0.0008.
 We did this with a command like
 
 ```Shell
