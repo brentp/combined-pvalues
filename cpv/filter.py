@@ -28,7 +28,7 @@ def main():
     rh = get_header(args.region_bed)
 
     a = dict(p_bed=args.p_bed, region_bed=args.region_bed)
-    print "#" + "\t".join(rh + ["t-pos", "t-neg"])
+    print "#" + "\t".join(rh + ["t-pos", "t-neg", "t-sum"])
     for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
@@ -41,8 +41,8 @@ def main():
         if args.max_p:
             if any(float(row['p' + args.p]) > args.max_p for row in plist):
                 continue
-
-        frow = [plist[0][h] for h in rh] + [str(tpos), str(tneg)]
+        tsum = sum(ts for ts in tscores)
+        frow = [plist[0][h] for h in rh] + [str(tpos), str(tneg), str(tsum)]
         print "\t".join(frow)
 
 if __name__ == "__main__":
