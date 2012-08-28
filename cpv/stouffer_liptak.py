@@ -27,9 +27,10 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
     """
     L = len(pvals)
     pvals = np.array(pvals, dtype=np.float64)
-    qvals = qnorm(1 - pvals, loc=0, scale=1).reshape(L, 1)
+    pvals[pvals == 1] = 1.0 - 9e-16
+    qvals = qnorm(1.0 - pvals, loc=0, scale=1).reshape(L, 1)
     if any(np.isinf(qvals)):
-        raise Exception("bad values")
+        raise Exception("bad values: %s" % pvals[list(np.isinf(qvals))])
 
     # dont do the correction unless sigma is specified.
     result = {"OK": True}
