@@ -87,7 +87,9 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     ax.set_ylabel('' if no_log else '-log10(p)')
     if regions:
         for s, e in new_bounds:
-            ax.axvspan(s - 55, e + 10, facecolor='#f30000', ec='#f30000', alpha=0.3,
+            #ax.axvspan(s - 55, e + 10, facecolor='#f30000', ec='#f30000', alpha=0.3,
+            #        zorder=0)
+            ax.axvspan(s - 55, e + 10, facecolor='#222222', ec='#222222', alpha=0.3,
                     zorder=0)
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
@@ -155,7 +157,7 @@ def main():
     p.add_argument("-b", dest="bonferonni", 
             help="plot a line for the bonferonni of 0.05")
     p.add_argument("-c", "--col", dest="col", help="index of the column containing"
-                   " the the p-value", default=-1, type=int)
+                   " the the p-value", default='-1')
     p.add_argument("--colors", dest="colors", help="cycle through these colors",
                 default="bk")
     p.add_argument("--image", dest="image", help="save the image to this file."
@@ -176,7 +178,7 @@ def main():
     if (not args.bed_file):
         sys.exit(not p.print_help())
 
-    column = get_col_num(args.col)
+    column = get_col_num(args.col, args.bed_file)
     regions = read_regions(args.regions)
 
     manhattan(args.bed_file, column, args.image, args.no_log, args.colors,
