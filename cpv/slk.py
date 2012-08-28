@@ -92,7 +92,7 @@ def slk_chrom(chromlist, lag_max, acfs, stringent):
         if not r["OK"] and n_bad < 20:
             print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
                     (xbed["chrom"], xbed["start"], xbed["end"])
-            print >>sys.stderr, "# pvals:", pvals[:20] + "..." 
+            print >>sys.stderr, "# pvals:", ",".join(map(str, pvals[:10])) + "..." 
             n_bad += 1
             if n_bad == 20:
                 print >>sys.stderr, "not reporting further un-invertibles"

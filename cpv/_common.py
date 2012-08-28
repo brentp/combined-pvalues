@@ -13,7 +13,7 @@ def get_col_nums(c):
     if isinstance(c, int): return [get_col_num(c)]
     return [get_col_num(int(n)) for n in c.rstrip().split(",")]
 
-def get_col_num(c):
+def get_col_num(c, bed_file=None):
     """
     adjust the col number so it does intutive stuff
     for command-line interface
@@ -22,7 +22,14 @@ def get_col_num(c):
     >>> get_col_num(-1)
     -1
     """
-    return c if c < 0 else (c - 1)
+    if isinstance(c, basestring) and c.isdigit():
+        c = int(c)
+    if isinstance(c, (int, long)):
+        return c if c < 0 else (c - 1)
+    header = open(bed_file).readline().rstrip().split("\t")
+    assert c in header
+    return header.index(c)
+
 
 def bediter(fname, col_num, delta=None):
     """
@@ -30,14 +37,19 @@ def bediter(fname, col_num, delta=None):
     and the start, stop column into an int and yield a dict
     for each row.
     """
-    for l in reader(fname, header=False):
+    for i, l in enumerate(reader(fname, header=False)):
         if l[0][0] == "#": continue
+        if i == 0: # allow skipping header
+            try:
+                float(l[col_num])
+            except ValueError:
+                continue
         p = float(l[col_num])
         if not delta is None:
             if p > 1 - delta: p-= delta # the stouffer correction doesnt like values == 1
             if p < delta: p = delta # the stouffer correction doesnt like values == 0
 
-        yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
+        yield  {"chrom": l[0], "start": int(float(l[1])), "end": int(float(l[2])),
                 "p": p} # "stuff": l[3:][:]}
 
 def pairwise(iterable):

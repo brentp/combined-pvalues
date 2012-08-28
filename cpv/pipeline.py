@@ -9,7 +9,7 @@ def main():
                    formatter_class=argparse.RawDescriptionHelpFormatter)
 
     p.add_argument("-c", dest="c", help="column number that has the value to"
-                   "take the  acf", type=int, default=4)
+                   "take the  acf", default='4')
     p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
              " ACF calculation", type=int)
     p.add_argument("--step", dest="step", help="step size for bins in the"
@@ -42,7 +42,7 @@ def main():
         args.threshold = args.seed
     assert op.exists(args.bed_files[0])
 
-    col_num = get_col_num(args.c)
+    col_num = get_col_num(args.c, args.bed_files[0])
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
             args.bed_files, args.stringent, args.mlog)
