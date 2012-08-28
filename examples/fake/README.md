@@ -1,5 +1,5 @@
-Here we show a fake dataset that would have no DMRs using a traditional
-approach.
+Here we show a dataset with some regions of low p-values for which a
+traditional approach would find no p-values.
 For example, after Benjamini-Hochberg, there are no regions with a q-value
 less that 0.05:
 
