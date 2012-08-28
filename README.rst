@@ -8,6 +8,7 @@ About
 
 The manuscript (under review) is available here:
 	http://dl.dropbox.com/u/88537/cpv-submission.pdf
+
 It includes an explanation of 3 examples in the examples directory
 of this repository.
 
@@ -252,3 +253,10 @@ An invocation::
 Will extract p-values from column 5 of pvals.bed for lines within regions in
 regions.bed. It will set tau to (-t) 0.1, use a step-size of 50 for the ACF
 calculation.
+
+Frequently Asked Questions
+==========================
+
+See the Wiki `F.A.Q.`_
+
+.. _`F.A.Q.`: https://github.com/brentp/combined-pvalues/wiki/F.A.Q.

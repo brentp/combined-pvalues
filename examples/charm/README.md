@@ -100,6 +100,84 @@ lower q-values from the Irizarry data by intersecting with our
 DMR's. So the Irizarry DMR's that overlap with ours are less
 likely to be false discoveries.
 
+
+Shuffling
+---------
+
+We can shuffle the clinical data (DiseaseStatus and TissueType relative
+to the lab data and check what the pipeline will call.
+In fact, when running comb-p on shuffled data, it most often finds *no*
+DMR's. 
+When requiring at least 5 probes and a corrected p-value of < 0.05, we find
+2328 DMRs in the real data for disease status.
+On 20 repeats of randomly shuffled data, with the same cutoffs, we find a total of only
+39 false-positive DMR's; 34 of those come from 2 of the random sets,
+indicating that they happened to coincide fairly well with the case-control
+status of the original data.
+This indicates a false discovery rate of essentially 0.0008.
+We did this with a command like
+
+```Shell
+$ comb-p pipeline -c 6 -s --seed 0.0005 --dist 80 --step 40 -p $PREFIX $SHUFFLED_PVALS
+```
+The shuffled p-values were generated with the script:
+https://github.com/brentp/combined-pvalues/blob/master/examples/charm/scripts/fit.lm.R
+
+We then count only the regions that are significant after the SLK-Sidak
+correction.
+
+We also show that *not* applying the pipeline results in more false positive
+DMRs. If we run only the peak finding.
+
+```Shell
+$ comb-p peaks -c $LSB_JOBINDEX --seed 0.0005 --dist 80 data/pvalues.bed > $PRE.peaks;
+```
+without the corrections that would normally be applied in the pipeline, we
+find 18654 peaks in the shuffled data--relative to only 37 before.
+
+```Shell
+$ wc -l data/quantile/p.disease-*/p.disease-*.peaks
+``` 
+
+We can limit those by requiring more than a single probe in the DMR and this drops
+the number to 254.
+
+```Shell
+awk '$5 > 1' data/quantile/p.disease-*/p.disease-*.peaks | wc -l
+```
+In this case, if we apply the same to the real, unshuffled data, then we find 
+also more putative DMR's. Below we do a more stringent test using the FDR.
+Since this dataset is on tumor vs normal, we see large changes, but for many
+real-world datasets, this correction is required in order to find regions of
+smaller changes.
+
+
+Power
+-----
+Conversely, we can show that we find more total probes that are differentially
+methylated when using our SLK method than using a simple FDR correction.
+
+```Shell
+$ python ../../cpv/fdr.py -c 4 /tmp/pvalues.bed | awk '$8 < 0.0005' | wc -l
+1238
+```
+shows that there are 1238 probes with a p-value less than our chosen cutoff.
+However, if we count the total number of probes in regions with a corrected
+p-value less then 0.05 (note the distinction between probe and region
+p-values):
+
+```Shell
+$ awk 'BEGIN{sum=0}(NR > 1 && $7 < 0.05){ sum += $5; }END{ print sum }' /tmp/p.disease.regions-p.bed 
+31514
+```
+We have a much larger number *31,514* vs *1,238*. (The number is higher if we
+don't limit to significant regions).
+
+Of course, this is necessary in studies where we have smaller differences and the original
+p-values at each probe are not low enough to survive multiple-testing correction.
+In fact, in most cases, we find 0 probes with a Benjamini-Hochberg q-value <
+0.05.
+
 Further Exploration
 -------------------
 
