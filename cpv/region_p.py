@@ -153,7 +153,8 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
             prows.append(prow)
             prow = piter.next()
             if prow is None: break
-        assert prows, (region_line)
+        if not prows:
+            print >>sys.stderr, "missed,:", prows, (region_line)
         region_len = rend - rstart
         region_info.append((region_line, region_len, prows))
         del prows
