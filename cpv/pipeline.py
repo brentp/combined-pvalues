@@ -23,12 +23,15 @@ def main():
     p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
 
-    p.add_argument("-s", dest="stringent", action="store_true", default=False,
-            help="use this flag if there is an abundance of low-pvalues.")
-
     p.add_argument("--mlog", dest="mlog", action="store_true",
                    default=False, help="do the correlation on the -log10 of"
                    "the p-values. Default is to do it on the raw values")
+
+    p.add_argument("--region-filter-p", help="max adjusted region-level p-value to be reported"
+                 "in final output", type=float, default=1)
+
+    p.add_argument("--region-filter-n", help="require at least this many probes"
+                 "for a region to be reported in final output", type=int, default=1)
 
     p.add_argument('bed_files', nargs='+', help='sorted bed file to process')
 
@@ -45,13 +48,16 @@ def main():
     col_num = get_col_num(args.c, args.bed_files[0])
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
-            args.bed_files, args.stringent, args.mlog)
+            args.bed_files, mlog=args.mlog,
+		region_filter_p=args.region_filter_p,
+		region_filter_n=args.region_filter_n)
 
-def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files,
-        stringent=False, mlog=False):
+def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
+    region_filter_p=1, region_filter_n=1):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
-    from cpv import acf, slk, fdr, peaks, region_p, stepsize
+    from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
     import operator
+
     if step is None:
         step = stepsize.stepsize(bed_files, col_num)
         print >>sys.stderr, "calculated stepsize as: %i" % step
@@ -83,9 +89,9 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files,
         acf_vals = acf.write_acf(acf_vals, fh)
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
+
     with open(prefix + ".slk.bed", "w") as fh:
-        for row in slk.adjust_pvals(bed_files, col_num, acf_vals,
-                stringent):
+        for row in slk.adjust_pvals(bed_files, col_num, acf_vals):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
 
@@ -109,12 +115,22 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files,
                                prefix + ".slk.bed",
                                prefix + ".regions.bed", -2,
                                0, step):
-            if sim_p != "NA":
-                sim_p = "%.4g" % sim_p
-            #fh.write("%s\t%.4g\t%.4g\t%s\n" % (region_line, slk_p, slk_sidak_p, \
             fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
-            #                                     sim_p))
+
             fh.flush()
             N += int(slk_sidak_p < 0.05)
         print >>sys.stderr, "wrote: %s, (regions with corrected-p < 0.05: %i)" \
                 % (fh.name, N)
+
+    regions_bed = fh.name
+    with open(prefix + ".regions-t.bed", "w") as fh:
+        N = 0
+        for i, toks in enumerate(filter.filter(bed_files[0], regions_bed)):
+	    if i == 0: toks[0] = "#" + toks[0]
+            else:
+		if float(toks[6]) > region_filter_p: continue
+		if int(toks[4]) < region_filter_n: continue
+                N += 1
+            print >>fh, "\t".join(toks)
+        print >>sys.stderr, "wrote: %s, (regions with region-p < %.3f and n-probes >= %i: %i)" \
+                % (fh.name, region_filter_p, region_filter_n, N)

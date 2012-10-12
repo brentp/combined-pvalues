@@ -14,7 +14,7 @@ from tempfile import mktemp
 def fix_header(fname):
     r = reader(fname, header=False)
     h = r.next()
-    if not h[0].lower().startswith(("#", )) and (h[1] + h[2]).isdigit():
+    if not h[0].startswith(("#", )) and (h[1] + h[2]).isdigit():
         return fname
     tname = mktemp()
     fh = open(tname, "w")
@@ -39,29 +39,32 @@ def main():
     p.add_argument('p_bed', help='file containing the raw p-values')
     args = p.parse_args()
 
-    ph = ['p' + h for h in get_header(args.p_bed)]
-    rh = get_header(args.region_bed)
+    for row in filter(args.p_bed, args.region_bed, args.max_p):
+        print "\t".join(row)
 
+def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value"):
+    ph = ['p' + h for h in get_header(p_bed)]
+    rh = get_header(region_bed)
 
-    a = dict(p_bed=args.p_bed, region_bed=args.region_bed)
+    a = dict(p_bed=p_bed, region_bed=region_bed)
     a['p_bed'] = fix_header(a['p_bed'])
 
-    print "#" + "\t".join(rh + ["t-pos", "t-neg", "t-sum"])
+    yield rh + ["t-pos", "t-neg", "t-sum", "n_gt_p05", "n_gt_p1"]
     for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
-        tscores = [float(row['p' + args.t]) for row in plist]
-
-        tpos = sum(1 for ts in tscores if ts > 0)
-        tneg = sum(1 for ts in tscores if ts < 0)
-        if args.filter and (tpos * tneg != 0):
-            continue
-        if args.max_p:
+        tscores = [float(row['pt']) for row in plist]
+        if max_p:
             if any(float(row['p' + args.p]) > args.max_p for row in plist):
                 continue
+
+        ngt05  = sum(1 for row in plist if float(row['p' + p_col_name]) > 0.05)
+        ngt1  = sum(1 for row in plist if float(row['p' + p_col_name]) > 0.1)
+        tpos = sum(1 for ts in tscores if ts > 0)
+        tneg = sum(1 for ts in tscores if ts < 0)
         tsum = sum(ts for ts in tscores)
-        frow = [plist[0][h] for h in rh] + [str(tpos), str(tneg), str(tsum)]
-        print "\t".join(frow)
+        frow = [plist[0][h] for h in rh] + [str(tpos), str(tneg), str(tsum), str(ngt05), str(ngt1)]
+        yield frow
 
 if __name__ == "__main__":
     import doctest
