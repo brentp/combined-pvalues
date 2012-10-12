@@ -1,5 +1,3 @@
-"""
-"""
 import argparse
 import sys
 import os
@@ -75,7 +73,7 @@ def gen_sigma_matrix(group, acfs, cached={}):
     """
     return a
 
-def slk_chrom(chromlist, lag_max, acfs, stringent):
+def slk_chrom(chromlist, lag_max, acfs, stringent=False):
     """
     calculate the slk for a given chromosome
     """
@@ -100,7 +98,7 @@ def slk_chrom(chromlist, lag_max, acfs, stringent):
 def _slk_chrom(args):
     return list(slk_chrom(*args))
 
-def adjust_pvals(fnames, col_num0, acfs, stringent):
+def adjust_pvals(fnames, col_num0, acfs, stringent=False):
     lag_max = acfs[-1][0][1]
 
     # parallelize if multiprocesing is installed.
