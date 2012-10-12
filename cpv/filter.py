@@ -9,6 +9,21 @@ import argparse
 from toolshed import reader, header as get_header
 from operator import itemgetter
 from itertools import groupby
+from tempfile import mktemp
+
+def fix_header(fname):
+    r = reader(fname, header=False)
+    h = r.next()
+    if not h[0].lower().startswith(("#", )) and (h[1] + h[2]).isdigit():
+        return fname
+    tname = mktemp()
+    fh = open(tname, "w")
+    print >>fh, "#" + "\t".join(h)
+    for toks in r:
+        print >>fh, "\t".join(toks)
+    fh.close()
+    return tname
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
@@ -27,7 +42,10 @@ def main():
     ph = ['p' + h for h in get_header(args.p_bed)]
     rh = get_header(args.region_bed)
 
+
     a = dict(p_bed=args.p_bed, region_bed=args.region_bed)
+    a['p_bed'] = fix_header(a['p_bed'])
+
     print "#" + "\t".join(rh + ["t-pos", "t-neg", "t-sum"])
     for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
