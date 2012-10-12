@@ -70,7 +70,7 @@ def run(args):
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
         """
 
-def _gen_acf(region_info, fpvals, col_num, step):
+def _gen_acf(region_info, fpvals, col_num, step, mlog):
     # calculate the ACF as far out as needed...
     # [1] is the length of each region.
     max_len = max(r[1] for r in region_info)
@@ -90,7 +90,7 @@ def _gen_acf(region_info, fpvals, col_num, step):
     if len(lags) > 100:
         print >>sys.stderr, "# !! this could take a looong time"
         print >>sys.stderr, "# !!!! consider using a larger step size (-s)"
-    acfs = acf(fpvals, lags, col_num, simple=True)
+    acfs = acf(fpvals, lags, col_num, simple=True, mlog=mlog)
     print >>sys.stderr, "# Done with one-time ACF calculation"
     return acfs
 
@@ -146,9 +146,11 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
         nr += 1
         # grab the p-values in the bed file that are within the current region
         while (prow["chrom"] != rchrom or prow["start"] < rstart):
+        #while (prow["chrom"] != rchrom or prow["end"] < rstart):
             prow = piter.next()
             if prow is None: break
 
+        #while prow is not None and (rchrom, rend) > (prow["chrom"], prow["start"]):
         while prow is not None and (rchrom, rend) >= (prow["chrom"], prow["end"]):
             prows.append(prow)
             prow = piter.next()
@@ -156,12 +158,12 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
         if not prows:
             print >>sys.stderr, "missed,:", prows, (region_line)
         region_len = rend - rstart
-        region_info.append((region_line, region_len, prows))
+        region_info.append((region_line, region_len, prows[:]))
         del prows
     assert nr == len(region_info), (nr, len(region_info))
     return region_info
 
-def region_p(fpvals, fregions, col_num, nsims, step):
+def region_p(fpvals, fregions, col_num, nsims, step, mlog=False):
     # just use 2 for col_num, but dont need the p from regions.
 
     if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
@@ -171,7 +173,7 @@ def region_p(fpvals, fregions, col_num, nsims, step):
     process, total_coverage_sync = _get_total_coverage(fpvals, col_num)
     region_info = _get_ps_in_regions(fregions, fpvals, col_num)
 
-    acfs = _gen_acf(region_info, (fpvals,), col_num, step)
+    acfs = _gen_acf(region_info, (fpvals,), col_num, step, mlog=mlog)
     process.join()
     total_coverage = total_coverage_sync.value
 
@@ -184,8 +186,11 @@ def region_p(fpvals, fregions, col_num, nsims, step):
         # gen_sigma expects a list of bed dicts.
         sigma = gen_sigma_matrix(prows, acfs)
         ps = np.array([prow["p"] for prow in prows])
-        assert ps.shape[0] != 0, ("bad region", region_line)
-        assert ps.shape[0] == sigma.shape[0], ("bad_region", region_line)
+        if ps.shape[0] == 0:
+            print >>sys.stderr,("bad region", region_line)
+            continue
+        #assert ps.shape[0] != 0, ("bad region", region_line)
+        #assert ps.shape[0] == sigma.shape[0], ("bad_region", region_line)
 
         # calculate the SLK for the region.
 

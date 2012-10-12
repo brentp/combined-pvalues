@@ -108,7 +108,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files,
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                prefix + ".slk.bed",
                                prefix + ".regions.bed", -2,
-                               0, step):
+                               0, step, mlog=mlog):
             if sim_p != "NA":
                 sim_p = "%.4g" % sim_p
             #fh.write("%s\t%.4g\t%.4g\t%s\n" % (region_line, slk_p, slk_sidak_p, \
