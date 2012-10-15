@@ -65,6 +65,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     lags = range(1, dist, step)
     lags.append(lags[-1] + step)
 
+    prefix = prefix.rstrip(".")
     # go out to max requested distance but stop once an autocorrelation
     # < 0.05 is added.
 
