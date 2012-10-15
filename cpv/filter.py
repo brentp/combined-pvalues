@@ -53,7 +53,9 @@ def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value"):
     for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
+        plist = [x for x in plist if (int(x['start']) <= int(x['pstart']) <= int(x['pend'])) and ((int(x['start']) <= int(x['pend']) <= int(x['end'])))]
         tscores = [float(row['pt']) for row in plist]
+
         if max_p:
             if any(float(row['p' + args.p]) > args.max_p for row in plist):
                 continue
