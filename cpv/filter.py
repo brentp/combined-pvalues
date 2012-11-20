@@ -45,6 +45,8 @@ def main():
 def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value"):
     ph = ['p' + h for h in get_header(p_bed)]
     rh = get_header(region_bed)
+    if isinstance(p_col_name, (int, long)):
+        p_col_name = ph[p_col_name][1:]
 
     a = dict(p_bed=p_bed, region_bed=region_bed)
     a['p_bed'] = fix_header(a['p_bed'])
@@ -54,10 +56,10 @@ def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value"):
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
         plist = [x for x in plist if (int(x['start']) <= int(x['pstart']) <= int(x['pend'])) and ((int(x['start']) <= int(x['pend']) <= int(x['end'])))]
-        tscores = [float(row['pt']) for row in plist]
+        tscores = [float(row['pt']) for row in plist if 'pt' in row]
 
         if max_p:
-            if any(float(row['p' + args.p]) > args.max_p for row in plist):
+            if any(float(row['p' + p_col_name]) > max_p for row in plist):
                 continue
 
         ngt05  = sum(1 for row in plist if float(row['p' + p_col_name]) > 0.05)
