@@ -6,8 +6,11 @@ correlation.
 About
 =====
 
-The manuscript (under review) is available here:
-	http://dl.dropbox.com/u/88537/cpv-submission.pdf
+The Bioinformatics Applications Note manuscript is available here:
+    http://bioinformatics.oxfordjournals.org/content/28/22/2986.full
+
+free link:
+    http://bioinformatics.oxfordjournals.org/cgi/reprint/bts545?ijkey=ZTTOnczUJYLfKgw&keytype=ref
 
 It includes an explanation of 3 examples in the examples directory
 of this repository.
