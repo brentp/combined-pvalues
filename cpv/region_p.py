@@ -62,7 +62,7 @@ def run(args):
     # order in results is slk, uniform, sample
     #for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-            col_num, args.N, args.step):
+            col_num, args.N, args.step, args.mlog):
         if sim_p != "NA":
             sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g\t%s" % (region_line, slk, slk_sidak, sim_p)
@@ -228,6 +228,9 @@ def main():
     p.add_argument("-s", dest="step", type=int, default=50,
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
+    p.add_argument("--mlog", dest="mlog", action="store_true",
+                   default=False, help="do the correlation on the -log10 of"
+                   "the p-values. Default is to do it on the raw values")
     p.add_argument("-N", dest="N", help="number of simulations to perform",
                    type=int, default=0)
     p.add_argument("-c", dest="c", help="column number containing the p-value"
