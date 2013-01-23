@@ -60,15 +60,11 @@ def sl_sim(sigma, ps, nsims, sample_distribution=None):
 def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
-    #for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
             col_num, args.N, args.step, args.mlog):
-        if sim_p != "NA":
-            sim_p = "%.4g" % (sim_p)
-        print "%s\t%.4g\t%.4g\t%s" % (region_line, slk, slk_sidak, sim_p)
-        """
+        #if sim_p != "NA":
+        #    sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
-        """
 
 def _gen_acf(region_info, fpvals, col_num, step, mlog):
     # calculate the ACF as far out as needed...
@@ -202,7 +198,7 @@ def region_p(fpvals, fregions, col_num, nsims, step, mlog=False):
         sidak_slk_p = sidak(slk_p, region_len, total_coverage)
 
         result = [region_line, slk_p, sidak_slk_p]
- 
+
         # corroborate those with p-values < 0.1 by simulation
         #"""
         if nsims > 0:
@@ -239,6 +235,10 @@ def main():
     if not (args.regions and args.pvals):
         import sys
         sys.exit(not p.print_help())
+    from toolshed import nopen
+    header = nopen(args.regions).next()
+    if header.startswith("#") or (not header.split("\t")[2].isdigit()):
+        print "%s\tslk_p\tslk_sidak_p" % (header.rstrip("\r\n"),)
     return run(args)
 
 if __name__ == "__main__":
