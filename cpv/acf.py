@@ -79,7 +79,8 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     # reversing allows optimization below.
     try:
         from multiprocessing import Pool
-        p = Pool()
+        import signal
+        p = Pool(None, lambda: signal.signal(signal.SIGINT, signal.SIG_IGN))
         imap = p.imap
     except ImportError:
         from itertools import imap

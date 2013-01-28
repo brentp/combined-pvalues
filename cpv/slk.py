@@ -104,7 +104,8 @@ def adjust_pvals(fnames, col_num0, acfs, stringent=False):
     # parallelize if multiprocesing is installed.
     try:
         from multiprocessing import Pool
-        pool = Pool()
+        import signal
+        pool = Pool(None, lambda: signal.signal(signal.SIGINT, signal.SIG_IGN))
         imap = pool.imap
     except ImportError:
         import itertools
