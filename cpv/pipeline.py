@@ -10,7 +10,7 @@ def main():
 
     p.add_argument("-c", dest="c", help="column number that has the value to"
                    "take the  acf", default='4')
-    p.add_argument("--dist", dest="dist", help="Maximum dist to extend the"
+    p.add_argument("--dist", "--distance", dest="dist", help="Maximum dist to extend the"
              " ACF calculation", type=int)
     p.add_argument("--step", dest="step", help="step size for bins in the"
              " ACF calculation", type=int)
@@ -23,7 +23,7 @@ def main():
     p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
 
-    p.add_argument("--mlog", dest="mlog", action="store_true",
+    p.add_argument("--mlog", "--nlog", dest="mlog", action="store_true",
                    default=False, help="do the correlation on the -log10 of"
                    "the p-values. Default is to do it on the raw values")
 
