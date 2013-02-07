@@ -16,7 +16,7 @@ def create_acf_list(lags):
     for lag_min, lag_max in pairwise(lags):
         acfs.append((lag_min, lag_max,
             # array uses less memory than list.
-            {"x": array("f"), "y": array("f") }))
+            {"x": array("f"), "y": array("f")}))
     acfs.reverse()
     return acfs
 
@@ -48,6 +48,7 @@ def _acf_by_chrom(args):
                     break
     return acfs
 
+
 def merge_acfs(unmerged):
     """
     utitlity function to merge the chromosomes after
@@ -58,7 +59,7 @@ def merge_acfs(unmerged):
     for um in unmerged:
         # have to merge at each lag.
         for (glag_min, glag_max, gxys), (ulag_min, ulag_max, uxys) in \
-                                                        izip(merged, um):
+                                                izip(merged, um):
             assert glag_min == ulag_min and glag_max == ulag_max
             gxys["x"].extend(uxys["x"])
             gxys["y"].extend(uxys["y"])
@@ -88,8 +89,9 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     arg_list = [] # chaining
     for fname in fnames:
         # groupby chromosome.
-        arg_list = chain(arg_list, ((list(chromlist), lags) for chrom, chromlist in
-                groupby(bediter(fname, col_num0), lambda a: a["chrom"])))
+        arg_list = chain(arg_list, ((list(chromlist), lags) for chrom, \
+                    chromlist in \
+                    groupby(bediter(fname, col_num0), lambda a: a["chrom"])))
 
     unmerged_acfs = [] # separated by chrom. need to merge later.
     for chrom_acf in imap(_acf_by_chrom, arg_list):
@@ -142,7 +144,7 @@ def write_acf(acf_vals, out):
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
     print >>out, "#", chart(values, xlabels)
     print >> out, "#lag_min\tlag_max\tcorrelation\tN\tp"
-    for k,v in sorted(acf_vals):
+    for k, v in sorted(acf_vals):
         print >> out, "%i\t%i\t%.4g\t%i\t%.4g" % (k[0], k[1], v[0], v[1], v[2])
         simple_acf.append((k, v[0]))
     return simple_acf
