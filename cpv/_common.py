@@ -52,6 +52,18 @@ def bediter(fname, col_num, delta=None):
         yield  {"chrom": l[0], "start": int(float(l[1])), "end": int(float(l[2])),
                 "p": p} # "stuff": l[3:][:]}
 
+def genomic_control(pvals):
+    """
+    >>> genomic_control([0.25, 0.5, 0.75])
+    1.0000800684096998
+    >>> genomic_control([0.025, 0.005, 0.0075])
+    15.715846578113579
+    """
+    from scipy import stats
+    import numpy as np
+    pvals = np.asarray(pvals)
+    return np.median(stats.chi2.ppf(1 - pvals, 1)) / 0.4549
+
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
