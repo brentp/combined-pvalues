@@ -54,6 +54,7 @@ def bediter(fname, col_num, delta=None):
 
 def genomic_control(pvals):
     """
+    calculate genomic control factor, lambda
     >>> genomic_control([0.25, 0.5, 0.75])
     1.0000800684096998
     >>> genomic_control([0.025, 0.005, 0.0075])
@@ -63,6 +64,19 @@ def genomic_control(pvals):
     import numpy as np
     pvals = np.asarray(pvals)
     return np.median(stats.chi2.ppf(1 - pvals, 1)) / 0.4549
+
+def genome_control_adjust(pvals):
+    """
+    adjust p-values by the genomic control factor, lambda
+    >>> genome_control_adjust([0.4, 0.01, 0.02])
+    array([ 0.8072264 ,  0.45518836,  0.50001716])
+    """
+    import numpy as np
+    from scipy import stats
+    pvals = np.asarray(pvals)
+    qchi = stats.chi2.ppf(1 - pvals, 1)
+    gc = np.median(qchi) / 0.4549
+    return 1 - stats.chi2.cdf(qchi / gc, 1)
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
