@@ -60,7 +60,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     region_filter_p=1, region_filter_n=1, genome_control=False):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
-    from cpv._common import genome_control_adjust_bed, genomic_control, bediter
+    from cpv._common import genome_control_adjust, genomic_control, bediter
     import operator
 
 
@@ -72,11 +72,10 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     lags.append(lags[-1] + step)
 
     prefix = prefix.rstrip(".")
-    if genome_control:
-        1/0
-        with open(prefix + ".adj.bed", "w") as fh:
-            genome_control_adjust_bed(bed_files, col_num, fh)
-        bedfiles = [fh.name]
+    #if genome_control:
+    #    with open(prefix + ".adj.bed", "w") as fh:
+    #        genome_control_adjust_bed(bed_files, col_num, fh)
+    #    bed_files = [fh.name]
 
     putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False,
                                 mlog=mlog)
@@ -102,23 +101,32 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
 
-    with open(prefix + ".slk.bed", "w") as fh:
+    spvals = []
+    with open(prefix + ".slk.bed", "w") as fhslk:
+
         for row in slk.adjust_pvals(bed_files, col_num, acf_vals):
-            fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
-        print >>sys.stderr, "wrote: %s" % fh.name
-    print >>sys.stderr, "genomic control value after SLK: %.3f" \
-            % genomic_control([d['p'] for d in bediter(fh.name, 4)])
-        # always the 4th column contains the slk adjusted p-value
+            fhslk.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
+            spvals.append(row[-1])
+    print >>sys.stderr, "wrote: %s" % fhslk.name
+
+    if genome_control:
+        fhslk = open(prefix + ".slk.gc.bed", "w")
+        adj = genome_control_adjust([d['p'] for d in bediter(prefix + ".slk.bed", -1)])
+        for i, line in enumerate(open(prefix + ".slk.bed")):
+            print >>fhslk, "%s\t%.5g" % (line.rstrip("\r\n"), adj[i])
+
+        fhslk.close()
+        print >>sys.stderr, "wrote: %s" % fhslk.name
 
     with open(prefix + ".fdr.bed", "w") as fh:
-        for bh, l in fdr.fdr(prefix + ".slk.bed", -1):
+        for bh, l in fdr.fdr(fhslk.name, -1):
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
 
     fregions = prefix + ".regions.bed"
     with open(fregions, "w") as fh:
-        peaks.peaks(prefix + ".fdr.bed", -1, threshold, seed,
-            step, fh, operator.le)
+        list(peaks.peaks(prefix + ".fdr.bed", -1, threshold, seed,
+            step, fh, operator.le))
     n_regions = sum(1 for _ in open(fregions))
     print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
 
