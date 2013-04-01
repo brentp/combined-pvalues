@@ -18,8 +18,12 @@ import sys
 def bediter(fname, col_num):
     for l in reader(fname, header=False):
         if l[0][0] == "#": continue
-        yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
+        try:
+            yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
                 "p": float(l[col_num])} # "stuff": l[3:][:]}
+        except:
+            print >>sys.stderr, l
+            raise
 
 # use class to keep track of written peaks.
 def write_peaks(peaks, seed, out, scmp):
@@ -75,15 +79,17 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
 def peaks(fbedfile, col_num, threshold, seed, dist, fout, scmp):
     chromiter = bediter(fbedfile, col_num)
     # TODO: make this yield...
-    list(walk(chromiter, threshold, seed, dist, fout, scmp))
+    for _ in walk(chromiter, threshold, seed, dist, fout, scmp):
+        yield _
 
 def run(args):
     col_num = args.c if args.c < 0 else args.c - 1
     scmp = operator.ge if args.invert else operator.le
     assert scmp(args.seed, args.threshold)
     # call list because the walk function is an iterator.
-    peaks(args.bed_file, col_num, args.threshold, args.seed, args.dist,
-          sys.stdout, scmp)
+    for peak in peaks(args.bed_file, col_num, args.threshold, args.seed, args.dist,
+            sys.stdout, scmp):
+        yield peak
 
 def main():
     p = argparse.ArgumentParser(__doc__)
@@ -111,7 +117,8 @@ def main():
 
     if args.threshold is None:
         args.threshold = args.seed
-    run(args)
+    for peak in run(args):
+        print peak
 
 if __name__ == "__main__":
     import doctest

@@ -1,5 +1,6 @@
 from toolshed import reader
 from itertools import tee, izip
+import sys
 
 def get_col_nums(c):
     """
@@ -31,26 +32,29 @@ def get_col_num(c, bed_file=None):
     return header.index(c)
 
 
-def bediter(fname, col_num, delta=None):
+def bediter(fnames, col_num, delta=None):
     """
     iterate over a bed file. turn col_num into a float
     and the start, stop column into an int and yield a dict
     for each row.
     """
-    for i, l in enumerate(reader(fname, header=False)):
-        if l[0][0] == "#": continue
-        if i == 0: # allow skipping header
-            try:
-                float(l[col_num])
-            except ValueError:
-                continue
-        p = float(l[col_num])
-        if not delta is None:
-            if p > 1 - delta: p-= delta # the stouffer correction doesnt like values == 1
-            if p < delta: p = delta # the stouffer correction doesnt like values == 0
+    if isinstance(fnames, basestring):
+        fnames = [fnames]
+    for fname in fnames:
+        for i, l in enumerate(reader(fname, header=False)):
+            if l[0][0] == "#": continue
+            if i == 0: # allow skipping header
+                try:
+                    float(l[col_num])
+                except ValueError:
+                    continue
+            p = float(l[col_num])
+            if not delta is None:
+                if p > 1 - delta: p-= delta # the stouffer correction doesnt like values == 1
+                if p < delta: p = delta # the stouffer correction doesnt like values == 0
 
-        yield  {"chrom": l[0], "start": int(float(l[1])), "end": int(float(l[2])),
-                "p": p} # "stuff": l[3:][:]}
+            yield  {"chrom": l[0], "start": int(float(l[1])), "end": int(float(l[2])),
+                    "p": p} # "stuff": l[3:][:]}
 
 def genomic_control(pvals):
     """
@@ -77,6 +81,31 @@ def genome_control_adjust(pvals):
     qchi = stats.chi2.ppf(1 - pvals, 1)
     gc = np.median(qchi) / 0.4549
     return 1 - stats.chi2.cdf(qchi / gc, 1)
+
+def genome_control_adjust_bed(bedfiles, colnum, outfh):
+    c = colnum
+    adj = genome_control_adjust([d['p'] for d in bediter(bedfiles, colnum)])
+
+    diff = 0
+    if len(bedfiles) > 1:
+        print >>sys.stderr, "can't do genomic control adjustment with more than 1 bed file"
+        sys.exit(4)
+    for j, bedfile in enumerate(bedfiles):
+        for i, toks in enumerate(line.rstrip("\r\n").split("\t") \
+                for line in open(bedfile)):
+            try:
+                float(toks[c])
+            except ValueError: # headder
+                if i == 0 == j:
+                    print >>outfh, "\t".join(toks)
+                    diff = 1
+                    continue
+                elif i == 0:
+                    continue
+                else:
+                    raise
+            toks[c] = "%.5g" % adj[i - diff]
+            print >>outfh, "\t".join(toks)
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."

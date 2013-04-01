@@ -23,6 +23,10 @@ def main():
     p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
 
+    p.add_argument("--genomic-control", dest="genomic_control",
+            help="perform the genomic control correction on the input"
+            " pvalues", action="store_true", default=False)
+
     p.add_argument("--mlog", "--nlog", dest="mlog", action="store_true",
                    default=False, help="do the correlation on the -log10 of"
                    "the p-values. Default is to do it on the raw values")
@@ -37,7 +41,6 @@ def main():
 
     args = p.parse_args()
 
-
     if not (args.prefix):
         sys.exit(p.print_help())
 
@@ -50,13 +53,16 @@ def main():
             args.threshold, args.seed,
             args.bed_files, mlog=args.mlog,
             region_filter_p=args.region_filter_p,
-            region_filter_n=args.region_filter_n)
+            region_filter_n=args.region_filter_n,
+            genome_control=args.genomic_control)
 
 def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
-    region_filter_p=1, region_filter_n=1):
+    region_filter_p=1, region_filter_n=1, genome_control=False):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
+    from cpv._common import genome_control_adjust_bed, genomic_control, bediter
     import operator
+
 
     if step is None:
         step = stepsize.stepsize(bed_files, col_num)
@@ -66,12 +72,17 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     lags.append(lags[-1] + step)
 
     prefix = prefix.rstrip(".")
-    # go out to max requested distance but stop once an autocorrelation
-    # < 0.05 is added.
+    if genome_control:
+        1/0
+        with open(prefix + ".adj.bed", "w") as fh:
+            genome_control_adjust_bed(bed_files, col_num, fh)
+        bedfiles = [fh.name]
 
     putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False,
                                 mlog=mlog)
     acf_vals = []
+    # go out to max requested distance but stop once an autocorrelation
+    # < 0.05 is added.
     for a in putative_acf_vals:
         # a is ((lmin, lmax), (corr, N))
         # this heuristic seems to work. stop just above the 0.08 correlation
@@ -95,6 +106,9 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         for row in slk.adjust_pvals(bed_files, col_num, acf_vals):
             fh.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
         print >>sys.stderr, "wrote: %s" % fh.name
+    print >>sys.stderr, "genomic control value after SLK: %.3f" \
+            % genomic_control([d['p'] for d in bediter(fh.name, 4)])
+        # always the 4th column contains the slk adjusted p-value
 
     with open(prefix + ".fdr.bed", "w") as fh:
         for bh, l in fdr.fdr(prefix + ".slk.bed", -1):
