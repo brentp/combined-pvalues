@@ -13,6 +13,7 @@ test $d -ne 1 && echo "ERROR" $d
 ##################################################################
 python cpv/peaks.py --dist 1 --seed 0.02 data/close_peaks.bed > t
 
+python cpv/pipeline.py
 d=$(wc -l t | awk '{ print $1}')
 test $d -ne 2 && echo "ERROR" $d
 
@@ -47,6 +48,8 @@ md_expected=$(md5sum cpv/tests/data/expected_acf.txt | awk '{ print $1 }')
 
 if [ $md != $md_expected ]; then
     echo "ACF OUTPUT different"
+    echo $md
+    echo $md_expected
 fi
 
 
