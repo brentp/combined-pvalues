@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
-from cpv._common import bediter, get_col_num
+from cpv._common import bediter, get_col_num, genomic_control
 
 def chr_cmp(a, b):
     a, b = a[0], b[0]
@@ -64,7 +64,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
             region_xys.extend([(last_x + r['start'], r['p']) for r in rlist \
                   if any((s <= r['start'] <= e) for s, e in regions_bounds)])
             # adjust the bounds of each region based on chrom.
-            new_bounds.extend([(last_x + s, last_x + e) 
+            new_bounds.extend([(last_x + s, last_x + e)
                             for s, e in regions_bounds])
 
         # save the middle of the region to place the label
@@ -112,10 +112,11 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
             % (ys > -np.log10(bonferonni_p)).sum()
 
-    if False:
-        ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
-
+    if True:
         pys = np.sort(10**-ys) # convert back to actual p-values
+        gc = genomic_control(pys)
+        ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
+        ax_qq.text(0.03, 0.88, r'$\lambda : %.3f$' % gc, transform=ax_qq.transAxes)
         qqplot(ys, ax_qq)
 
         ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
@@ -154,8 +155,8 @@ def main():
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--no-log", help="the p-value is already -log10'd, don't "
                 "re -log10", action='store_true', default=False)
-    p.add_argument("-b", dest="bonferonni", 
-            help="plot a line for the bonferonni of 0.05")
+    p.add_argument("-b", dest="bonferonni",
+            help="plot a line for the bonferonni of 0.05", action="store_true")
     p.add_argument("-c", "--col", dest="col", help="index of the column containing"
                    " the the p-value", default='-1')
     p.add_argument("--colors", dest="colors", help="cycle through these colors",
