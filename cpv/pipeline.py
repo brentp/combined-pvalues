@@ -36,6 +36,8 @@ def main():
 
     p.add_argument("--region-filter-n", help="require at least this many probes"
                  "for a region to be reported in final output", type=int, default=1)
+    p.add_argument("--annotate", help="annotate with refGen from this db" \
+            "in UCSC (e.g. hg19) requires cruzdb", default=None)
 
     p.add_argument('bed_files', nargs='+', help='sorted bed file to process')
 
@@ -54,10 +56,11 @@ def main():
             args.bed_files, mlog=args.mlog,
             region_filter_p=args.region_filter_p,
             region_filter_n=args.region_filter_n,
-            genome_control=args.genomic_control)
+            genome_control=args.genomic_control,
+            db=args.annotate)
 
 def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
-    region_filter_p=1, region_filter_n=1, genome_control=False):
+    region_filter_p=1, region_filter_n=1, genome_control=False, db=None):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
     from cpv._common import genome_control_adjust, genomic_control, bediter
@@ -157,3 +160,12 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
             print >>fh, "\t".join(toks)
         print >>sys.stderr, "wrote: %s, (regions with region-p < %.3f and n-probes >= %i: %i)" \
                 % (fh.name, region_filter_p, region_filter_n, N)
+
+    if db is not None:
+        from cruzdb import Genome
+        g = Genome(db)
+        lastf = fh.name
+        with open(prefix + ".anno.%s.bed" % db, "w") as fh:
+            g.annotate(lastf, ("refGene", "cpgIslandExt"), out=fh,
+                    feature_strand=True)
+        print >>sys.stderr, "wrote: %s annotated with %s" % (fh.name, db)
