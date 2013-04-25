@@ -89,7 +89,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         for s, e in new_bounds:
             #ax.axvspan(s - 55, e + 10, facecolor='#f30000', ec='#f30000', alpha=0.3,
             #        zorder=0)
-            ax.axvspan(s - 55, e + 10, facecolor='#222222', ec='#222222', alpha=0.3,
+            ax.axvspan(s - 55, e + 10, facecolor='#EA352B', ec='#EA352B', alpha=0.3,
                     zorder=0)
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
@@ -128,15 +128,15 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     return image_path
 
 def hist(pys, ax_hist):
-    ax_hist.hist(pys, bins=40, color='0.75')
+    ax_hist.hist(pys, bins=40, color='#959899', ec='#484B4C')
     ax_hist.set_xticks([])
     ax_hist.set_yticks([])
 
 def qqplot(lpys, ax_qq):
     lunif = -np.log10(np.arange(1, len(lpys) + 1) / float(len(lpys)))[::-1]
-    ax_qq.plot(lunif, np.sort(lpys), marker=',', linestyle='none')
+    ax_qq.plot(lunif, np.sort(lpys), marker=',', linestyle='none', c='#EA352B')
     ax_qq.set_xticks([])
-    ax_qq.plot(lunif, lunif, 'r--')
+    ax_qq.plot(lunif, lunif, ls='--', c='#959899')
     ax_qq.set_xlabel('')
     ax_qq.set_ylabel('')
     ax_qq.set_yticks([])
@@ -159,8 +159,6 @@ def main():
             help="plot a line for the bonferonni of 0.05", action="store_true")
     p.add_argument("-c", "--col", dest="col", help="index of the column containing"
                    " the the p-value", default='-1')
-    p.add_argument("--colors", dest="colors", help="cycle through these colors",
-                default="bk")
     p.add_argument("--image", dest="image", help="save the image to this file."
                    " e.g. %(default)s", default="manhattan.png")
     p.add_argument("--title", help="title for the image.", default=None,
@@ -181,8 +179,8 @@ def main():
 
     column = get_col_num(args.col, args.bed_file)
     regions = read_regions(args.regions)
-
-    manhattan(args.bed_file, column, args.image, args.no_log, args.colors,
+    colors = ['#959899', '#484B4C']
+    manhattan(args.bed_file, column, args.image, args.no_log, colors,
               args.title, args.lines, args.ymax, regions=regions,
              bonferonni=args.bonferonni)
 
