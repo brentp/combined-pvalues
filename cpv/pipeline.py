@@ -104,13 +104,19 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
 
-    spvals = []
+    spvals, opvals = [], []
     with open(prefix + ".slk.bed", "w") as fhslk:
 
         for row in slk.adjust_pvals(bed_files, col_num, acf_vals):
             fhslk.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
+            opvals.append(row[-2])
             spvals.append(row[-1])
-    print >>sys.stderr, "wrote: %s" % fhslk.name
+
+    print >>sys.stderr, "# original lambda: %.2f" % genomic_control(opvals)
+    del opvals
+
+    gc_lambda = genomic_control(spvals)
+    print >>sys.stderr, "wrote: %s with lambda: %.2f" % (fhslk.name, gc_lambda)
 
     if genome_control:
         fhslk = open(prefix + ".slk.gc.bed", "w")
@@ -166,6 +172,6 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         g = Genome(db)
         lastf = fh.name
         with open(prefix + ".anno.%s.bed" % db, "w") as fh:
-            g.annotate(lastf, ("refGene", "cpgIslandExt"), out=fh,
-                    feature_strand=True)
+            g.annotate(lastf, ("refGene", "cpgIslandExt", "cytoBand"), out=fh,
+                    feature_strand=True, parallel=len(spvals) > 500)
         print >>sys.stderr, "wrote: %s annotated with %s" % (fh.name, db)
