@@ -56,7 +56,7 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
         Cp = qvals.sum() / np.sqrt(len(qvals))
 
     # get the right tail.
-    pstar = 1.0 - pnorm(Cp)
+    pstar = norm.sf(Cp)
     if np.isnan(pstar):
         print >>sys.stderr, "BAD:", pvals, sigma
         pstar = np.median(pvals)
