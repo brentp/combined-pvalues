@@ -31,11 +31,15 @@ def main():
                    default=False, help="do the correlation on the -log10 of"
                    "the p-values. Default is to do it on the raw values")
 
-    p.add_argument("--region-filter-p", help="max adjusted region-level p-value to be reported"
-                 "in final output", type=float, default=1)
+    p.add_argument("--region-filter-p", help="max adjusted region-level p-value"
+                 " to be reported "
+                 "in final output. this requires the input bed file to have"
+                 " chrom, start, end, 't' columns", type=float, default=1)
 
     p.add_argument("--region-filter-n", help="require at least this many probes"
-                 "for a region to be reported in final output", type=int, default=1)
+                 "for a region to be reported in final output. "
+                 " this requires the input bed file to have chrom, start, "
+                 "end, 't' columns", type=int, default=1)
     p.add_argument("--annotate", help="annotate with refGen from this db" \
             "in UCSC (e.g. hg19) requires cruzdb", default=None)
 
