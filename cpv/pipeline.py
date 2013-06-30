@@ -154,18 +154,22 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
                 % (fh.name, N)
 
     regions_bed = fh.name
-    with open(prefix + ".regions-t.bed", "w") as fh:
-        N = 0
-        for i, toks in enumerate(filter.filter(bed_files[0], regions_bed,
-            p_col_name=col_num)):
-            if i == 0: toks[0] = "#" + toks[0]
-            else:
-                if float(toks[6]) > region_filter_p: continue
-                if int(toks[4]) < region_filter_n: continue
-                N += 1
-            print >>fh, "\t".join(toks)
-        print >>sys.stderr, "wrote: %s, (regions with region-p < %.3f and n-probes >= %i: %i)" \
-                % (fh.name, region_filter_p, region_filter_n, N)
+    header = (gzip.open(bed_files[0]) if bed_files[0].endswith(".gz") \
+            else open(bed_files[0])).next().split("\t")
+    if all(h in header for h in ('t', 'start', 'end')):
+        with open(prefix + ".regions-t.bed", "w") as fh:
+            N = 0
+            for i, toks in enumerate(filter.filter(bed_files[0], regions_bed,
+                p_col_name=col_num)):
+                if i == 0: toks[0] = "#" + toks[0]
+                else:
+                    if float(toks[6]) > region_filter_p: continue
+                    if int(toks[4]) < region_filter_n: continue
+                    N += 1
+                print >>fh, "\t".join(toks)
+            print >>sys.stderr, "wrote: %s, (regions with region-p \
+                                < %.3f and n-probes >= %i: %i)" \
+                    % (fh.name, region_filter_p, region_filter_n, N)
 
     if db is not None:
         from cruzdb import Genome
