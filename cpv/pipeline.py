@@ -175,6 +175,16 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
                                 < %.3f and n-probes >= %i: %i)" \
                     % (fh.name, region_filter_p, region_filter_n, N)
 
+    try:
+        from cpv import manhattan
+        regions = manhattan.read_regions(fh.name)
+        manhattan.manhattan(prefix + ".slk.bed", 3, prefix.rstrip(".") + ".manhattan.png",
+                         ['#959899', '#484B4C'],
+                          "", False, None, regions=regions, bonferonni=True)
+    except ImportError:
+        pass # they dont have matplotlib
+
+
     if db is not None:
         from cruzdb import Genome
         g = Genome(db)
