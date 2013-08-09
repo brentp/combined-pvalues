@@ -178,9 +178,10 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     try:
         from cpv import manhattan
         regions = manhattan.read_regions(fh.name)
+
         manhattan.manhattan(prefix + ".slk.bed", 3, prefix.rstrip(".") + ".manhattan.png",
-                         ['#959899', '#484B4C'],
-                          "", False, None, regions=regions, bonferonni=True)
+                         False, ['#959899', '#484B4C'], "", False, None,
+                         regions=regions, bonferonni=True)
     except ImportError:
         pass # they dont have matplotlib
 
