@@ -10,6 +10,8 @@ import numpy as np
 import scipy.stats as ss
 from itertools import groupby, izip, chain
 from _common import bediter, pairwise, get_col_num
+import signal
+
 
 def create_acf_list(lags):
     acfs = []
@@ -67,6 +69,9 @@ def merge_acfs(unmerged):
             uxys = {}
     return merged
 
+def pool_sig():
+    return signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     """
     calculate the correlation of the numbers in `col_num0` from the bed files
@@ -80,8 +85,7 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     # reversing allows optimization below.
     try:
         from multiprocessing import Pool
-        import signal
-        p = Pool(None, lambda: signal.signal(signal.SIGINT, signal.SIG_IGN))
+        p = Pool(None, pool_sig)
         imap = p.imap
     except ImportError:
         from itertools import imap
