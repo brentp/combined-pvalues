@@ -1,5 +1,6 @@
 from toolshed import reader
 from itertools import tee, izip
+import signal
 import sys
 
 def get_col_nums(c):
@@ -121,6 +122,19 @@ def read_acf(acf_file):
         if row[0] == "lag_min": continue
         acf_vals[(int(row[0]), int(row[1]))] = float(row[2])
     return sorted(acf_vals.items())
+
+def pool_sig():
+    return signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def get_map():
+    try:
+        from multiprocessing import Pool
+        p = Pool(None, pool_sig)
+        imap = p.imap
+    except ImportError:
+        from itertools import imap
+    return imap
 
 if __name__ == "__main__":
     import doctest

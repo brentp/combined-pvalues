@@ -9,8 +9,7 @@ import sys
 import numpy as np
 import scipy.stats as ss
 from itertools import groupby, izip, chain
-from _common import bediter, pairwise, get_col_num
-import signal
+from _common import bediter, pairwise, get_col_num, get_map
 
 
 def create_acf_list(lags):
@@ -69,8 +68,6 @@ def merge_acfs(unmerged):
             uxys = {}
     return merged
 
-def pool_sig():
-    return signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     """
@@ -83,12 +80,7 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
     implementation.
     """
     # reversing allows optimization below.
-    try:
-        from multiprocessing import Pool
-        p = Pool(None, pool_sig)
-        imap = p.imap
-    except ImportError:
-        from itertools import imap
+    imap = get_map()
 
     arg_list = [] # chaining
     for fname in fnames:

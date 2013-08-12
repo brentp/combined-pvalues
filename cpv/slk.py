@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 import numpy as np
 from operator import itemgetter
 from itertools import chain
-from _common import read_acf, bediter, get_col_num
+from _common import read_acf, bediter, get_col_num, get_map
 from itertools import groupby, combinations
 from stouffer_liptak import stouffer_liptak
 
@@ -102,15 +102,7 @@ def adjust_pvals(fnames, col_num0, acfs, stringent=False):
     lag_max = acfs[-1][0][1]
 
     # parallelize if multiprocesing is installed.
-    try:
-        from multiprocessing import Pool
-        import signal
-        pool = Pool(None, lambda: signal.signal(signal.SIGINT, signal.SIG_IGN))
-        imap = pool.imap
-    except ImportError:
-        import itertools
-        imap = itertools.imap
-
+    imap = get_map()
     arg_iter = []
     for fname in fnames:
         # 9e-17 seems to be limit of precision for cholesky.
