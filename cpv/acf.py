@@ -111,6 +111,8 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
                     % (lmin, lmax)
             continue
         if mlog:
+            xs[xs == 0] = 1e-20
+            ys[ys == 0] = 1e-20
             xs, ys = -np.log10(xs), -np.log10(ys)
         slope, intercept, corr, p_val, stderr = ss.linregress(xs, ys)
         if simple:
@@ -125,12 +127,13 @@ def run(args):
     with the necessary options and calls acf()
     """
     d = map(int, args.d.split(":"))
+    assert len(d) == 3, ("-d argument must in in the format start:end:step")
     d[1] += 1 # adjust for non-inclusive end-points...
-    assert len(d) == 3
     lags = range(*d)
 
     acf_vals = acf(args.files, lags, get_col_num(args.c), partial=(not
-                                                            args.full))
+                                                            args.full),
+                                                            mlog=args.mlog)
     write_acf(acf_vals, sys.stdout)
 
 def write_acf(acf_vals, out):

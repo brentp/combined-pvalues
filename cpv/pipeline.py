@@ -83,7 +83,6 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     #    with open(prefix + ".adj.bed", "w") as fh:
     #        genome_control_adjust_bed(bed_files, col_num, fh)
     #    bed_files = [fh.name]
-
     putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False,
                                 mlog=mlog)
     acf_vals = []
