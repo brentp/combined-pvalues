@@ -1,5 +1,6 @@
 import sys
 import os.path as op
+import gzip
 
 def main():
     import argparse
@@ -157,7 +158,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
                 % (fh.name, N)
 
     regions_bed = fh.name
-    header = (gzip.open(bed_files[0]) if bed_files[0].endswith(".gz") \
+    header = (gzip.open(bed_files[0]) if bed_files[0].endswith(".gz")
             else open(bed_files[0])).next().split("\t")
     if all(h in header for h in ('t', 'start', 'end')):
         with open(prefix + ".regions-t.bed", "w") as fh:
