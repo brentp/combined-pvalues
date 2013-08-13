@@ -22,6 +22,7 @@ To run, indicate one of:
    hist      - plot a histogram of a column and check for uniformity.
    splot     - a scatter plot of column(s) in a bed file for a given region.
    manhattan - a manhattan plot of values in a BED file.
+   pipeline  - run acf, slk, fdr, peaks, region_p in succesion
 
 NOTE: most of these assume *sorted* BED files.
 SEE: https://github.com/brentp/combined-pvalues for documentation
