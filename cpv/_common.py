@@ -39,6 +39,8 @@ def bediter(fnames, col_num, delta=None):
     and the start, stop column into an int and yield a dict
     for each row.
     """
+    last_chrom = chr(0)
+    last_start = -1
     if isinstance(fnames, basestring):
         fnames = [fnames]
     for fname in fnames:
@@ -49,12 +51,26 @@ def bediter(fnames, col_num, delta=None):
                     float(l[col_num])
                 except ValueError:
                     continue
+            chrom = l[0]
+            start = int(float(l[1]))
+            if chrom == last_chrom:
+                assert start >= last_start, ("error at line: %i, %s"
+                        % (i, "\t".join(l)), "file is not sorted")
+            else:
+                assert last_chrom < chrom, ("error at line: %i, %s "
+                        " with file: %s" % (i, "\t".join(l), fname),
+                        "chromosomes must be sorted as characters",
+                        last_chrom, "is not < ", chrom)
+                last_chrom = chrom
+
+            last_start = start
+
             p = float(l[col_num])
             if not delta is None:
                 if p > 1 - delta: p-= delta # the stouffer correction doesnt like values == 1
                 if p < delta: p = delta # the stouffer correction doesnt like values == 0
 
-            yield  {"chrom": l[0], "start": int(float(l[1])), "end": int(float(l[2])),
+            yield  {"chrom": l[0], "start": start, "end": int(float(l[2])),
                     "p": p} # "stuff": l[3:][:]}
 
 def genomic_control(pvals):
