@@ -142,6 +142,13 @@ def read_acf(acf_file):
 def pool_sig():
     return signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+# from aljunberg:  https://gist.github.com/aljungberg/626518 
+from multiprocessing.pool import IMapIterator
+def wrapper(func):
+    def wrap(self, timeout=None):
+        return func(self, timeout=timeout or 1e100)
+    return wrap
+IMapIterator.next = wrapper(IMapIterator.next)
 
 def get_map():
     try:
