@@ -41,7 +41,7 @@ def gen_correlated(sigma, n, observed=None):
         X = observed[idxs].reshape((n, sigma.shape[0]))
 
     Q = np.matrix(qnorm(X))
-    for row in  np.array(pnorm((Q * C).T)).T:
+    for row in  np.array(1 - norm.sf((Q * C).T)).T:
         yield row
 
 def sl_sim(sigma, ps, nsims, sample_distribution=None):
