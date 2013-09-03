@@ -111,10 +111,13 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
                     % (lmin, lmax)
             continue
         if mlog:
-            xs[xs == 0] = 1e-20
-            ys[ys == 0] = 1e-20
+            xs[xs == 0] = 0.5 * xs[xs > 0].min()
+            ys[ys == 0] = 0.5 * ys[ys > 0].min()
             xs, ys = -np.log10(xs), -np.log10(ys)
         slope, intercept, corr, p_val, stderr = ss.linregress(xs, ys)
+        # NOTE: using pearson correlation, which assumes normality.
+        # could switch to spearman as below.
+        #corr, p_val = ss.spearmanr(xs, ys)
         if simple:
             acf_res[(lmin, lmax)] = corr
         else:
