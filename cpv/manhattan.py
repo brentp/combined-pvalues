@@ -86,11 +86,16 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
 
     ax.set_ylabel('' if no_log else '-log10(p)')
     if regions:
+        """
+        # Plot as colored background
         for s, e in new_bounds:
-            #ax.axvspan(s - 55, e + 10, facecolor='#f30000', ec='#f30000', alpha=0.3,
-            #        zorder=0)
-            ax.axvspan(s - 55, e + 10, facecolor='#EA352B', ec='#EA352B', alpha=0.3,
-                    zorder=0)
+            ax.axvspan(s - 55, e + 10, facecolor='#EA352B', ec='#EA352B', alpha=0.3, zorder=0)
+        """
+        rxs, rys = zip(*region_xys)
+        if not no_log: rys = -np.log10(rys)
+        ax.scatter(rxs, rys, s=rys ** 1.3, c='#AE2117', edgecolors='#AE2117',
+                zorder=2)
+
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
     else:
