@@ -171,8 +171,8 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
                     if int(toks[4]) < region_filter_n: continue
                     N += 1
                 print >>fh, "\t".join(toks)
-            print >>sys.stderr, "wrote: %s, (regions with region-p \
-                                < %.3f and n-probes >= %i: %i)" \
+            print >>sys.stderr, ("wrote: %s, (regions with region-p"
+                                "< %.3f and n-probes >= %i: %i)") \
                     % (fh.name, region_filter_p, region_filter_n, N)
 
     try:
