@@ -48,11 +48,13 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
 
     region_xs, region_ys = [], []
     new_bounds = []
+    rcolors = cycle(('#AE2117', '#EA352B'))
     for seqid, rlist in sorted(giter, cmp=chr_cmp):
         color = colors.next()
         nrows += len(rlist)
         # since chroms are on the same plot. add this chrom to the end of the
         # last chrom
+        rcolor = rcolors.next()
 
         region_xs = [last_x + r['start'] for r in rlist]
         xs.extend(region_xs)
@@ -61,7 +63,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
 
         if regions and seqid in regions:
             regions_bounds = regions[seqid]
-            region_xys.extend([(last_x + r['start'], r['p']) for r in rlist \
+            region_xys.extend([(last_x + r['start'], r['p'], rcolor) for r in rlist \
                   if any((s <= r['start'] <= e) for s, e in regions_bounds)])
             # adjust the bounds of each region based on chrom.
             new_bounds.extend([(last_x + s, last_x + e)
@@ -91,9 +93,13 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         for s, e in new_bounds:
             ax.axvspan(s - 55, e + 10, facecolor='#EA352B', ec='#EA352B', alpha=0.3, zorder=0)
         """
-        rxs, rys = zip(*region_xys)
+        # plot as points.
+        rxs, rys, rcs = zip(*region_xys)
         if not no_log: rys = -np.log10(rys)
-        ax.scatter(rxs, rys, s=rys ** 1.3, c='#AE2117', edgecolors='#AE2117',
+        ax.scatter(rxs, rys,
+                #  s=rys ** 1.3,  # size by -log10(p)
+                s = 6,
+                c=rcs, edgecolors=rcs,
                 zorder=2)
 
     if lines:
