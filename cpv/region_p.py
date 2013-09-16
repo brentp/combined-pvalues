@@ -121,11 +121,14 @@ def sidak(p, region_length, total_coverage):
     return min(p_sidak, 1)
 
 def gen_regions(fregions):
-    for region_line in (l.rstrip("\r\n")
-                                   for l in open(fregions) if l[0] != "#"):
+    for i, region_line in enumerate((l.rstrip("\r\n")
+                                   for l in open(fregions) if l[0] != "#")):
         toks = region_line.split("\t")
         rchrom = toks[0]
-        rstart, rend = map(int, toks[1:3])
+        try:
+            rstart, rend = map(int, toks[1:3])
+        except ValueError: # header.
+            if i == 0: continue
         yield rchrom, rstart, rend, region_line
 
 def _get_ps_in_regions(fregions, fpvals, col_num):
@@ -185,14 +188,14 @@ def region_p(fpvals, fregions, col_num, nsims, step, mlog=False):
         if ps.shape[0] == 0:
             print >>sys.stderr,("bad region", region_line)
             continue
-        #assert ps.shape[0] != 0, ("bad region", region_line)
-        #assert ps.shape[0] == sigma.shape[0], ("bad_region", region_line)
 
         # calculate the SLK for the region.
 
         region_slk = stouffer_liptak(ps, sigma)
 
-        assert region_slk["OK"] is True
+        if not region_slk["OK"]:
+            print >>sys.stderr, "problem with:", region_slk, ps
+
         slk_p = region_slk["p"]
 
         sidak_slk_p = sidak(slk_p, region_len, total_coverage)
