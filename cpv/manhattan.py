@@ -31,7 +31,7 @@ def chr_cmp(a, b):
         return cmp(achr, bchr)
 
 def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
-             bonferonni=False, regions=None):
+             bonferonni=False, regions=None, subplots=False):
     """
     regions is keyed by chromosome with [(start, stop), ...] extents of
     the regions to highlight
@@ -123,7 +123,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
             % (ys > -np.log10(bonferonni_p)).sum()
 
-    if True:
+    if subplots:
         pys = np.sort(10**-ys) # convert back to actual p-values
         gc = genomic_control(pys)
         ax_qq = f.add_axes((0.74, 0.12, 0.22, 0.22), alpha=0.2)
@@ -181,6 +181,8 @@ def main():
              " points in space. plotting will take longer with this option.")
     p.add_argument("--regions", dest="regions",
                    help="points in these bed regions are colored differently")
+    p.add_argument("--subplots", action="store_true", default=False,
+                   help="plot qq-plot and p-value histogram as sub-plots")
 
     p.add_argument('bed_file', help="bed-file to plot")
 
