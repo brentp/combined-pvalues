@@ -23,6 +23,8 @@ def main():
                  type=float)
     p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
+    p.add_argument("-z", "--z-score", action="store_true", default=False,
+            help="use z-score correction instead of liptak")
 
     p.add_argument("--genomic-control", dest="genomic_control",
             help="perform the genomic control correction on the input"
@@ -62,10 +64,12 @@ def main():
             region_filter_p=args.region_filter_p,
             region_filter_n=args.region_filter_n,
             genome_control=args.genomic_control,
-            db=args.annotate)
+            db=args.annotate,
+            z=args.z_score)
 
 def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
-    region_filter_p=1, region_filter_n=1, genome_control=False, db=None):
+    region_filter_p=1, region_filter_n=1, genome_control=False, db=None,
+    z=False):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
     from cpv._common import genome_control_adjust, genomic_control, bediter
@@ -111,7 +115,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     spvals, opvals = [], []
     with open(prefix + ".slk.bed", "w") as fhslk:
 
-        for row in slk.adjust_pvals(bed_files, col_num, acf_vals):
+        for row in slk.adjust_pvals(bed_files, col_num, acf_vals, z=z):
             fhslk.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
             opvals.append(row[-2])
             spvals.append(row[-1])
@@ -145,12 +149,13 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
 
     with open(prefix + ".regions-p.bed", "w") as fh:
         N = 0
-        fh.write("#chrom\tstart\tend\tmin_p\tn_probes\tslk_p\tslk_sidak_p\n")
+        fh.write("#chrom\tstart\tend\tmin_p\tn_probes\t{correction}_p\t{correction}_sidak_p\n".format(correction=('z'
+            if z else 'slk')))
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                prefix + ".slk.bed",
                                prefix + ".regions.bed", -2,
-                               0, step, mlog=mlog):
+                               0, step, mlog=mlog, z=z):
             fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
             fh.flush()
             N += int(slk_sidak_p < 0.05)

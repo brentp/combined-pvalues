@@ -16,7 +16,7 @@ from itertools import chain, groupby
 from operator import itemgetter
 from slk import gen_sigma_matrix
 from acf import acf
-from stouffer_liptak import stouffer_liptak
+from stouffer_liptak import stouffer_liptak, z_score_combine
 
 from scipy.stats import norm
 from numpy.linalg import cholesky as chol
@@ -162,7 +162,7 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
     assert nr == len(region_info), (nr, len(region_info))
     return region_info
 
-def region_p(fpvals, fregions, col_num, nsims, step, mlog=False):
+def region_p(fpvals, fregions, col_num, nsims, step, mlog=False, z=False):
     # just use 2 for col_num, but dont need the p from regions.
 
     if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
@@ -191,7 +191,10 @@ def region_p(fpvals, fregions, col_num, nsims, step, mlog=False):
 
         # calculate the SLK for the region.
 
-        region_slk = stouffer_liptak(ps, sigma)
+        if z:
+            region_slk = z_score_combine(ps, sigma)
+        else:
+            region_slk = stouffer_liptak(ps, sigma)
 
         if not region_slk["OK"]:
             print >>sys.stderr, "problem with:", region_slk, ps

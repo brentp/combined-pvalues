@@ -7,7 +7,7 @@ from operator import itemgetter
 from itertools import chain
 from _common import read_acf, bediter, get_col_num, get_map
 from itertools import groupby, combinations
-from stouffer_liptak import stouffer_liptak
+from stouffer_liptak import stouffer_liptak, z_score_combine
 
 
 def get_corr(dist, acfs):
@@ -73,7 +73,7 @@ def gen_sigma_matrix(group, acfs, cached={}):
     """
     return a
 
-def slk_chrom(chromlist, lag_max, acfs, stringent=False):
+def slk_chrom(chromlist, lag_max, acfs, stringent=False, z=False):
     """
     calculate the slk for a given chromosome
     """
@@ -83,7 +83,10 @@ def slk_chrom(chromlist, lag_max, acfs, stringent=False):
         sigma = gen_sigma_matrix(xneighbors, acfs)
         pvals = [g['p'] for g in xneighbors]
         # stringetn is True/False
-        r = stouffer_liptak(pvals, sigma, correction=stringent)
+        if z:
+            r = z_score_combine(pvals, sigma)
+        else:
+            r = stouffer_liptak(pvals, sigma, correction=stringent)
 
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
                 r["p"])
@@ -98,7 +101,7 @@ def slk_chrom(chromlist, lag_max, acfs, stringent=False):
 def _slk_chrom(args):
     return list(slk_chrom(*args))
 
-def adjust_pvals(fnames, col_num0, acfs, stringent=False):
+def adjust_pvals(fnames, col_num0, acfs, stringent=False, z=False):
     lag_max = acfs[-1][0][1]
 
     # parallelize if multiprocesing is installed.
@@ -106,7 +109,8 @@ def adjust_pvals(fnames, col_num0, acfs, stringent=False):
     arg_iter = []
     for fname in fnames:
         # 9e-17 seems to be limit of precision for cholesky.
-        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs, stringent) \
+        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs, stringent,
+            z) \
                     for key, chromlist in groupby(bediter(fname, col_num0, 9e-17),
                             itemgetter("chrom"))))
 
