@@ -69,7 +69,6 @@ def z_score_combine(pvals, sigma):
     pvals = np.array(pvals, dtype=np.float64)
     pvals[pvals == 1] = 1.0 - 9e-16
     z = np.mean(qnorm(1.0 - pvals, loc=0, scale=1))
-    lower = np.tril(sigma, k=-1) > 0
     sz = 1.0/L * np.sqrt(L + 2 * np.tril(sigma, k=-1).sum())
     res = {'p': norm.sf(z/sz), 'OK': True}
     return res

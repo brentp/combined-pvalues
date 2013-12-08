@@ -122,7 +122,8 @@ def adjust_pvals(fnames, col_num0, acfs, stringent=False, z=False):
 def run(args):
     acf_vals = read_acf(args.acf)
     col_num = get_col_num(args.c)
-    for row in adjust_pvals(args.files, col_num, acf_vals, args.stringent):
+    for row in adjust_pvals(args.files, col_num, acf_vals, args.stringent,
+                            z=args.z_score):
         sys.stdout.write("%s\t%i\t%i\t%.5g\t%.5g\n" % row)
 
 def main():
@@ -135,6 +136,9 @@ def main():
             " acf", type=int, default=4)
     p.add_argument("-s", dest="stringent", action="store_true", default=False,
             help="use this flag if there is an abundance of low-pvalues.")
+    p.add_argument("-z", "--z-score", action="store_true", default=False,
+            help="use z-score correction instead of liptak")
+
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):
