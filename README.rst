@@ -21,8 +21,8 @@ QuickStart
 ==========
 
 If your data is a sorted BED (first columns are chrom, start, stop) with a column for
-p-value in the 4th column from single-probe tests--e.g. from limma::topTable, you can
-find DMRs as::
+p-value in the 4th column from single-probe tests--e.g. from limma::topTable(..., n=Inf),
+you can find DMRs as::
 
     comb-p pipeline \
         -c 4 \
