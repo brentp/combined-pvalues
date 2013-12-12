@@ -17,6 +17,33 @@ of this repository.
 
 The software is distributed under the MIT license.
 
+QuickStart
+==========
+
+If your data is a sorted BED (first columns are chrom, start, stop) with a column for
+p-value in the 4th column, you can find DMRs as::
+
+    comb-p pipeline \
+        -c 4 \
+        --mlog \
+        --step 100 \
+        --dist 200
+        --seed 1e-3 \
+        -p $OUT_PREFIX \
+        --region-filter-p 0.1 \
+        --anno mm9 \
+        $PVALS
+
+Where the `seed` indicates the maximal p-value that can seed a region and distance is
+how far to extend a region without seeing another p-value that low. In the end, regions
+with a corrected (Sidak) p-value of 0.1 will be annotated with genome version mm9 (any
+version from UCSC database is supported).
+The output will look like:
+
+    https://github.com/brentp/combined-pvalues/blob/master/manuscript/anno.tsv
+
+Commands below give finer control over each step.
+
 Installation
 ============
 
