@@ -21,7 +21,8 @@ QuickStart
 ==========
 
 If your data is a sorted BED (first columns are chrom, start, stop) with a column for
-p-value in the 4th column, you can find DMRs as::
+p-value in the 4th column from single-probe tests--e.g. from limma::topTable, you can
+find DMRs as::
 
     comb-p pipeline \
         -c 4 \
@@ -41,6 +42,10 @@ version from UCSC database is supported).
 The output will look like:
 
     https://github.com/brentp/combined-pvalues/blob/master/manuscript/anno.tsv
+
+With DMRs annotated to the nearest gene and CpG island. Negative distances indicate
+that the DMR is upstream of the gene. DMRs inside of genes have `exon` / `UTR` or the
+appropriate feature to indicate their location within the gene.
 
 Commands below give finer control over each step.
 
