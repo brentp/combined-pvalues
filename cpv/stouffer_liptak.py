@@ -7,7 +7,7 @@ import sys
 qnorm = norm.ppf
 pnorm = norm.cdf
 
-def stouffer_liptak(pvals, sigma=None, correction=False):
+def stouffer_liptak(pvals, sigma=None):
     """
     The stouffer_liptak correction.
     >>> stouffer_liptak([0.1, 0.2, 0.8, 0.12, 0.011])
@@ -28,7 +28,8 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
     L = len(pvals)
     pvals = np.array(pvals, dtype=np.float64)
     pvals[pvals == 1] = 1.0 - 9e-16
-    qvals = qnorm(1.0 - pvals, loc=0, scale=1).reshape(L, 1)
+    #qvals = qnorm(1.0 - pvals, loc=0, scale=1).reshape(L, 1)
+    qvals = norm.isf(pvals, loc=0, scale=1).reshape(L, 1)
     if any(np.isinf(qvals)):
         raise Exception("bad values: %s" % pvals[list(np.isinf(qvals))])
 
@@ -40,21 +41,24 @@ def stouffer_liptak(pvals, sigma=None, correction=False):
             Cm1 = np.asmatrix(C).I # C^-1
             # qstar
             qvals = Cm1 * qvals
-            result["OK"] = True
         except LinAlgError, e:
-            print >>sys.stderr, e
-            # cant do the correction non-invertible
-            sigma *= 0.95
-            np.fill_diagonal(sigma, 0.99)
             result["OK"] = False
+            if False:
+                try:
+                    sigma -= 0.03
+                    np.fill_diagonal(sigma, 0.999)
+                    sigma[sigma <=0] = 0.001
+                    C = chol(sigma)
+                    Cm1 = np.asmatrix(C).I # C^-1
+                    qvals = Cm1 * qvals
+                    result['OK'] = True
+                except LinAlgError, e:
+                    print >>sys.stderr, e
+                    # cant do the correction non-invertible
+            result = z_score_combine(pvals, sigma)
+            return result
 
-        # http://en.wikipedia.org/wiki/Fisher's_method#Relation_to_Stouffer.27s_Z-score_method
-    if correction:
-        denom = np.sqrt(np.power(sigma, 2).sum())
-        Cp = qvals.sum() / denom
-    if not correction:
-        Cp = qvals.sum() / np.sqrt(len(qvals))
-
+    Cp = qvals.sum() / np.sqrt(len(qvals))
     # get the right tail.
     pstar = norm.sf(Cp)
     if np.isnan(pstar):
