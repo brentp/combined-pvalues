@@ -16,14 +16,15 @@ import sys
 
 # don't use _common because I want this to be stand-alone.
 def bediter(fname, col_num):
-    for l in reader(fname, header=False):
+    for i, l in enumerate(reader(fname, header=False)):
         if l[0][0] == "#": continue
         try:
             yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
                 "p": float(l[col_num])} # "stuff": l[3:][:]}
         except:
             print >>sys.stderr, l
-            raise
+            if i != 0:
+                raise
 
 # use class to keep track of written peaks.
 def write_peaks(peaks, seed, out, scmp):
