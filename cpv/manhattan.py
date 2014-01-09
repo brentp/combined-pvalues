@@ -64,7 +64,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         if regions and seqid in regions:
             regions_bounds = regions[seqid]
             region_xys.extend([(last_x + r['start'], r['p'], rcolor) for r in rlist \
-                  if any((s <= r['start'] <= e) for s, e in regions_bounds)])
+                  if any((s - 1 <= r['start'] <= e + 1) for s, e in regions_bounds)])
             # adjust the bounds of each region based on chrom.
             new_bounds.extend([(last_x + s, last_x + e)
                             for s, e in regions_bounds])
@@ -88,11 +88,13 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
 
     ax.set_ylabel('' if no_log else '-log10(p)')
     if regions:
-        """
+        #"""
         # Plot as colored background
-        for s, e in new_bounds:
-            ax.axvspan(s - 55, e + 10, facecolor='#EA352B', ec='#EA352B', alpha=0.3, zorder=0)
-        """
+        if len(new_bounds) < 32:
+            for s, e in new_bounds:
+                ax.axvspan(s - 2, e + 2, facecolor='#EA352B',
+                           ec='#EA352B', alpha=0.3, zorder=0)
+        #"""
         # plot as points.
         rxs, rys, rcs = zip(*region_xys)
         if not no_log: rys = -np.log10(rys)
@@ -105,7 +107,9 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     if lines:
         ax.vlines(xs, 0, ys, colors=cs, alpha=0.5)
     else:
-        ax.scatter(xs, ys, s=3.5, c=cs, edgecolors='none', alpha=0.6, zorder=1)
+        alpha = 0.8 if len(xs) < 10000 else 0.6
+        edgecolors = 'k' if len(xs) < 10000 else 'none'
+        ax.scatter(xs, ys, s=3.5, c=cs, edgecolors=edgecolors, alpha=alpha, zorder=1)
 
 
     # plot 0.05 line after multiple testing. always nlog10'ed since
@@ -113,7 +117,10 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     if bonferonni:
         ax.axhline(y=-np.log10(bonferonni_p), color='0.5', linewidth=2)
     plt.axis('tight')
-    plt.xlim(0, xs[-1])
+    if max(xs) - min(xs) > 10000:
+        plt.xlim(0, xs[-1])
+    else:
+        plt.xlim(xs[0], xs[-1])
     plt.ylim(ymin=0)
     if ymax is not None: plt.ylim(ymax=ymax)
     plt.xticks([c[1] for c in chrom_centers], [c[0] for c in chrom_centers], rotation=-90, size=8.5)
