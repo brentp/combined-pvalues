@@ -36,6 +36,8 @@ def main():
             default="P.Value")
     p.add_argument("-t", dest="t", default="t",
             help="t-statistic or directionality from p_bed")
+    p.add_argument("--coef", default="logFC",
+            help="name of coefficient column in BED")
     p.add_argument("--filter", help="don't print row if there's a swith in \
             t-scores", action="store_true", default=False)
     p.add_argument("--max-p", help="filter regions with any p-value > this value", type=float)
@@ -43,10 +45,13 @@ def main():
     p.add_argument('p_bed', help='file containing the raw p-values')
     args = p.parse_args()
 
-    for row in filter(args.p_bed, args.region_bed, args.max_p):
+    for row in filter(args.p_bed, args.region_bed, args.max_p,
+            p_col_name=args.p,
+            coef_col_name=args.coef):
         print "\t".join(row)
 
-def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value"):
+def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value",
+                    coef_col_name="logFC"):
     ph = ['p' + h for h in get_header(p_bed)]
     rh = get_header(region_bed)
     if isinstance(p_col_name, (int, long)):
@@ -67,16 +72,24 @@ def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value"):
                 continue
 
         ngt05  = sum(1 for row in plist if float(row['p' + p_col_name]) > 0.05)
-        tpos = sum(1 for ts in tscores if ts > 0)
-        tneg = sum(1 for ts in tscores if ts < 0)
-        tpn = "%i/%i" % (tpos, tneg)
-        tsum = sum(ts for ts in tscores)
-        coef = (sum(float(row['plogFC']) for row in plist) /
+        if tscores:
+            tpos = sum(1 for ts in tscores if ts > 0)
+            tneg = sum(1 for ts in tscores if ts < 0)
+            tpn = "%i/%i" % (tpos, tneg)
+
+            tsum = sum(ts for ts in tscores)
+        else:
+            tsum = tpn = "NA"
+
+        if 'p' + coef_col_name in plist[0]:
+            coef = (sum(float(row['p' + coef_col_name]) for row in plist) /
                                     len(plist))
-        # since we probably had the data logit transformed, here we
-        # do the inverse and subtract 0.5 since ilogit(0) == 0.5
-        icoef = (sum(ilogit(float(row['plogFC'])) for row in plist) /
+            # since we probably had the data logit transformed, here we
+            # do the inverse and subtract 0.5 since ilogit(0) == 0.5
+            icoef = (sum(ilogit(float(row['p' + coef_col_name])) for row in plist) /
                                     len(plist)) - 0.5
+        else:
+            coef = icoef = float('nan')
         frow = [plist[0][h] for h in rh] + [tpn, str(tsum),
                 str(ngt05), '%.3f' % coef, '%.3f' % icoef]
         yield frow
