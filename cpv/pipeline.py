@@ -102,6 +102,8 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         print >>fh, " ".join(sys.argv[1:]) + "\n"
         import datetime
         print >>fh, "date: %s" % datetime.datetime.today()
+        from .__init__ import __version__
+        print >>fh, "version:", __version__
 
     with open(prefix + ".acf.txt", "w") as fh:
         acf_vals = acf.write_acf(acf_vals, fh)

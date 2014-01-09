@@ -4,9 +4,11 @@ ez_setup.use_setuptools()
 
 
 from setuptools import setup
+import cpv
+version = cpv.__version__
 
 setup(name='cpv',
-      version='0.1',
+      version=version,
       description='combine p-values',
       author='Brent Pedersen',
       author_email='bpederse@gmail.com',
