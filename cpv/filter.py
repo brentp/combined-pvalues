@@ -41,16 +41,18 @@ def main():
     p.add_argument("--filter", help="don't print row if there's a swith in \
             t-scores", action="store_true", default=False)
     p.add_argument("--max-p", help="filter regions with any p-value > this value", type=float)
+    p.add_argument("--region-p", help="filter regions with combined p-value > this value", type=float)
     p.add_argument('region_bed', help='file containing the regions')
     p.add_argument('p_bed', help='file containing the raw p-values')
     args = p.parse_args()
 
     for row in filter(args.p_bed, args.region_bed, args.max_p,
+            region_p=args.region_p,
             p_col_name=args.p,
             coef_col_name=args.coef):
         print "\t".join(row)
 
-def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value",
+def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
                     coef_col_name="logFC"):
     ph = ['p' + h for h in get_header(p_bed)]
     rh = get_header(region_bed)
@@ -64,6 +66,16 @@ def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value",
     for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
+
+        if region_p:
+            r = plist[0] # first cols are all the same
+            region_p_key = 'slk_sidak_p' if 'slk_sidak_p' in r \
+                                         else 'z_sidak_p' if 'z_sidak_p' in r \
+                                         else None
+            if region_p_key is None: raise Exception
+            if float(r[region_p_key]) > region_p:
+                continue
+
         plist = [x for x in plist if (int(x['start']) <= int(x['pstart']) <= int(x['pend'])) and ((int(x['start']) <= int(x['pend']) <= int(x['end'])))]
         tscores = [float(row['pt']) for row in plist if 'pt' in row]
 

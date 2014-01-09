@@ -84,10 +84,6 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     lags.append(lags[-1] + step)
 
     prefix = prefix.rstrip(".")
-    #if genome_control:
-    #    with open(prefix + ".adj.bed", "w") as fh:
-    #        genome_control_adjust_bed(bed_files, col_num, fh)
-    #    bed_files = [fh.name]
     putative_acf_vals = acf.acf(bed_files, lags, col_num, simple=False,
                                 mlog=mlog)
     acf_vals = []
@@ -165,7 +161,8 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     regions_bed = fh.name
     header = (gzip.open(bed_files[0]) if bed_files[0].endswith(".gz")
             else open(bed_files[0])).next().split("\t")
-    if all(h in header for h in ('t', 'start', 'end')):
+    #if all(h in header for h in ('t', 'start', 'end')):
+    if region_filter_p != 1 or region_filter_n != 1:
         with open(prefix + ".regions-t.bed", "w") as fh:
             N = 0
             for i, toks in enumerate(filter.filter(bed_files[0], regions_bed,
