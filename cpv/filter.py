@@ -60,7 +60,7 @@ def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value",
     a = dict(p_bed=p_bed, region_bed=region_bed)
     a['p_bed'] = fix_header(a['p_bed'])
 
-    yield rh + ["t.pos/t.neg", "t.sum", "n.gt.p05", 'avg.diff', 'ilogit.diff']
+    j = 0
     for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
@@ -72,26 +72,38 @@ def filter(p_bed, region_bed, max_p=None, p_col_name="P.Value",
                 continue
 
         ngt05  = sum(1 for row in plist if float(row['p' + p_col_name]) > 0.05)
+
+        # logic to try to find t and coef headers and skip if not found
+        extra_header = []
+        extra = []
         if tscores:
             tpos = sum(1 for ts in tscores if ts > 0)
             tneg = sum(1 for ts in tscores if ts < 0)
             tpn = "%i/%i" % (tpos, tneg)
 
-            tsum = sum(ts for ts in tscores)
+            tsum = str(sum(ts for ts in tscores))
+            extra_header += ["t.pos/t.neg", "t.sum"]
+            extra += [tpn, tsum]
         else:
             tsum = tpn = "NA"
 
         if 'p' + coef_col_name in plist[0]:
             coef = (sum(float(row['p' + coef_col_name]) for row in plist) /
                                     len(plist))
+
             # since we probably had the data logit transformed, here we
             # do the inverse and subtract 0.5 since ilogit(0) == 0.5
             icoef = (sum(ilogit(float(row['p' + coef_col_name])) for row in plist) /
                                     len(plist)) - 0.5
+            extra_header += ["avg.diff", "ilogit.diff"]
+            extra += ["%.3f" % coef, "%.3f" % icoef]
         else:
             coef = icoef = float('nan')
-        frow = [plist[0][h] for h in rh] + [tpn, str(tsum),
-                str(ngt05), '%.3f' % coef, '%.3f' % icoef]
+
+        frow = [plist[0][h] for h in rh] + extra
+        if j == 0:
+            yield rh + extra_header
+            j = 1
         yield frow
 
 if __name__ == "__main__":
