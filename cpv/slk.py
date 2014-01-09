@@ -73,7 +73,7 @@ def gen_sigma_matrix(group, acfs, cached={}):
     """
     return a
 
-def slk_chrom(chromlist, lag_max, acfs, stringent=False, z=False):
+def slk_chrom(chromlist, lag_max, acfs, z=False):
     """
     calculate the slk for a given chromosome
     """
@@ -86,7 +86,7 @@ def slk_chrom(chromlist, lag_max, acfs, stringent=False, z=False):
         if z:
             r = z_score_combine(pvals, sigma)
         else:
-            r = stouffer_liptak(pvals, sigma, correction=stringent)
+            r = stouffer_liptak(pvals, sigma)
 
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
                 r["p"])
@@ -101,7 +101,7 @@ def slk_chrom(chromlist, lag_max, acfs, stringent=False, z=False):
 def _slk_chrom(args):
     return list(slk_chrom(*args))
 
-def adjust_pvals(fnames, col_num0, acfs, stringent=False, z=False):
+def adjust_pvals(fnames, col_num0, acfs, z=False):
     lag_max = acfs[-1][0][1]
 
     # parallelize if multiprocesing is installed.
@@ -109,9 +109,9 @@ def adjust_pvals(fnames, col_num0, acfs, stringent=False, z=False):
     arg_iter = []
     for fname in fnames:
         # 9e-17 seems to be limit of precision for cholesky.
-        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs, stringent,
+        arg_iter = chain(arg_iter, ((list(chromlist), lag_max, acfs,
             z) \
-                    for key, chromlist in groupby(bediter(fname, col_num0, 9e-17),
+                    for key, chromlist in groupby(bediter(fname, col_num0, 9e-117),
                             itemgetter("chrom"))))
 
     for results in imap(_slk_chrom, arg_iter):
@@ -122,7 +122,7 @@ def adjust_pvals(fnames, col_num0, acfs, stringent=False, z=False):
 def run(args):
     acf_vals = read_acf(args.acf)
     col_num = get_col_num(args.c)
-    for row in adjust_pvals(args.files, col_num, acf_vals, args.stringent,
+    for row in adjust_pvals(args.files, col_num, acf_vals,
                             z=args.z_score):
         sys.stdout.write("%s\t%i\t%i\t%.5g\t%.5g\n" % row)
 
@@ -134,8 +134,6 @@ def main():
                    "as well as the distance lags.")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
             " acf", type=int, default=4)
-    p.add_argument("-s", dest="stringent", action="store_true", default=False,
-            help="use this flag if there is an abundance of low-pvalues.")
     p.add_argument("-z", "--z-score", action="store_true", default=False,
             help="use z-score correction instead of liptak")
 
