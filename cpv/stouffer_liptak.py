@@ -28,7 +28,6 @@ def stouffer_liptak(pvals, sigma=None):
     L = len(pvals)
     pvals = np.array(pvals, dtype=np.float64)
     pvals[pvals == 1] = 1.0 - 9e-16
-    #qvals = qnorm(1.0 - pvals, loc=0, scale=1).reshape(L, 1)
     qvals = norm.isf(pvals, loc=0, scale=1).reshape(L, 1)
     if any(np.isinf(qvals)):
         raise Exception("bad values: %s" % pvals[list(np.isinf(qvals))])
@@ -43,18 +42,6 @@ def stouffer_liptak(pvals, sigma=None):
             qvals = Cm1 * qvals
         except LinAlgError, e:
             result["OK"] = False
-            if False:
-                try:
-                    sigma -= 0.03
-                    np.fill_diagonal(sigma, 0.999)
-                    sigma[sigma <=0] = 0.001
-                    C = chol(sigma)
-                    Cm1 = np.asmatrix(C).I # C^-1
-                    qvals = Cm1 * qvals
-                    result['OK'] = True
-                except LinAlgError, e:
-                    print >>sys.stderr, e
-                    # cant do the correction non-invertible
             result = z_score_combine(pvals, sigma)
             return result
 
@@ -72,8 +59,8 @@ def z_score_combine(pvals, sigma):
     L = len(pvals)
     pvals = np.array(pvals, dtype=np.float64)
     pvals[pvals == 1] = 1.0 - 9e-16
-    z = np.mean(qnorm(1.0 - pvals, loc=0, scale=1))
-    sz = 1.0/L * np.sqrt(L + 2 * np.tril(sigma, k=-1).sum())
+    z = np.mean(norm.isf(pvals, loc=0, scale=1))
+    sz = 1.0 /L * np.sqrt(L + 2 * np.tril(sigma, k=-1).sum())
     res = {'p': norm.sf(z/sz), 'OK': True}
     return res
 

@@ -61,7 +61,7 @@ def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-            col_num, args.N, args.step, args.mlog):
+            col_num, args.N, args.step, mlog=args.mlog, z=args.z):
         #if sim_p != "NA":
         #    sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
@@ -115,8 +115,14 @@ def sidak(p, region_length, total_coverage):
     """
     see: https://github.com/brentp/combined-pvalues/issues/2
     """
-    k = total_coverage / float(region_length)
+    k = total_coverage / np.float128(region_length)
+    if k < 1: k = total_coverage
     p_sidak = 1 - (1 - p)**k
+    if p_sidak == 0:
+        assert p < 1e-16
+        p_sidak = (1 - (1 - 1e-16)**k) / (p / 1e-16)
+        p_sidak = min(p_sidak, p * k)
+
     # print "bonferroni:", min(p * k, 1)
     return min(p_sidak, 1)
 
@@ -237,6 +243,8 @@ def main():
                    type=int, default=0)
     p.add_argument("-c", dest="c", help="column number containing the p-value"
                    " of interest", type=int, default=-1)
+    p.add_argument("-z", dest="z", help="use z-score correction",
+                    action="store_true")
     args = p.parse_args()
     if not (args.regions and args.pvals):
         import sys
