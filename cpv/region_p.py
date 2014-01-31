@@ -90,7 +90,7 @@ def _gen_acf(region_info, fpvals, col_num, step, mlog):
     print >>sys.stderr, "# Done with one-time ACF calculation"
     return acfs
 
-def get_total_coverage(fpvals, col_num, out_val):
+def get_total_coverage(fpvals, col_num, step, out_val):
     """
     Calculate total bases of coverage in `fpvals`.
     Used for the sidak correction
@@ -100,14 +100,16 @@ def get_total_coverage(fpvals, col_num, out_val):
             itemgetter('chrom')):
         bases = set([])
         for feat in chrom_iter:
-            bases.update(range(feat['start'], feat['end']))
+            s, e = feat['start'], feat['end']
+            e = max(e, s + step)
+            bases.update(range(s, e))
         total_coverage += len(bases)
     out_val.value = total_coverage
 
-def _get_total_coverage(fpvals, col_num):
+def _get_total_coverage(fpvals, col_num, step):
     from multiprocessing import Process, Value
     val = Value('f')
-    p = Process(target=get_total_coverage, args=(fpvals, col_num, val))
+    p = Process(target=get_total_coverage, args=(fpvals, col_num, step, val))
     p.start()
     return p, val
 
@@ -175,7 +177,7 @@ def region_p(fpvals, fregions, col_num, nsims, step, mlog=False, z=False):
         print >>sys.stderr, "no regions in %s" % (fregions, )
         sys.exit()
 
-    process, total_coverage_sync = _get_total_coverage(fpvals, col_num)
+    process, total_coverage_sync = _get_total_coverage(fpvals, col_num, step)
     region_info = _get_ps_in_regions(fregions, fpvals, col_num)
 
     acfs = _gen_acf(region_info, (fpvals,), col_num, step, mlog=mlog)
