@@ -1,5 +1,5 @@
 A library to combine, analyze, group and correct p-values in BED files.
-Unique tools involve correction for spatial autocorrelation tests.
+Unique tools involve correction for spatial autocorrelation.
 This is useful for ChIP-Seq probes and Tiling arrays, or any data with spatial
 correlation.
 
@@ -8,9 +8,6 @@ About
 
 The Bioinformatics Applications Note manuscript is available here:
     http://bioinformatics.oxfordjournals.org/content/28/22/2986.full
-
-free link:
-    http://bioinformatics.oxfordjournals.org/cgi/reprint/bts545?ijkey=ZTTOnczUJYLfKgw&keytype=ref
 
 It includes an explanation of 3 examples in the examples directory
 of this repository.
@@ -25,20 +22,15 @@ p-value in the 4th column from single-probe tests--e.g. from limma::topTable(...
 you can find DMRs as::
 
     comb-p pipeline \
-        -c 4 \
-        --mlog \
-        --step 100 \
-        --dist 200
-        --seed 1e-3 \
+        -c 4 \          # p-values in 4th column
+        --mlog \        # use minus log10 before calculating correlatoin
+        --seed 1e-3 \   # require a p-value of 1e-3 to start a region 
+        --dist 200      # extend region if find another p-value within this dist
         -p $OUT_PREFIX \
-        --region-filter-p 0.1 \
-        --anno mm9 \
-        $PVALS
+        --region-filter-p 0.1 \ # post-filter reported regions
+        --anno mm9 \            # annotate with genome mm9 from UCSC
+        $PVALS                  # sorted BED file with pvals in 4th column
 
-Where the `seed` indicates the maximal p-value that can seed a region and distance is
-how far to extend a region without seeing another p-value that low. In the end, regions
-with a corrected (Sidak) p-value of 0.1 will be annotated with genome version mm9 (any
-version from UCSC database is supported).
 The output will look like:
 
     https://github.com/brentp/combined-pvalues/blob/master/manuscript/anno.tsv
@@ -52,6 +44,10 @@ Commands below give finer control over each step.
 Installation
 ============
 
+If you do not have `numpy` and `scipy` installed. Please use anaconda
+from: https://continuum.io/downloads
+which is a complete python distribution with those modules included.
+
 run::
 
     sudo python setup.py install
@@ -59,6 +55,7 @@ run::
 to have `comb-p` installed on your path.
 Otherwise, you can use the python scripts in the cpv subdirectory.
 E.g.
+
 ::
 
     python cpv/peaks.py
@@ -176,15 +173,6 @@ If that number is too small, the correlation values may be unreliable.
 We expect the correlation to decrease with increase lag (unless there is some
 periodicity).
 
-The first line of the output is a link to an image of the ACF data represented
-in the table. For parameter -d 1:500:60 it looks like:
-
-.. image:: https://raw.github.com/brentp/combined-pvalues/master/data/1_500_60.png
-
-Or, with more bins -d 1:500:30:
-
-.. image:: https://raw.github.com/brentp/combined-pvalues/master/data/1_500_30.png
-
 That output should be directed to a file for use in later steps.
 
 Combine P-values with Stouffer-Liptak-Kechris correction
@@ -192,18 +180,6 @@ Combine P-values with Stouffer-Liptak-Kechris correction
 
 See
 +++
-
-    Kechris et al. 2010:
-    Generalizing Moving Averages for Tiling
-    Arrays Using Combined P-Value Statistics
-
-    This changes that implementation by allowing lags by *distance* (presumably)
-    in bases, rather than by an index offset as is generally done with ACF.
-    This makes the implementation quite a bit slower but provides more
-    flexibility for probes/p-values that are not evenly spaced.
-
-Usage
-+++++
 
 The ACF output is then used to do the Stouffer-Liptak-Kechris correction.
 A call like::
@@ -215,17 +191,6 @@ A call like::
  + outputs a new BED file with columns:
 
 *chr*, *start*, *end*, *pval*, *combined-pval*
-
-Benjamini-Hochberg Correction
------------------------------
-
-This performs BH FDR correction on the pvalues. A call looks like::
-
-    $ python cpv/fdr.py data/pvals.acf.bed > data/pvals.adjusted.bed
-
-where the new file has one additional column, the corrected p-value. By
-default, it uses the last column as the p-value input, but another column can
-be used by specifying *-c*.
 
 Regions
 -------
@@ -245,27 +210,10 @@ p-value in the region.
 The cpv/peaks.py script is quite flexible. Run it without arguments for
 further usage.
 
-ScatterPlot (splot)
--------------------
-
-The command::
-
-    comb-p splot -c 5,6 data/pvals.adjusted.bed \
-                                -r chrY:2717613-2728613 \
-                                --labels original,adjusted
-
-will plot columns 5 and 6 from the region `-r`, resulting in
-
-.. image:: https://raw.github.com/brentp/combined-pvalues/master/data/scatter.png
-
-larger regions will automatically be plotted as points.
-You may specify any number of columns to plot.
-
-
 Region P-values (region_p)
 --------------------------
 
-Currently, the reported p-value is a Stouffer-Liptak *p-value* for the entire
+The reported p-value is a Stouffer-Liptak *p-value* for the entire
 region. This is done by taking a file of regions, and the original,
 uncorrected p-values, calculating the ACF out to the length of the longest
 region, and then using that ACF to perform the Stouffer-Liptak correction on
@@ -286,8 +234,7 @@ An invocation::
                      -c 5 > data/regions.sig.bed
 
 Will extract p-values from column 5 of pvals.bed for lines within regions in
-regions.bed. It will set tau to (-t) 0.1, use a step-size of 50 for the ACF
-calculation.
+regions.bed. 
 
 Frequently Asked Questions
 ==========================

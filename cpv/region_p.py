@@ -117,7 +117,7 @@ def sidak(p, region_length, total_coverage):
     """
     see: https://github.com/brentp/combined-pvalues/issues/2
     """
-    k = total_coverage / np.float128(region_length)
+    k = total_coverage / np.float64(region_length)
     if k < 1: k = total_coverage
     p_sidak = 1 - (1 - p)**k
     if p_sidak == 0:
