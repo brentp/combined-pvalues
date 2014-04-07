@@ -101,7 +101,7 @@ def get_total_coverage(fpvals, col_num, step, out_val):
         bases = set([])
         for feat in chrom_iter:
             s, e = feat['start'], feat['end']
-            e = max(e, s + step)
+            #e = max(e, s + step)
             bases.update(range(s, e))
         total_coverage += len(bases)
     out_val.value = total_coverage
