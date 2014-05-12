@@ -195,6 +195,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         g = Genome(db)
         lastf = fh.name
         with open(prefix + ".anno.%s.bed" % db, "w") as fh:
+            fh.write('#')
             g.annotate(lastf, ("refGene", "cpgIslandExt"), out=fh,
                     feature_strand=True, parallel=len(spvals) > 500)
         print >>sys.stderr, "wrote: %s annotated with %s" % (fh.name, db)
