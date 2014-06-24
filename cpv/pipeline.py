@@ -42,7 +42,7 @@ def main():
     p.add_argument("--region-filter-n", help="require at least this many probes"
                  "for a region to be reported in final output. "
                  " this requires the input bed file to have chrom, start, "
-                 "end, 't' columns", type=int, default=1)
+                 "end, 't' columns", type=int, default=None)
     p.add_argument("--annotate", help="annotate with refGen from this db" \
             "in UCSC (e.g. hg19) requires cruzdb", default=None)
 
@@ -68,7 +68,7 @@ def main():
             z=args.z_score)
 
 def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
-    region_filter_p=1, region_filter_n=1, genome_control=False, db=None,
+    region_filter_p=1, region_filter_n=None, genome_control=False, db=None,
     z=False):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
@@ -164,7 +164,8 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     header = (gzip.open(bed_files[0]) if bed_files[0].endswith(".gz")
             else open(bed_files[0])).next().split("\t")
     #if all(h in header for h in ('t', 'start', 'end')):
-    if region_filter_p != 1 or region_filter_n != 1:
+    if region_filter_p != 1 or region_filter_n != None:
+        if region_filter_n is None: region_filter_n = 0
         with open(prefix + ".regions-t.bed", "w") as fh:
             N = 0
             for i, toks in enumerate(filter.filter(bed_files[0], regions_bed,
