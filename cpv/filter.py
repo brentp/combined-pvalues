@@ -98,7 +98,8 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
             extra += [tpn, tsum]
         else:
             tsum = tpn = "NA"
-
+        if 'p' + coef_col_name not in plist[0] and 'pcoefficient' in plist[0]:
+            coef_col_name = 'coefficient'
         if 'p' + coef_col_name in plist[0]:
             coef = (sum(float(row['p' + coef_col_name]) for row in plist) /
                                     len(plist))
