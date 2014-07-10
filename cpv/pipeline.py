@@ -185,7 +185,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
 
         manhattan.manhattan(prefix + ".slk.bed", 3, prefix.rstrip(".") + ".manhattan.png",
                          False, ['#959899', '#484B4C'], "", False, None,
-                         regions=regions, bonferonni=True)
+                         regions=regions, bonferonni=False)
     except ImportError:
         pass # they dont have matplotlib
 
