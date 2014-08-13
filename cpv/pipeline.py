@@ -141,7 +141,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     fregions = prefix + ".regions.bed"
     with open(fregions, "w") as fh:
         list(peaks.peaks(prefix + ".fdr.bed", -1, threshold, seed,
-            step, fh, operator.le))
+            dist, fh, operator.le))
     n_regions = sum(1 for _ in open(fregions))
     print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
 
