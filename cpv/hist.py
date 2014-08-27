@@ -5,12 +5,13 @@ and check for uniformity with the chisq test.
 import argparse
 import numpy as np
 from chart import chart
+import toolshed as ts
 from _common import pairwise, get_col_num
 
 def run(args):
     col_num = get_col_num(args.c)
     file_iter =  (l.rstrip("\r\n").split("\t")
-                  for l in open(args.file) if l[0] != "#")
+                  for l in ts.nopen(args.file) if l[0] != "#")
 
     pvals = np.array([float(b[col_num]) for b in file_iter])
     kwargs = {"bins": args.n} if args.n else {}

@@ -1,4 +1,4 @@
-from toolshed import reader
+import toolshed as ts
 from itertools import tee, izip
 import signal
 import sys
@@ -28,7 +28,7 @@ def get_col_num(c, bed_file=None):
         c = int(c)
     if isinstance(c, (int, long)):
         return c if c < 0 else (c - 1)
-    header = open(bed_file).readline().rstrip().split("\t")
+    header = ts.header(bed_file)
     assert c in header
     return header.index(c)
 
@@ -44,7 +44,7 @@ def bediter(fnames, col_num, delta=None):
     if isinstance(fnames, basestring):
         fnames = [fnames]
     for fname in fnames:
-        for i, l in enumerate(reader(fname, header=False)):
+        for i, l in enumerate(ts.reader(fname, header=False)):
             if l[0][0] == "#": continue
             if i == 0: # allow skipping header
                 try:
@@ -109,7 +109,7 @@ def genome_control_adjust_bed(bedfiles, colnum, outfh):
         sys.exit(4)
     for j, bedfile in enumerate(bedfiles):
         for i, toks in enumerate(line.rstrip("\r\n").split("\t") \
-                for line in open(bedfile)):
+                for line in ts.nopen(bedfile)):
             try:
                 float(toks[c])
             except ValueError: # headder
@@ -132,7 +132,7 @@ def pairwise(iterable):
 
 def read_acf(acf_file):
     acf_vals = {}
-    for row in open(acf_file):
+    for row in ts.nopen(acf_file):
         if row[0] == "#": continue
         row = row.split("\t")
         if row[0] == "lag_min": continue

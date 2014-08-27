@@ -4,6 +4,7 @@ and check for uniformity with the chisq test.
 """
 import argparse
 from _common import get_col_nums
+import toolshed as ts
 from itertools import cycle
 
 def run(args):
@@ -16,7 +17,7 @@ def run(args):
     ps = dict((c, []) for c in col_nums)
 
     file_iter =  (l.rstrip("\r\n").split("\t")
-                  for l in open(args.file) if l[0] != "#")
+                  for l in ts.nopen(args.file) if l[0] != "#")
 
     chrom, start_end = args.region.split(":")
     start, end = map(int, start_end.split("-"))

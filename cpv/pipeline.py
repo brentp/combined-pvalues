@@ -1,6 +1,6 @@
 import sys
 import os.path as op
-import gzip
+import toolshed as ts
 
 def main():
     import argparse
@@ -111,7 +111,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
 
     spvals, opvals = [], []
-    with open(prefix + ".slk.bed", "w") as fhslk:
+    with ts.nopen(prefix + ".slk.bed.gz", "w") as fhslk:
 
         for row in slk.adjust_pvals(bed_files, col_num, acf_vals, z=z):
             fhslk.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
@@ -125,34 +125,34 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     print >>sys.stderr, "wrote: %s with lambda: %.2f" % (fhslk.name, gc_lambda)
 
     if genome_control:
-        fhslk = open(prefix + ".slk.gc.bed", "w")
-        adj = genome_control_adjust([d['p'] for d in bediter(prefix + ".slk.bed", -1)])
-        for i, line in enumerate(open(prefix + ".slk.bed")):
+        fhslk = ts.nopen(prefix + ".slk.gc.bed.gz", "w")
+        adj = genome_control_adjust([d['p'] for d in bediter(prefix + ".slk.bed.gz", -1)])
+        for i, line in enumerate(ts.nopen(prefix + ".slk.bed.gz")):
             print >>fhslk, "%s\t%.5g" % (line.rstrip("\r\n"), adj[i])
 
         fhslk.close()
         print >>sys.stderr, "wrote: %s" % fhslk.name
 
-    with open(prefix + ".fdr.bed", "w") as fh:
+    with ts.nopen(prefix + ".fdr.bed.gz", "w") as fh:
         for bh, l in fdr.fdr(fhslk.name, -1):
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
 
-    fregions = prefix + ".regions.bed"
-    with open(fregions, "w") as fh:
-        list(peaks.peaks(prefix + ".fdr.bed", -1, threshold, seed,
+    fregions = prefix + ".regions.bed.gz"
+    with ts.nopen(fregions, "w") as fh:
+        list(peaks.peaks(prefix + ".fdr.bed.gz", -1, threshold, seed,
             dist, fh, operator.le))
-    n_regions = sum(1 for _ in open(fregions))
+    n_regions = sum(1 for _ in ts.nopen(fregions))
     print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
 
-    with open(prefix + ".regions-p.bed", "w") as fh:
+    with ts.nopen(prefix + ".regions-p.bed.gz", "w") as fh:
         N = 0
         fh.write("#chrom\tstart\tend\tmin_p\tn_probes\t{correction}_p\t{correction}_sidak_p\n".format(correction=('z'
             if z else 'slk')))
         # use -2 for original, uncorrected p-values in slk.bed
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
-                               prefix + ".slk.bed",
-                               prefix + ".regions.bed", -2,
+                               prefix + ".slk.bed.gz",
+                               prefix + ".regions.bed.gz", -2,
                                0, step, mlog=mlog, z=z):
             fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
             fh.flush()
@@ -161,11 +161,10 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
                 % (fh.name, N)
 
     regions_bed = fh.name
-    header = (gzip.open(bed_files[0]) if bed_files[0].endswith(".gz")
-            else open(bed_files[0])).next().split("\t")
+    header = ts.header(bed_files[0])
     #if all(h in header for h in ('t', 'start', 'end')):
     if region_filter_n is None: region_filter_n = 0
-    with open(prefix + ".regions-t.bed", "w") as fh:
+    with ts.nopen(prefix + ".regions-t.bed", "w") as fh:
         N = 0
         for i, toks in enumerate(filter.filter(bed_files[0], regions_bed,
             p_col_name=col_num)):
@@ -183,7 +182,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         from cpv import manhattan
         regions = manhattan.read_regions(fh.name)
 
-        manhattan.manhattan(prefix + ".slk.bed", 3, prefix.rstrip(".") + ".manhattan.png",
+        manhattan.manhattan(prefix + ".slk.bed.gz", 3, prefix.rstrip(".") + ".manhattan.png",
                          False, ['#959899', '#484B4C'], "", False, None,
                          regions=regions, bonferonni=False)
     except ImportError:

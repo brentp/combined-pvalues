@@ -2,6 +2,7 @@
 perform Benjamini-Hochberg FDR correction on a BED file with p-values.
 """
 import argparse
+import toolshed as ts
 from _common import bediter
 from itertools import izip
 from _common import get_col_num
@@ -29,7 +30,7 @@ def _qvality(fbed_file, col_num, col_null):
 
    ps = [b['p'] for b in bediter(fbed_file, col_num)]
    nulls = [b['p'] for b in bediter(fbed_file, col_null)]
-   fh = open(fbed_file)
+   fh = ts.nopen(fbed_file)
    drop_header(fh)
    for (pval, pep, qval), l in izip(qvality(ps, nulls, r=None), fh):
        yield qval, pep, l
@@ -41,7 +42,7 @@ def obs_fdr(fbed_file, col_num, col_null=None):
         nulls = np.arange(1, len(ps) + 1, dtype=np.float64) / float(len(ps))
     else:
         nulls = [b['p'] for b in bediter(fbed_file, col_null)]
-    fh = open(fbed_file)
+    fh = ts.nopen(fbed_file)
     drop_header(fh)
     for qval, l in izip(relative_fdr(ps, nulls), fh):
         yield qval, l

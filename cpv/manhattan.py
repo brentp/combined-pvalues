@@ -7,6 +7,7 @@ plot a manhattan plot of the input file(s).
 import argparse
 import sys
 import os
+import toolshed as ts
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from itertools import groupby, cycle
 from operator import itemgetter
@@ -164,7 +165,7 @@ def qqplot(lpys, ax_qq):
 def read_regions(fregions):
     if not fregions: return None
     regions = {}
-    for toks in (l.split("\t") for l in open(fregions) if l[0] != "#"):
+    for toks in (l.split("\t") for l in ts.nopen(fregions) if l[0] != "#"):
         if not toks[0] in regions: regions[toks[0]] = []
         regions[toks[0]].append((int(toks[1]), int(toks[2])))
     return regions

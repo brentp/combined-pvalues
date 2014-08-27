@@ -6,7 +6,7 @@ This script will output the original region_bed intervals, along with
 sum of positive t-scores and the sum of negative t-scores.
 """
 import argparse
-from toolshed import reader, header as get_header
+import toolshed as ts
 from operator import itemgetter
 from itertools import groupby
 from tempfile import mktemp
@@ -16,12 +16,12 @@ def ilogit(v):
     return 1 / (1 + exp(-v))
 
 def fix_header(fname):
-    r = reader(fname, header=False)
+    r = ts.reader(fname, header=False)
     h = r.next()
     if not h[0].startswith(("#", )) and (h[1] + h[2]).isdigit():
         return fname
     tname = mktemp()
-    fh = open(tname, "w")
+    fh = ts.nopen(tname, "w")
     print >>fh, "#" + "\t".join(h)
     for toks in r:
         print >>fh, "\t".join(toks)
@@ -54,8 +54,8 @@ def main():
 
 def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
                     coef_col_name="logFC"):
-    ph = ['p' + h for h in get_header(p_bed)]
-    rh = get_header(region_bed)
+    ph = ['p' + h for h in ts.header(p_bed)]
+    rh = ts.header(region_bed)
     if isinstance(p_col_name, (int, long)):
         p_col_name = ph[p_col_name][1:]
 
@@ -63,7 +63,7 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
     a['p_bed'] = fix_header(a['p_bed'])
 
     j = 0
-    for group, plist in groupby(reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
+    for group, plist in groupby(ts.reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
 

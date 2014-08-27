@@ -10,6 +10,7 @@
 import argparse
 import sys
 import numpy as np
+import toolshed as ts
 
 from _common import bediter, get_col_num
 from itertools import chain, groupby
@@ -130,7 +131,7 @@ def sidak(p, region_length, total_coverage):
 
 def gen_regions(fregions):
     for i, region_line in enumerate((l.rstrip("\r\n")
-                                   for l in open(fregions) if l[0] != "#")):
+                                   for l in ts.nopen(fregions) if l[0] != "#")):
         toks = region_line.split("\t")
         rchrom = toks[0]
         try:
@@ -173,7 +174,7 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
 def region_p(fpvals, fregions, col_num, nsims, step, mlog=False, z=False):
     # just use 2 for col_num, but dont need the p from regions.
 
-    if(sum(1 for _ in open(fregions) if _[0] != "#") == 0):
+    if(sum(1 for _ in ts.nopen(fregions) if _[0] != "#") == 0):
         print >>sys.stderr, "no regions in %s" % (fregions, )
         sys.exit()
 
@@ -251,8 +252,7 @@ def main():
     if not (args.regions and args.pvals):
         import sys
         sys.exit(not p.print_help())
-    from toolshed import nopen
-    header = nopen(args.regions).next()
+    header = ts.nopen(args.regions).next()
     if header.startswith("#") or (not header.split("\t")[2].isdigit()):
         print "%s\tslk_p\tslk_sidak_p" % (header.rstrip("\r\n"),)
     return run(args)
