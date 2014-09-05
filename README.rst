@@ -45,7 +45,7 @@ Installation
 ============
 
 If you do not have `numpy` and `scipy` installed. Please use anaconda
-from: https://continuum.io/downloads
+from: http://continuum.io/downloads
 which is a complete python distribution with those modules included.
 
 run::
@@ -80,10 +80,8 @@ This message is displayed::
        fdr   - Benjamini-Hochberg correction of p-values
        peaks - find peaks in a BED file.
        region_p  - generate SLK p-values for a region (of p-values)
-       hist      - plot a histogram of a column and check for uniformity.
-       splot     - a scatter plot of column(s) in a bed file for a given region.
        manhattan - a manhattan plot of values in a BED file.
-
+       pipeline  - run the series of commands to find DMRs.
 
     NOTE: most of these assume *sorted* BED files.
 
