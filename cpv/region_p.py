@@ -1,11 +1,6 @@
 """
-   simulate a p-value of a region using:
-
-    + The Stouffer-Liptak method.
-
-    + the truncated product method described
-      in Zaykin et al. 2002, "Truncated Product Method for Combining p-values".
-      Genet Epidemiol.
+   calculate a p-value of a region using the Stouffer-Liptak method or the
+   z-score method.
 """
 import argparse
 import sys
@@ -236,14 +231,12 @@ def main():
     p.add_argument("-p", dest="pvals", help="BED containing all the p values"
                   " used to generate `regions`")
     p.add_argument("-r", dest="regions", help="BED containing all the regions")
-    p.add_argument("-s", dest="step", type=int, default=50,
+    p.add_argument("-s", "--step", dest="step", type=int, default=50,
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
     p.add_argument("--mlog", dest="mlog", action="store_true",
                    default=False, help="do the correlation on the -log10 of"
                    "the p-values. Default is to do it on the raw values")
-    p.add_argument("-N", dest="N", help="number of simulations to perform",
-                   type=int, default=0)
     p.add_argument("-c", dest="c", help="column number containing the p-value"
                    " of interest", type=int, default=-1)
     p.add_argument("-z", dest="z", help="use z-score correction",
