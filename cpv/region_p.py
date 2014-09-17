@@ -57,7 +57,7 @@ def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-            col_num, args.N, args.step, mlog=args.mlog, z=args.z):
+            col_num, args.step, mlog=args.mlog, z=args.z):
         #if sim_p != "NA":
         #    sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
@@ -166,7 +166,7 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
     assert nr == len(region_info), (nr, len(region_info))
     return region_info
 
-def region_p(fpvals, fregions, col_num, nsims, step, mlog=False, z=False):
+def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
     # just use 2 for col_num, but dont need the p from regions.
 
     if(sum(1 for _ in ts.nopen(fregions) if _[0] != "#") == 0):
@@ -210,19 +210,7 @@ def region_p(fpvals, fregions, col_num, nsims, step, mlog=False, z=False):
         result = [region_line, slk_p, sidak_slk_p]
 
         # corroborate those with p-values < 0.1 by simulation
-        #"""
-        if nsims > 0:
-
-            # adjust nsims so it's an adjusted p-value.
-            q_nsims = int(0.5 + total_coverage / float(region_len))
-            assert sample_distribution is not None
-            # trim sigma because we may have trimmed the ps above.
-            sim_p = sl_sim(sigma, ps, q_nsims, sample_distribution)
-            result.append(sim_p)
-        else:
-            result.append("NA")
-        #"""
-        #result.append("NA")
+        result.append("NA")
         yield result
 
 def main():
