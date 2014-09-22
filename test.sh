@@ -54,3 +54,5 @@ fi
 
 
 rm t
+
+comb-p pipeline --seed 0.01 --dist 300 --step 300 examples/fake/pvalues.bed -p /tmp/fake

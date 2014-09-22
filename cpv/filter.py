@@ -18,7 +18,7 @@ def ilogit(v):
 def fix_header(fname):
     r = ts.reader(fname, header=False)
     h = r.next()
-    if not h[0].startswith(("#", )) and (h[1] + h[2]).isdigit():
+    if not (h[1] + h[2]).isdigit():
         return fname
     tname = mktemp()
     fh = ts.nopen(tname, "w")
@@ -54,8 +54,16 @@ def main():
 
 def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
                     coef_col_name="logFC"):
-    ph = ['p' + h for h in ts.header(p_bed)]
+
+    ph = ts.header(p_bed)
+    if (ph[1] + ph[2]).isdigit():
+        raise Exception('need header in p-value file to run filter')
+    ph = ['p' + h for h in ph]
     rh = ts.header(region_bed)
+
+    if isinstance(p_col_name, str) and p_col_name.isdigit():
+        p_col_name = int(p_col_name) - 1
+
     if isinstance(p_col_name, (int, long)):
         p_col_name = ph[p_col_name][1:]
 
@@ -76,7 +84,11 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
             if float(r[region_p_key]) > region_p:
                 continue
 
-        plist = [x for x in plist if (int(x['start']) <= int(x['pstart']) <= int(x['pend'])) and ((int(x['start']) <= int(x['pend']) <= int(x['end'])))]
+        try:
+            plist = [x for x in plist if (int(x['start']) <= int(x['pstart']) <= int(x['pend'])) and ((int(x['start']) <= int(x['pend']) <= int(x['end'])))]
+        except:
+            print plist
+            raise
         tscores = [float(row['pt']) for row in plist if 'pt' in row]
 
         if max_p:

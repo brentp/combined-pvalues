@@ -58,7 +58,7 @@ def main():
     assert op.exists(args.bed_files[0])
 
     col_num = get_col_num(args.c, args.bed_files[0])
-    if not args.zscore:
+    if not args.z_score:
         print >>sys.stderr, "it is recommended to use --z-score"
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
