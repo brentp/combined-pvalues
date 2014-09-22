@@ -58,6 +58,8 @@ def main():
     assert op.exists(args.bed_files[0])
 
     col_num = get_col_num(args.c, args.bed_files[0])
+    if not args.zscore:
+        print >>sys.stderr, "it is recommended to use --z-score"
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
             args.bed_files, mlog=args.mlog,
@@ -153,7 +155,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                prefix + ".slk.bed.gz",
                                prefix + ".regions.bed.gz", -2,
-                               0, step, mlog=mlog, z=z):
+                               step, mlog=mlog, z=z):
             fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
             fh.flush()
             N += int(slk_sidak_p < 0.05)
