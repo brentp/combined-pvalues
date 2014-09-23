@@ -58,8 +58,12 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
     ph = ts.header(p_bed)
     if (ph[1] + ph[2]).isdigit():
         raise Exception('need header in p-value file to run filter')
+    assert ph[1] == 'start' and ph[2] == 'end' and ph[0] == 'chrom', \
+            ('must have chrom, start, end header for', p_bed)
     ph = ['p' + h for h in ph]
+
     rh = ts.header(region_bed)
+    header = not (rh[1] + rh[2]).isdigit()
 
     if isinstance(p_col_name, str) and p_col_name.isdigit():
         p_col_name = int(p_col_name) - 1
@@ -69,9 +73,12 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
 
     a = dict(p_bed=p_bed, region_bed=region_bed)
     a['p_bed'] = fix_header(a['p_bed'])
+    a['header'] = ""
 
     j = 0
-    for group, plist in groupby(ts.reader('|bedtools intersect -b %(p_bed)s -a %(region_bed)s -wo' % a,
+    for group, plist in groupby(
+            ts.reader('|bedtools intersect -b %(p_bed)s \
+                         -a %(region_bed)s -wo %(header)s' % a,
             header=rh + ph), itemgetter('chrom','start','end')):
         plist = list(plist)
 
