@@ -17,8 +17,9 @@ def ilogit(v):
 
 def fix_header(fname):
     r = ts.reader(fname, header=False)
+    l = next(ts.nopen(fname))
     h = r.next()
-    if not (h[1] + h[2]).isdigit():
+    if (not (h[1] + h[2]).isdigit()) and l[0] == "#":
         return fname
     tname = mktemp()
     fh = ts.nopen(tname, "w")
