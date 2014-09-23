@@ -97,6 +97,7 @@ def get_total_coverage(fpvals, col_num, step, out_val):
         bases = set([])
         for feat in chrom_iter:
             s, e = feat['start'], feat['end']
+            if s == e: e += 1
             #e = max(e, s + step)
             bases.update(range(s, e))
         total_coverage += len(bases)
@@ -113,11 +114,12 @@ def sidak(p, region_length, total_coverage):
     """
     see: https://github.com/brentp/combined-pvalues/issues/2
     """
+    assert region_length != 0
     k = total_coverage / np.float64(region_length)
     if k < 1: k = total_coverage
     p_sidak = 1 - (1 - p)**k
     if p_sidak == 0:
-        assert p < 1e-16
+        assert p < 1e-16, (p, k, total_coverage, region_length)
         p_sidak = (1 - (1 - 1e-16)**k) / (p / 1e-16)
         p_sidak = min(p_sidak, p * k)
 
@@ -160,7 +162,7 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
             if prow is None: break
         if not prows:
             print >>sys.stderr, "missed,:", prows, (region_line)
-        region_len = rend - rstart
+        region_len = max(1, rend - rstart)
         region_info.append((region_line, region_len, prows[:]))
         del prows
     assert nr == len(region_info), (nr, len(region_info))
