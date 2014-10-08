@@ -17,14 +17,18 @@ def main():
              " ACF calculation", type=int)
     p.add_argument("--seed", dest="seed", help="A value must be at least this"
                  " large/small in order to seed a region.", type=float,
-                 default=0.1)
+                 default=0.05)
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
+    p.add_argument("--use-fdr", dest="use_fdr", help="Use FDR-corrected p-values "
+            "for finding peaks (either way, we still do multiple-testing correction "
+            "on the p-values for the regions).", action='store_true',
+            default=False)
     p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
-    p.add_argument("-z", "--z-score", action="store_true", default=False,
-            help="use z-score correction instead of liptak")
+    p.add_argument("--liptak", action="store_true", default=True,
+            help="use Liptak instead of z-score correction")
 
     p.add_argument("--genomic-control", dest="genomic_control",
             help="perform the genomic control correction on the input"
@@ -58,8 +62,6 @@ def main():
     assert op.exists(args.bed_files[0])
 
     col_num = get_col_num(args.c, args.bed_files[0])
-    if not args.z_score:
-        print >>sys.stderr, "it is recommended to use --z-score"
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
             args.bed_files, mlog=args.mlog,
@@ -67,11 +69,12 @@ def main():
             region_filter_n=args.region_filter_n,
             genome_control=args.genomic_control,
             db=args.annotate,
-            z=args.z_score)
+            z=not args.liptak,
+            use_fdr=args.use_fdr)
 
 def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
     region_filter_p=1, region_filter_n=None, genome_control=False, db=None,
-    z=False):
+    z=False, use_fdr=True):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
     from cpv._common import genome_control_adjust, genomic_control, bediter
@@ -139,10 +142,9 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         for bh, l in fdr.fdr(fhslk.name, -1):
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
-
     fregions = prefix + ".regions.bed.gz"
     with ts.nopen(fregions, "w") as fh:
-        list(peaks.peaks(prefix + ".fdr.bed.gz", -1, threshold, seed,
+        list(peaks.peaks(prefix + ".fdr.bed.gz", -1 if use_fdr else -2, threshold, seed,
             dist, fh, operator.le))
     n_regions = sum(1 for _ in ts.nopen(fregions))
     print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
