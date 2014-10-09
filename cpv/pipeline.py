@@ -117,7 +117,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
 
     spvals, opvals = [], []
     with ts.nopen(prefix + ".slk.bed.gz", "w") as fhslk:
-
+        fhslk.write('#chrom\tstart\tend\tp\tregion-p\n')
         for row in slk.adjust_pvals(bed_files, col_num, acf_vals, z=z):
             fhslk.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
             opvals.append(row[-2])
@@ -170,8 +170,8 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     if region_filter_n is None: region_filter_n = 0
     with ts.nopen(prefix + ".regions-t.bed", "w") as fh:
         N = 0
-        for i, toks in enumerate(filter.filter(bed_files[0], regions_bed,
-            p_col_name=col_num)):
+        for i, toks in enumerate(filter.filter(prefix + ".slk.bed.gz",
+            regions_bed, p_col_name='p')):
             if i == 0: toks[0] = "#" + toks[0]
             else:
                 if float(toks[6]) > region_filter_p: continue
