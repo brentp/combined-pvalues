@@ -23,7 +23,6 @@ you can find DMRs as::
 
     comb-p pipeline \
         -c 4 \          # p-values in 4th column
-        --mlog \        # use minus log10 before calculating correlatoin
         --seed 1e-3 \   # require a p-value of 1e-3 to start a region 
         --dist 200      # extend region if find another p-value within this dist
         -p $OUT_PREFIX \
