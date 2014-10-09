@@ -64,8 +64,11 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
 
         if regions and seqid in regions:
             regions_bounds = regions[seqid]
-            region_xys.extend([(last_x + r['start'], r['p'], rcolor) for r in rlist \
+            if len(regions_bounds) < 500:
+                region_xys.extend([(last_x + r['start'], r['p'], rcolor) for r in rlist \
                   if any((s - 1 <= r['start'] <= e + 1) for s, e in regions_bounds)])
+            else:
+                sys.stderr.write("regions for %s > 500, not plotting\n" % seqid)
             # adjust the bounds of each region based on chrom.
             new_bounds.extend([(last_x + s, last_x + e)
                             for s, e in regions_bounds])
