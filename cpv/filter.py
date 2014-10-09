@@ -25,6 +25,8 @@ def fix_header(fname):
     fh = ts.nopen(tname, "w")
     print >>fh, "#" + "\t".join(h)
     for toks in r:
+        # fix cases where saved as 8e6 instead of 800000
+        #toks[1:3] = map(str, (int(float(t)) for t in toks[1:3]))
         print >>fh, "\t".join(toks)
     fh.close()
     return tname
@@ -33,7 +35,7 @@ def fix_header(fname):
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                    formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("-p", dest="p", help="p-value column from region_bed",
+    p.add_argument("-p", dest="p", help="p-value column from `p_bed`",
             default="P.Value")
     p.add_argument("-t", dest="t", default="t",
             help="t-statistic or directionality from p_bed")
