@@ -171,7 +171,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     with ts.nopen(prefix + ".regions-t.bed", "w") as fh:
         N = 0
         for i, toks in enumerate(filter.filter(bed_files[0],
-            regions_bed, p_col_name='p')):
+            regions_bed, p_col_name=col_num)):
             if i == 0: toks[0] = "#" + toks[0]
             else:
                 if float(toks[6]) > region_filter_p: continue
