@@ -27,7 +27,7 @@ def main():
             default=False)
     p.add_argument("-p", "--prefix", dest="prefix",
             help="prefix for output files", default=None)
-    p.add_argument("--liptak", action="store_true", default=True,
+    p.add_argument("--liptak", action="store_true", default=False,
             help="use Liptak instead of z-score correction")
 
     p.add_argument("--genomic-control", dest="genomic_control",
@@ -170,7 +170,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
     if region_filter_n is None: region_filter_n = 0
     with ts.nopen(prefix + ".regions-t.bed", "w") as fh:
         N = 0
-        for i, toks in enumerate(filter.filter(prefix + ".slk.bed.gz",
+        for i, toks in enumerate(filter.filter(bed_files[0],
             regions_bed, p_col_name='p')):
             if i == 0: toks[0] = "#" + toks[0]
             else:

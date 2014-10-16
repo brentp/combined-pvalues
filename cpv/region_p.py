@@ -115,7 +115,11 @@ def sidak(p, region_length, total_coverage):
     see: https://github.com/brentp/combined-pvalues/issues/2
     """
     assert region_length != 0
-    k = total_coverage / np.float64(region_length)
+    # use 1.1 as heuristic to account for limit in available regions
+    # of a given size as the region_length increases
+    # TODO: base that on the actual number of regiosn of this length
+    # that could be seen based on the distance constraint.
+    k = total_coverage / (np.float64(region_length)**1.0)
     if k < 1: k = total_coverage
     p_sidak = 1 - (1 - p)**k
     if p_sidak == 0:
@@ -170,10 +174,12 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
 
 def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
     # just use 2 for col_num, but dont need the p from regions.
-
-    if(sum(1 for _ in ts.nopen(fregions) if _[0] != "#") == 0):
-        print >>sys.stderr, "no regions in %s" % (fregions, )
-        sys.exit()
+    with ts.nopen(fregions) as fhr:
+        for i, _ in enumerate(fhr):
+            if i > 2: break
+        else:
+            print >>sys.stderr, "no regions in %s" % (fregions, )
+            sys.exit()
 
     process, total_coverage_sync = _get_total_coverage(fpvals, col_num, step)
     region_info = _get_ps_in_regions(fregions, fpvals, col_num)
@@ -209,10 +215,7 @@ def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
 
         sidak_slk_p = sidak(slk_p, region_len, total_coverage)
 
-        result = [region_line, slk_p, sidak_slk_p]
-
-        # corroborate those with p-values < 0.1 by simulation
-        result.append("NA")
+        result = [region_line, slk_p, sidak_slk_p, "NA"]
         yield result
 
 def main():

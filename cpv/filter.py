@@ -6,29 +6,35 @@ This script will output the original region_bed intervals, along with
 sum of positive t-scores and the sum of negative t-scores.
 """
 import argparse
-import toolshed as ts
 from operator import itemgetter
 from itertools import groupby
 from tempfile import mktemp
 from math import exp
+import atexit
+import os
+
+import toolshed as ts
 
 def ilogit(v):
     return 1 / (1 + exp(-v))
 
-def fix_header(fname):
+def fix_bed(fname):
+    """
+    a lot of bed files will have no header or have e.g.
+    8e6 instead of 8000000 for start/end. this just fixes that
+    so we can send to bedtools
+    """
     r = ts.reader(fname, header=False)
-    l = next(ts.nopen(fname))
-    h = r.next()
-    if (not (h[1] + h[2]).isdigit()) and l[0] == "#":
-        return fname
+    h = next(r)
+    assert not (h[1] + h[2]).isdigit(), "must have header for filtering"
     tname = mktemp()
     fh = ts.nopen(tname, "w")
-    print >>fh, "#" + "\t".join(h)
+    fh.write("#" + "\t".join(h) + "\n")
     for toks in r:
-        # fix cases where saved as 8e6 instead of 800000
-        #toks[1:3] = map(str, (int(float(t)) for t in toks[1:3]))
-        print >>fh, "\t".join(toks)
+        toks[1:3] = map(str, (int(float(t)) for t in toks[1:3]))
+        fh.write("%s\n" % "\t".join(toks))
     fh.close()
+    atexit.register(os.unlink, tname)
     return tname
 
 
@@ -75,7 +81,7 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
         p_col_name = ph[p_col_name][1:]
 
     a = dict(p_bed=p_bed, region_bed=region_bed)
-    a['p_bed'] = fix_header(a['p_bed'])
+    a['p_bed'] = fix_bed(a['p_bed'])
     a['header'] = ""
 
     j = 0
