@@ -152,6 +152,7 @@ def _get_ps_in_regions(fregions, fpvals, col_num):
     for rchrom, rstart, rend, region_line in sorted(gen_regions(fregions),
                                                 key=itemgetter(0, 1)):
         prows = []
+        if prow is None: break
         nr += 1
         # grab the p-values in the bed file that are within the current region
         while (prow["chrom"] != rchrom or prow["start"] < rstart):
