@@ -14,6 +14,12 @@ from operator import itemgetter
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
+try:
+    import seaborn as sns
+    sns.set_context("paper")
+    sns.set_style("dark", {'axes.linewidth': 1})
+except ImportError:
+    pass
 import numpy as np
 from cpv._common import bediter, get_col_num, genomic_control
 
