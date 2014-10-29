@@ -37,6 +37,13 @@ The output will look like:
 With DMRs annotated to the nearest gene and CpG island. Negative distances indicate
 that the DMR is upstream of the gene. DMRs inside of genes have `exon` / `UTR` or the
 appropriate feature to indicate their location within the gene.
+If `matplotlib` is installed, then you will get a figure like this:
+
+.. figure:: https://gist.github.com/brentp/bf7d3c3d3f23cc319ed8/raw/b547a7458b1cf91f2e19baf1c96893272e06c1e1/mslk.png
+
+    Manhattan plot of p-values with DMRs highlighted
+
+    Regions passing the `--region-filter-p` are highlighted in a red color.
 
 Commands below give finer control over each step.
 
