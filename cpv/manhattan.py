@@ -88,8 +88,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     ys = np.array(ys) if no_log else -np.log10(ys)
 
     plt.close()
-    f = plt.figure()
-    ax = f.add_axes((0.1, 0.09, 0.88, 0.85))
+    f, ax = plt.subplots(1, figsize=(10, 6))
 
     bonferonni_p = 0.05 / nrows
 
@@ -126,14 +125,15 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     # that's the space we're plotting in.
     if bonferonni:
         ax.axhline(y=-np.log10(bonferonni_p), color='0.5', linewidth=2)
-    plt.axis('tight')
+    #plt.axis('tight')
     if max(xs) - min(xs) > 10000:
         plt.xlim(0, xs[-1])
     else:
         plt.xlim(xs[0], xs[-1])
     plt.ylim(ymin=0)
     if ymax is not None: plt.ylim(ymax=ymax)
-    plt.xticks([c[1] for c in chrom_centers], [c[0] for c in chrom_centers], rotation=-90, size=8.5)
+    plt.xticks([c[1] for c in chrom_centers],
+               [c[0].replace('chr', '') for c in chrom_centers], rotation=-90, size=8.5)
     #plt.show()
     print >>sys.stderr, "Bonferonni-corrected p-value for %i rows: %.3g" \
             % (nrows, 0.05 / nrows)
@@ -151,6 +151,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         hist(pys, ax_hist)
 
     print >>sys.stderr, "saving to: %s" % image_path
+    f.tight_layout()
     plt.savefig(image_path)
 
     return image_path
