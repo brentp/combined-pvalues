@@ -39,7 +39,7 @@ that the DMR is upstream of the gene. DMRs inside of genes have `exon` / `UTR` o
 appropriate feature to indicate their location within the gene.
 If `matplotlib` is installed, then you will get a figure like this:
 
-.. figure:: https://gist.github.com/brentp/bf7d3c3d3f23cc319ed8/raw/b547a7458b1cf91f2e19baf1c96893272e06c1e1/mslk.png
+.. figure:: https://gist.githubusercontent.com/brentp/bf7d3c3d3f23cc319ed8/raw/b547a7458b1cf91f2e19baf1c96893272e06c1e1/mslk.png
 
     Manhattan plot of p-values with DMRs highlighted
 
