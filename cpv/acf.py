@@ -4,7 +4,6 @@
 """
 import argparse
 from array import array
-from chart import chart
 import sys
 import numpy as np
 import scipy.stats as ss
@@ -144,7 +143,6 @@ def write_acf(acf_vals, out):
     simple_acf = []
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
-    print >>out, "#", chart(values, xlabels)
     print >> out, "#lag_min\tlag_max\tcorrelation\tN\tp"
     for k, v in sorted(acf_vals):
         print >> out, "%i\t%i\t%.4g\t%i\t%.4g" % (k[0], k[1], v[0], v[1], v[2])

@@ -4,7 +4,6 @@ and check for uniformity with the chisq test.
 """
 import argparse
 import numpy as np
-from chart import chart
 import toolshed as ts
 from _common import pairwise, get_col_num
 
@@ -17,7 +16,6 @@ def run(args):
     kwargs = {"bins": args.n} if args.n else {}
     hist, bins = np.histogram(pvals, normed=True, **kwargs)
     xlabels = "|".join("%.2f-%.2f" % b for b in pairwise(bins))
-    print "#", chart(hist, xlabels)
     hist, bins = np.histogram(pvals, normed=False, **kwargs)
 
     print "# median: %.3f mean:%.3f; std: %.3f min:%.3f; max:%.3f" % (
