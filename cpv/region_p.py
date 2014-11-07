@@ -143,9 +143,9 @@ def _get_ps_in_regions(tree, fpvals, col_num):
             region_len = max(1, region[1] - region[0])
             region_tup = tuple(region[-1])
             region_info[region_tup].append(row)
-    assert sum(len(v) for v in tree.values()) <= len(region_info)
-    if sum(len(v) for v in tree.values()) < len(region_info):
-        print >>sys.stderr("#note: not all regions contained measurements\n")
+    assert sum(len(v) for v in tree.values()) >= len(region_info)
+    if sum(len(v) for v in tree.values()) > len(region_info):
+        sys.stderr.write("# note: not all regions contained measurements\n")
     return region_info
 
 def read_regions(fregions):
