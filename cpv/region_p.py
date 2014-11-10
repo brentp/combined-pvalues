@@ -232,7 +232,7 @@ def main():
                    default=False, help="do the correlation on the -log10 of"
                    "the p-values. Default is to do it on the raw values")
     p.add_argument("-c", dest="c", help="column number containing the p-value"
-                   " of interest", type=int, default=-1)
+                   " of interest", type=str, default=-1)
     p.add_argument("-z", dest="z", help="use z-score correction",
                     action="store_true")
     args = p.parse_args()
@@ -242,6 +242,12 @@ def main():
     header = ts.nopen(args.regions).next()
     if header.startswith("#") or (not header.split("\t")[2].isdigit()):
         print "%s\tslk_p\tslk_sidak_p" % (header.rstrip("\r\n"),)
+
+    header = ts.header(args.pvals)
+    if args.c in header:
+        args.c = header.index(args.c) + 1
+    else:
+        args.c = int(args.c)
     return run(args)
 
 if __name__ == "__main__":
