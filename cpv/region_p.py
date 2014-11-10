@@ -6,6 +6,9 @@ import argparse
 import sys
 import numpy as np
 import toolshed as ts
+from collections import defaultdict
+
+from interlap import InterLap
 
 from _common import bediter, get_col_num
 from itertools import chain, groupby
@@ -64,8 +67,8 @@ def run(args):
 
 def _gen_acf(region_info, fpvals, col_num, step, mlog):
     # calculate the ACF as far out as needed...
-    # [1] is the length of each region.
-    max_len = max(r[1] for r in region_info)
+    # keys of region_info are (chrom, start, end)
+    max_len = max(int(r[2]) - int(r[1]) for r in region_info)
     print >>sys.stderr, "# calculating ACF out to: %i" % max_len
 
     lags = range(1, max_len, step)
@@ -130,60 +133,37 @@ def sidak(p, region_length, total_coverage):
     # print "bonferroni:", min(p * k, 1)
     return min(p_sidak, 1)
 
-def gen_regions(fregions):
-    for i, region_line in enumerate((l.rstrip("\r\n")
-                                   for l in ts.nopen(fregions) if l[0] != "#")):
-        toks = region_line.split("\t")
-        rchrom = toks[0]
-        try:
-            rstart, rend = map(int, toks[1:3])
-        except ValueError: # header.
-            if i == 0: continue
-        yield rchrom, rstart, rend, region_line
-
-def _get_ps_in_regions(fregions, fpvals, col_num):
+def _get_ps_in_regions(tree, fpvals, col_num):
     """
     find the pvalues associated with each region
     """
-    region_info = []
-    piter = chain(bediter(fpvals, col_num), [None])
-    prow = piter.next()
-    nr = 0
-    for rchrom, rstart, rend, region_line in sorted(gen_regions(fregions),
-                                                key=itemgetter(0, 1)):
-        prows = []
-        if prow is None: break
-        nr += 1
-        # grab the p-values in the bed file that are within the current region
-        while (prow["chrom"] != rchrom or prow["start"] < rstart):
-        #while (prow["chrom"] != rchrom or prow["end"] < rstart):
-            prow = piter.next()
-            if prow is None: break
-
-        #while prow is not None and (rchrom, rend) > (prow["chrom"], prow["start"]):
-        while prow is not None and (rchrom, rend) >= (prow["chrom"], prow["end"]):
-            prows.append(prow)
-            prow = piter.next()
-            if prow is None: break
-        if not prows:
-            print >>sys.stderr, "missed,:", prows, (region_line)
-        region_len = max(1, rend - rstart)
-        region_info.append((region_line, region_len, prows[:]))
-        del prows
-    assert nr == len(region_info), (nr, len(region_info))
+    region_info = defaultdict(list)
+    for row in bediter(fpvals, col_num):
+        for region in tree[row['chrom']].find((row['start'], row['end'])):
+            region_len = max(1, region[1] - region[0])
+            region_tup = tuple(region[-1])
+            region_info[region_tup].append(row)
+    assert sum(len(v) for v in tree.values()) >= len(region_info)
+    if sum(len(v) for v in tree.values()) > len(region_info):
+        sys.stderr.write("# note: not all regions contained measurements\n")
     return region_info
+
+def read_regions(fregions):
+    tree = defaultdict(InterLap)
+    for i, toks in enumerate(ts.reader(fregions, header=False)):
+        if i == 0 and not (toks[1] + toks[2]).isdigit(): continue
+        tree[toks[0]].add((int(toks[1]), int(toks[2]), toks))
+    sys.stderr.write("# read %i regions from %s\n" \
+            % (sum(len(v) for v in tree.values()), fregions))
+    return tree
 
 def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
     # just use 2 for col_num, but dont need the p from regions.
-    with ts.nopen(fregions) as fhr:
-        for i, _ in enumerate(fhr):
-            if i > 2: break
-        else:
-            print >>sys.stderr, "no regions in %s" % (fregions, )
-            sys.exit()
 
+    tree = read_regions(fregions)
     process, total_coverage_sync = _get_total_coverage(fpvals, col_num, step)
-    region_info = _get_ps_in_regions(fregions, fpvals, col_num)
+
+    region_info = _get_ps_in_regions(tree, fpvals, col_num)
 
     acfs = _gen_acf(region_info, (fpvals,), col_num, step, mlog=mlog)
     process.join()
@@ -194,29 +174,26 @@ def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
                                 (total_coverage)
     sample_distribution = np.array([b["p"] for b in bediter(fpvals,
                                                                 col_num)])
-    for region_line, region_len, prows in region_info:
+
+    combine = z_score_combine if z else stouffer_liptak
+    for region, prows in region_info.iteritems():
         # gen_sigma expects a list of bed dicts.
         sigma = gen_sigma_matrix(prows, acfs)
         ps = np.array([prow["p"] for prow in prows])
         if ps.shape[0] == 0:
-            print >>sys.stderr,("bad region", region_line)
+            print >>sys.stderr,("bad region", region)
             continue
 
         # calculate the SLK for the region.
-
-        if z:
-            region_slk = z_score_combine(ps, sigma)
-        else:
-            region_slk = stouffer_liptak(ps, sigma)
-
+        region_slk = combine(ps, sigma)
         if not region_slk["OK"]:
             print >>sys.stderr, "problem with:", region_slk, ps
 
         slk_p = region_slk["p"]
 
-        sidak_slk_p = sidak(slk_p, region_len, total_coverage)
+        sidak_slk_p = sidak(slk_p, int(region[2]) - int(region[1]), total_coverage)
 
-        result = [region_line, slk_p, sidak_slk_p, "NA"]
+        result = ["\t".join(region), slk_p, sidak_slk_p, "NA"]
         yield result
 
 def main():
