@@ -77,22 +77,16 @@ def slk_chrom(chromlist, lag_max, acfs, z=True):
     """
     calculate the slk for a given chromosome
     """
-    n_bad = 0
     for xbed, xneighbors in walk(chromlist, lag_max):
 
         sigma = gen_sigma_matrix(xneighbors, acfs)
         pvals = [g['p'] for g in xneighbors]
         # stringetn is True/False
         r = z_score_combine(pvals, sigma)
-        yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
-                r["p"])
-        if not r["OK"] and n_bad < 20:
-            print >>sys.stderr, "# non-invertible %s\t%i\t%i" % \
-                    (xbed["chrom"], xbed["start"], xbed["end"])
-            print >>sys.stderr, "# pvals:", ",".join(map(str, pvals[:10])) + "..." 
-            n_bad += 1
-            if n_bad == 20:
-                print >>sys.stderr, "not reporting further un-invertibles"
+        # NOTE: this commented out line show slightly better performance on
+        # simulated data with largish changes.
+        #yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], 2 * min(xbed["p"], r["p"]))
+        yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], r["p"])
 
 def _slk_chrom(args):
     return list(slk_chrom(*args))
