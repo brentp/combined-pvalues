@@ -5,8 +5,8 @@ for a bedgraph file with pvalues in the 4th column. usage would be:
 
     $ python peaks.py --dist 100 --seed 0.01 some.bed > some.regions.bed
 
-where regions.bed contains the start and end of the region and (currently) the
-lowest p-value in that region.
+where some.regions.bed contains the start and end of the region and (currently)
+the lowest p-value in that region.
 """
 from itertools import groupby
 import operator
