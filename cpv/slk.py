@@ -81,7 +81,6 @@ def slk_chrom(chromlist, lag_max, acfs, z=True):
 
         sigma = gen_sigma_matrix(xneighbors, acfs)
         pvals = [g['p'] for g in xneighbors]
-        # stringetn is True/False
         r = z_score_combine(pvals, sigma)
         # NOTE: this commented out line show slightly better performance on
         # simulated data with largish changes.
