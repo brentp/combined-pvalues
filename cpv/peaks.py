@@ -29,7 +29,6 @@ def bediter(fname, col_num):
 # use class to keep track of written peaks.
 def write_peaks(peaks, seed, out, scmp):
     # could have a list with only those passing the threshold.
-    if not any(scmp(p["p"], seed) for p in peaks): return None
     if len(peaks) == 0: return None
     # peak_count unused...
     peak_start = peaks[0]["start"]
@@ -43,6 +42,19 @@ def write_peaks(peaks, seed, out, scmp):
         if scmp(p["p"], pbest): pbest = p["p"]
     out.write("%s\t%i\t%i\t%.4g\t%i\n" % (
         peaks[0]["chrom"], peak_start, peak_end, pbest, peak_count))
+
+def trim_peaks(peaks, seed, thresh, scmp):
+    """
+    if thresh was greater than seed, we trim the region
+    so the ends are < seed, but middle values can be seed < p < thresh
+    """
+    if seed == thresh: return peaks
+    try:
+        i_start = next(i for i, p in enumerate(peaks) if scmp(p['p'], seed))
+    except StopIteration:
+        return []
+    i_end = len(peaks) - next(i for i, p in enumerate(reversed(peaks)) if scmp(p['p'], seed))
+    return peaks[i_start:i_end]
 
 def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
     assert(scmp(seed, thresh))
@@ -59,9 +71,10 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
                 # first check distance.
                 # if distance is too great, we create a new peak
                 if peaks != [] and b["start"] - max_end > dist:
+
+                    peaks = trim_peaks(peaks, seed, thresh, scmp)
                     if out is None:
-                       if any(scmp(p, seed) for p in peaks):
-                           for p in peaks: yield p
+                        for p in peaks: yield p
                     else:
                         write_peaks(peaks, seed, out, scmp)
                     peaks = []
@@ -72,7 +85,7 @@ def walk(chromiter, thresh, seed, dist, out=None, scmp=operator.le):
                 max_end = max(b['end'], max_end)
 
         if out is None:
-           if any(scmp(p, seed) for p in peaks):
+           if any(scmp(p['p'], seed) for p in peaks):
                for p in peaks: yield p
         else:
             write_peaks(peaks, seed, out, scmp)
