@@ -21,7 +21,7 @@ def main():
     p.add_argument("--threshold", dest="threshold", help="After seeding, a value"
                  " of at least this number can extend a region. ",
                  type=float)
-    p.add_argument("--use-fdr", dest="use_fdr", help="Use FDR-corrected p-values "
+    p.add_argument("--no-fdr", dest="no_fdr", help="Don't use FDR-corrected p-values "
             "for finding peaks (either way, we still do multiple-testing correction "
             "on the p-values for the regions).", action='store_true',
             default=False)
@@ -33,10 +33,6 @@ def main():
     p.add_argument("--genomic-control", dest="genomic_control",
             help="perform the genomic control correction on the input"
             " pvalues", action="store_true", default=False)
-
-    p.add_argument("--mlog", "--nlog", dest="mlog", action="store_true",
-                   default=False, help="do the correlation on the -log10 of"
-                   "the p-values. Default is to do it on the raw values")
 
     p.add_argument("--region-filter-p", help="max adjusted region-level p-value"
                  " to be reported "
@@ -64,15 +60,15 @@ def main():
     col_num = get_col_num(args.c, args.bed_files[0])
     return pipeline(col_num, args.step, args.dist, args.prefix,
             args.threshold, args.seed,
-            args.bed_files, mlog=args.mlog,
+            args.bed_files,
             region_filter_p=args.region_filter_p,
             region_filter_n=args.region_filter_n,
             genome_control=args.genomic_control,
             db=args.annotate,
             z=not args.liptak,
-            use_fdr=args.use_fdr)
+            use_fdr=not args.no_fdr)
 
-def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False,
+def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=True,
     region_filter_p=1, region_filter_n=None, genome_control=False, db=None,
     z=False, use_fdr=True):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
@@ -157,7 +153,7 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=False
         for region_line, slk_p, slk_sidak_p, sim_p in region_p.region_p(
                                prefix + ".slk.bed.gz",
                                prefix + ".regions.bed.gz", -2,
-                               step, mlog=mlog, z=z):
+                               step, z=z):
             fh.write("%s\t%.4g\t%.4g\n" % (region_line, slk_p, slk_sidak_p))
             fh.flush()
             N += int(slk_sidak_p < 0.05)

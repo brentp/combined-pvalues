@@ -60,12 +60,12 @@ def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-            col_num, args.step, mlog=args.mlog, z=args.z):
+            col_num, args.step, z=args.z):
         #if sim_p != "NA":
         #    sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
 
-def _gen_acf(region_info, fpvals, col_num, step, mlog):
+def _gen_acf(region_info, fpvals, col_num, step):
     # calculate the ACF as far out as needed...
     # keys of region_info are (chrom, start, end)
     max_len = max(int(r[2]) - int(r[1]) for r in region_info)
@@ -85,7 +85,7 @@ def _gen_acf(region_info, fpvals, col_num, step, mlog):
     if len(lags) > 100:
         print >>sys.stderr, "# !! this could take a looong time"
         print >>sys.stderr, "# !!!! consider using a larger step size (-s)"
-    acfs = acf(fpvals, lags, col_num, simple=True, mlog=mlog)
+    acfs = acf(fpvals, lags, col_num, simple=True)
     print >>sys.stderr, "# Done with one-time ACF calculation"
     return acfs
 
@@ -157,7 +157,7 @@ def read_regions(fregions):
             % (sum(len(v) for v in tree.values()), fregions))
     return tree
 
-def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
+def region_p(fpvals, fregions, col_num, step, z=True):
     # just use 2 for col_num, but dont need the p from regions.
 
     tree = read_regions(fregions)
@@ -165,7 +165,7 @@ def region_p(fpvals, fregions, col_num, step, mlog=False, z=False):
 
     region_info = _get_ps_in_regions(tree, fpvals, col_num)
 
-    acfs = _gen_acf(region_info, (fpvals,), col_num, step, mlog=mlog)
+    acfs = _gen_acf(region_info, (fpvals,), col_num, step)
     process.join()
     total_coverage = total_coverage_sync.value
 
@@ -205,9 +205,6 @@ def main():
     p.add_argument("-s", "--step", dest="step", type=int, default=50,
             help="step size for acf calculation. should be the same "
             " value as the step sent to -d arg for acf")
-    p.add_argument("--mlog", dest="mlog", action="store_true",
-                   default=False, help="do the correlation on the -log10 of"
-                   "the p-values. Default is to do it on the raw values")
     p.add_argument("-c", dest="c", help="column number containing the p-value"
                    " of interest", type=str, default=-1)
     p.add_argument("-z", dest="z", help="use z-score correction",

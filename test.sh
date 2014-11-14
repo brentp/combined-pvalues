@@ -55,5 +55,5 @@ fi
 
 rm t
 set -ex
-python ./cpv/comb-p pipeline -c pvalue --mlog -p out --seed 0.05 --dist 1000 --region-filter-p 0.1 --region-filter-n 4 examples/file.bed
+python ./cpv/comb-p pipeline -c pvalue -p out --seed 0.05 --dist 1000 --region-filter-p 0.1 --region-filter-n 4 examples/file.bed
 

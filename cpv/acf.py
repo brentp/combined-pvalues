@@ -68,7 +68,7 @@ def merge_acfs(unmerged):
     return merged
 
 
-def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
+def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=True):
     """
     calculate the correlation of the numbers in `col_num0` from the bed files
     in `fnames` at various lags. The lags are specified by distance. Partial
@@ -110,8 +110,8 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=False):
                     % (lmin, lmax)
             continue
         if mlog:
-            xs[xs == 0] = 0.5 * xs[xs > 0].min()
-            ys[ys == 0] = 0.5 * ys[ys > 0].min()
+            xs[xs == 0] = 1e-12
+            ys[ys == 0] = 1e-12
             xs, ys = -np.log10(xs), -np.log10(ys)
         slope, intercept, corr, p_val, stderr = ss.linregress(xs, ys)
         # NOTE: using pearson correlation, which assumes normality.
@@ -134,8 +134,7 @@ def run(args):
     lags = range(*d)
 
     acf_vals = acf(args.files, lags, get_col_num(args.c), partial=(not
-                                                            args.full),
-                                                            mlog=args.mlog)
+                                                            args.full))
     write_acf(acf_vals, sys.stdout)
 
 def write_acf(acf_vals, out):
@@ -161,9 +160,6 @@ def main():
     p.add_argument("--full", dest="full", action="store_true",
                    default=False, help="do full autocorrelation (default"
                    " is partial)")
-    p.add_argument("--mlog", dest="mlog", action="store_true",
-                   default=False, help="do the correlation on the -log10 of"
-                   "the p-values. Default is to do it on the raw values")
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()
     if (len(args.files) == 0):
