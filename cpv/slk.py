@@ -7,7 +7,7 @@ from operator import itemgetter
 from itertools import chain
 from _common import read_acf, bediter, get_col_num, get_map
 from itertools import groupby, combinations
-from stouffer_liptak import stouffer_liptak, z_score_combine
+from stouffer_liptak import z_score_combine
 
 
 def get_corr(dist, acfs):
@@ -73,7 +73,7 @@ def gen_sigma_matrix(group, acfs, cached={}):
     """
     return a
 
-def slk_chrom(chromlist, lag_max, acfs, z=False):
+def slk_chrom(chromlist, lag_max, acfs, z=True):
     """
     calculate the slk for a given chromosome
     """
@@ -83,11 +83,7 @@ def slk_chrom(chromlist, lag_max, acfs, z=False):
         sigma = gen_sigma_matrix(xneighbors, acfs)
         pvals = [g['p'] for g in xneighbors]
         # stringetn is True/False
-        if z:
-            r = z_score_combine(pvals, sigma)
-        else:
-            r = stouffer_liptak(pvals, sigma)
-
+        r = z_score_combine(pvals, sigma)
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"],
                 r["p"])
         if not r["OK"] and n_bad < 20:
@@ -101,7 +97,7 @@ def slk_chrom(chromlist, lag_max, acfs, z=False):
 def _slk_chrom(args):
     return list(slk_chrom(*args))
 
-def adjust_pvals(fnames, col_num0, acfs, z=False):
+def adjust_pvals(fnames, col_num0, acfs, z=True):
     lag_max = acfs[-1][0][1]
 
     # parallelize if multiprocesing is installed.
@@ -122,8 +118,7 @@ def adjust_pvals(fnames, col_num0, acfs, z=False):
 def run(args):
     acf_vals = read_acf(args.acf)
     col_num = get_col_num(args.c)
-    for row in adjust_pvals(args.files, col_num, acf_vals,
-                            z=args.z_score):
+    for row in adjust_pvals(args.files, col_num, acf_vals):
         sys.stdout.write("%s\t%i\t%i\t%.5g\t%.5g\n" % row)
 
 def main():
@@ -134,8 +129,6 @@ def main():
                    "as well as the distance lags.")
     p.add_argument("-c", dest="c", help="column number that has the value to take the"
             " acf", type=int, default=4)
-    p.add_argument("-z", "--z-score", action="store_true", default=False,
-            help="use z-score correction instead of liptak")
 
     p.add_argument('files', nargs='+', help='files to process')
     args = p.parse_args()

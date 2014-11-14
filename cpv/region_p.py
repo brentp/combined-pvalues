@@ -60,7 +60,7 @@ def run(args):
     col_num = get_col_num(args.c)
     # order in results is slk, uniform, sample
     for region_line, slk, slk_sidak, sim_p in region_p(args.pvals, args.regions,
-            col_num, args.step, z=args.z):
+            col_num, args.step, z=True):
         #if sim_p != "NA":
         #    sim_p = "%.4g" % (sim_p)
         print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
