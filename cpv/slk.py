@@ -60,17 +60,7 @@ def gen_sigma_matrix(group, acfs, cached={}):
         if not dist in cached:
             cached[dist] = get_corr(dist, acfs)
         a[j, i] = a[i, j] = cached[dist]
-    
-    """
-    # visualize the sigma matrix.
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    X, Y = np.mgrid[0:a.shape[0], 0:a.shape[0]]
-    f = plt.figure()
-    ax = f.add_subplot(111, projection='3d')
-    ax.plot_wireframe(X, Y, np.log10(a + 1))
-    plt.show()
-    """
+
     return a
 
 def slk_chrom(chromlist, lag_max, acfs, z=True):
@@ -84,7 +74,9 @@ def slk_chrom(chromlist, lag_max, acfs, z=True):
         r = z_score_combine(pvals, sigma)
         # NOTE: this commented out line show slightly better performance on
         # simulated data with largish changes.
-        #yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], 2 * min(xbed["p"], r["p"]))
+        # take the min of the original and the smoothed pvalue.
+        #p = 1 - (1 - min(xbed['p'], r['p']))**2
+        #yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], p)
         yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], r["p"])
 
 def _slk_chrom(args):

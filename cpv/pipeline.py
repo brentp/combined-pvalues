@@ -59,8 +59,8 @@ def main():
     assert op.exists(args.bed_files[0])
 
     if args.acf_dist is None:
-        args.acf_dist = int(round(0.30 * args.dist, -1))
-        sys.stderr.write("setting --acf-dist to 0.30 * --dist == %i\n" %
+        args.acf_dist = int(round(0.40 * args.dist, -1))
+        sys.stderr.write("setting --acf-dist to 0.40 * --dist == %i\n" %
                 args.acf_dist)
 
     col_num = get_col_num(args.c, args.bed_files[0])
