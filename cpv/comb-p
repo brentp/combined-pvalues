@@ -21,7 +21,6 @@ To run, indicate one of:
    region_p  - generate SLK p-values for a region (of p-values)
    filter    - filter region_p output on size and p and add coef/t
    hist      - plot a histogram of a column and check for uniformity.
-   splot     - a scatter plot of column(s) in a bed file for a given region.
    manhattan - a manhattan plot of values in a BED file.
    pipeline  - run acf, slk, fdr, peaks, region_p in succesion
 
