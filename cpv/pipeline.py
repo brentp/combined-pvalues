@@ -11,8 +11,11 @@ def main():
 
     p.add_argument("-c", dest="c", help="column number that has the value to"
                    "take the  acf", default='4')
-    p.add_argument("--dist", "--distance", dest="dist", help="Maximum dist to extend the"
-             " ACF calculation", type=int)
+    p.add_argument("--dist", "--distance" "--peak-dist", dest="dist", help="Maximum dist to "
+            " search for adjacent peaks.", type=int)
+    p.add_argument("--acf-dist", help="distance/window-size to use for "
+            " smoothing. Defaults to 1/3 * peak-dist ", type=int, default=None)
+
     p.add_argument("--step", dest="step", help="step size for bins in the"
              " ACF calculation", type=int)
     p.add_argument("--seed", dest="seed", help="A value must be at least this"
@@ -55,8 +58,14 @@ def main():
         args.threshold = args.seed
     assert op.exists(args.bed_files[0])
 
+    if args.acf_dist is None:
+        args.acf_dist = int(round(0.30 * args.dist, -1))
+        sys.stderr.write("setting --acf-dist to 0.30 * --dist == %i\n" %
+                args.acf_dist)
+
     col_num = get_col_num(args.c, args.bed_files[0])
-    return pipeline(col_num, args.step, args.dist, args.prefix,
+    return pipeline(col_num, args.step,
+            args.dist, args.acf_dist, args.prefix,
             args.threshold, args.seed,
             args.bed_files,
             region_filter_p=args.region_filter_p,
@@ -65,9 +74,9 @@ def main():
             db=args.annotate,
             use_fdr=not args.no_fdr)
 
-def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=True,
-    region_filter_p=1, region_filter_n=None, genome_control=False,
-    db=None, use_fdr=True):
+def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
+        bed_files, mlog=True, region_filter_p=1, region_filter_n=None,
+        genome_control=False, db=None, use_fdr=True):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
     from cpv import acf, slk, fdr, peaks, region_p, stepsize, filter
     from cpv._common import genome_control_adjust, genomic_control, bediter
@@ -75,10 +84,10 @@ def pipeline(col_num, step, dist, prefix, threshold, seed, bed_files, mlog=True,
 
 
     if step is None:
-        step = stepsize.stepsize(bed_files, col_num)
+        step = min(acf_dist, stepsize.stepsize(bed_files, col_num))
         print >>sys.stderr, "calculated stepsize as: %i" % step
 
-    lags = range(1, dist, step)
+    lags = range(1, acf_dist, step)
     lags.append(lags[-1] + step)
 
     prefix = prefix.rstrip(".")
