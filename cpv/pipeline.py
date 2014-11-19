@@ -59,8 +59,8 @@ def main():
     assert op.exists(args.bed_files[0])
 
     if args.acf_dist is None:
-        args.acf_dist = int(round(0.40 * args.dist, -1))
-        sys.stderr.write("setting --acf-dist to 0.40 * --dist == %i\n" %
+        args.acf_dist = int(round(0.33333 * args.dist, -1))
+        sys.stderr.write("setting --acf-dist to 0.33 * --dist == %i\n" %
                 args.acf_dist)
 
     col_num = get_col_num(args.c, args.bed_files[0])
@@ -141,6 +141,7 @@ def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
         print >>sys.stderr, "wrote: %s" % fhslk.name
 
     with ts.nopen(prefix + ".fdr.bed.gz", "w") as fh:
+        fh.write('#chrom\tstart\tend\tp\tregion-p\tregion-q\n')
         for bh, l in fdr.fdr(fhslk.name, -1):
             fh.write("%s\t%.4g\n" % (l.rstrip("\r\n"), bh))
         print >>sys.stderr, "wrote: %s" % fh.name
