@@ -151,6 +151,8 @@ def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
             dist, fh, operator.le))
     n_regions = sum(1 for _ in ts.nopen(fregions))
     print >>sys.stderr, "wrote: %s (%i regions)" % (fregions, n_regions)
+    if n_regions == 0:
+        sys.exit()
 
     with ts.nopen(prefix + ".regions-p.bed.gz", "w") as fh:
         N = 0
