@@ -169,7 +169,6 @@ def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
                 % (fh.name, N)
 
     regions_bed = fh.name
-    header = ts.header(bed_files[0])
     #if all(h in header for h in ('t', 'start', 'end')):
     if region_filter_n is None: region_filter_n = 0
     with ts.nopen(prefix + ".regions-t.bed", "w") as fh:

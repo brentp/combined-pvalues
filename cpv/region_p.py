@@ -113,11 +113,17 @@ def _get_total_coverage(fpvals, col_num, step):
     p.start()
     return p, val
 
-def sidak(p, region_length, total_coverage):
+def sidak(p, region_length, total_coverage, message=[False]):
     """
     see: https://github.com/brentp/combined-pvalues/issues/2
     """
-    assert region_length != 0
+    if region_length == 0:
+        region_length = 1
+        if not message[0]:
+            message[0] = True
+            sys.stderr.write(""""warning: 0-length region found.
+does input have 0-length intervals? using length of 1 and not reporting
+further 0-length intervals""")
     # use 1.1 as heuristic to account for limit in available regions
     # of a given size as the region_length increases
     # TODO: base that on the actual number of regiosn of this length
