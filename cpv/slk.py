@@ -67,20 +67,22 @@ def slk_chrom(chromlist, lag_max, acfs, z=True):
     """
     calculate the slk for a given chromosome
     """
-    for xbed, xneighbors in walk(chromlist, lag_max):
+    arr = np.empty((len(chromlist),),  dtype=np.dtype([
+        ('start', np.uint32),
+        ('end', np.uint32),
+        ('p', np.float32),
+        ('slk_p', np.float32)]))
+
+    for i, (xbed, xneighbors) in enumerate(walk(chromlist, lag_max)):
 
         sigma = gen_sigma_matrix(xneighbors, acfs)
-        pvals = [g['p'] for g in xneighbors]
+        pvals = np.array([g['p'] for g in xneighbors])
         r = z_score_combine(pvals, sigma)
-        # NOTE: this commented out line show slightly better performance on
-        # simulated data with largish changes.
-        # take the min of the original and the smoothed pvalue.
-        #p = 1 - (1 - min(xbed['p'], r['p']))**2
-        #yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], p)
-        yield (xbed["chrom"], xbed["start"], xbed["end"], xbed["p"], r["p"])
+        arr[i] = (xbed["start"], xbed["end"], xbed["p"], r["p"])
+    return xbed['chrom'], arr
 
 def _slk_chrom(args):
-    return list(slk_chrom(*args))
+    return slk_chrom(*args)
 
 def adjust_pvals(fnames, col_num0, acfs, z=True):
     lag_max = acfs[-1][0][1]
@@ -95,16 +97,17 @@ def adjust_pvals(fnames, col_num0, acfs, z=True):
                     for key, chromlist in groupby(bediter(fname, col_num0, 9e-117),
                             itemgetter("chrom"))))
 
-    for results in imap(_slk_chrom, arg_iter):
-        for r in results:
-            yield r
+    for chrom, results in imap(_slk_chrom, arg_iter):
+        yield chrom, results
 
 
 def run(args):
     acf_vals = read_acf(args.acf)
     col_num = get_col_num(args.c)
-    for row in adjust_pvals(args.files, col_num, acf_vals):
-        sys.stdout.write("%s\t%i\t%i\t%.5g\t%.5g\n" % row)
+    for chrom, results in adjust_pvals(args.files, col_num, acf_vals):
+        fmt = chrom + "\t%i\t%i\t%.5g\t%.5g\n"
+        for row in results:
+            sys.stdout.write(fmt % row)
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,

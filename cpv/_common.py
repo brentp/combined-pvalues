@@ -70,8 +70,11 @@ def bediter(fnames, col_num, delta=None):
                 if p > 1 - delta: p-= delta # the stouffer correction doesnt like values == 1
                 if p < delta: p = delta # the stouffer correction doesnt like values == 0
 
-            yield  {"chrom": l[0], "start": start, "end": int(float(l[2])),
-                    "p": p} # "stuff": l[3:][:]}
+            v = {"chrom": l[0], "start": start, "end": int(float(l[2])),
+                 "p": p} # "stuff": l[3:][:]}
+            if v['end'] - v['start'] > 100000:
+                print("warning! large interval at %s will increase memory use." % v)
+            yield v
 
 def genomic_control(pvals):
     """

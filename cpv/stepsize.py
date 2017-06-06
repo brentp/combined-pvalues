@@ -17,6 +17,7 @@ def stepsize(bed_files, col):
     for bed_file in bed_files:
         for _, chromlist in groupby(bediter(bed_file, col), itemgetter('chrom')):
             L = list(chromlist)
+            if len(L) < 2: continue
 
             last_start = 0
             for i, ibed in enumerate(L):

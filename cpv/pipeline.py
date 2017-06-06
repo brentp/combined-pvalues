@@ -1,4 +1,5 @@
 import sys
+import array
 import os.path as op
 import toolshed as ts
 
@@ -12,7 +13,7 @@ def main():
     p.add_argument("-c", dest="c", help="column number that has the value to"
                    "take the  acf", default='4')
     p.add_argument("--dist", "--distance" "--peak-dist", dest="dist", help="Maximum dist to "
-            " search for adjacent peaks.", type=int)
+            " search for adjacent peaks.", type=int, required=True)
     p.add_argument("--acf-dist", help="distance/window-size to use for "
             " smoothing. Defaults to 1/3 * peak-dist ", type=int, default=None)
 
@@ -117,13 +118,16 @@ def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
         print >>sys.stderr, "wrote: %s" % fh.name
     print >>sys.stderr, "ACF:\n", open(prefix + ".acf.txt").read()
 
-    spvals, opvals = [], []
+    spvals, opvals = array.array('f'), array.array('f')
     with ts.nopen(prefix + ".slk.bed.gz", "w") as fhslk:
         fhslk.write('#chrom\tstart\tend\tp\tregion-p\n')
-        for row in slk.adjust_pvals(bed_files, col_num, acf_vals):
-            fhslk.write("%s\t%i\t%i\t%.4g\t%.4g\n" % row)
-            opvals.append(row[-2])
-            spvals.append(row[-1])
+        for chrom, results in slk.adjust_pvals(bed_files, col_num, acf_vals):
+            fmt = chrom + "\t%i\t%i\t%.4g\t%.4g\n"
+            for row in results:
+                row = tuple(row)
+                fhslk.write(fmt % row)
+                opvals.append(row[-2])
+                spvals.append(row[-1])
 
     print >>sys.stderr, "# original lambda: %.2f" % genomic_control(opvals)
     del opvals
