@@ -107,7 +107,7 @@ def run(args):
     for chrom, results in adjust_pvals(args.files, col_num, acf_vals):
         fmt = chrom + "\t%i\t%i\t%.5g\t%.5g\n"
         for row in results:
-            sys.stdout.write(fmt % row)
+            sys.stdout.write(fmt % tuple(row))
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
