@@ -1,11 +1,16 @@
 
+import sys
+
 import numpy as np
-from scipy.stats import norm, chisqprob
+from scipy.stats import norm
+import scipy.stats as ss
 from numpy.linalg import cholesky as chol
 from numpy.linalg.linalg import LinAlgError
-import sys
 qnorm = norm.ppf
 pnorm = norm.cdf
+
+chisqprob = ss.distributions.chi2.sf
+
 
 def stouffer_liptak(pvals, sigma=None):
     """
