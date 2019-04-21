@@ -53,7 +53,7 @@ Commands below give finer control over each step.
 Installation
 ============
 
-`comb-p` requires python2.7.
+`comb-p` requires python2.7 or python3.7+
 
 If you do not have `numpy` and `scipy` installed. Please use anaconda
 from: http://continuum.io/downloads
