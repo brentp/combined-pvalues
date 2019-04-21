@@ -18,19 +18,19 @@ def run(args):
     xlabels = "|".join("%.2f-%.2f" % b for b in pairwise(bins))
     hist, bins = np.histogram(pvals, normed=False, **kwargs)
 
-    print "# median: %.3f mean:%.3f; std: %.3f min:%.3f; max:%.3f" % (
-        np.median(pvals), pvals.mean(), pvals.std(), pvals.min(), pvals.max())
+    print("# median: %.3f mean:%.3f; std: %.3f min:%.3f; max:%.3f" % (
+        np.median(pvals), pvals.mean(), pvals.std(), pvals.min(), pvals.max()))
 
     try:
         from scipy.stats import chisquare
         chisq, p = chisquare(hist)
-        print "#chi-square test of uniformity. p: %.3g " \
-              "(low value means reject null of uniformity)" % p
+        print("#chi-square test of uniformity. p: %.3g " \
+              "(low value means reject null of uniformity)" % p)
     except ImportError:
         pass
-    print "#bin_start\tbin_end\tn"
+    print("#bin_start\tbin_end\tn")
     for bin, val in zip(pairwise(bins), hist):
-        print "%.2f\t%.2f\t%i" % (bin[0], bin[1], val)
+        print("%.2f\t%.2f\t%i" % (bin[0], bin[1], val))
 
 
 def main():

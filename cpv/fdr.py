@@ -1,10 +1,14 @@
 """
 perform Benjamini-Hochberg FDR correction on a BED file with p-values.
 """
+from __future__ import print_function
 import argparse
 import toolshed as ts
 from _common import bediter
-from itertools import izip
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip
 from _common import get_col_num
 import numpy as np
 import sys
@@ -20,10 +24,10 @@ def run(args):
     col_null = get_col_num(args.null) if args.null else None
     if args.qvality:
         for qval, pep, l in _qvality(args.bed_file, col_num, col_null):
-            print "%s\t%.4g\t%4g" % (l.rstrip("\r\n"), qval, pep)
+            print("%s\t%.4g\t%4g" % (l.rstrip("\r\n"), qval, pep))
     else:
         for qval, l in obs_fdr(args.bed_file, col_num, col_null):
-            print "%s\t%.4g" % (l.rstrip("\r\n"), qval)
+            print("%s\t%.4g" % (l.rstrip("\r\n"), qval))
 
 def _qvality(fbed_file, col_num, col_null):
    from qvality import qvality

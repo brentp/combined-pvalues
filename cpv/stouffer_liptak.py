@@ -1,4 +1,4 @@
-
+from __future__ import print_function
 import sys
 
 import numpy as np
@@ -45,7 +45,7 @@ def stouffer_liptak(pvals, sigma=None):
             Cm1 = np.asmatrix(C).I # C^-1
             # qstar
             qvals = Cm1 * qvals
-        except LinAlgError, e:
+        except LinAlgError as e:
             result["OK"] = False
             result = z_score_combine(pvals, sigma)
             return result
@@ -54,7 +54,7 @@ def stouffer_liptak(pvals, sigma=None):
     # get the right tail.
     pstar = norm.sf(Cp)
     if np.isnan(pstar):
-        print >>sys.stderr, "BAD:", pvals, sigma
+        print("BAD:", pvals, sigma, file=sys.stderr)
         pstar = np.median(pvals)
         result["OK"] = True
     result.update({"C": Cp, "p": pstar})

@@ -2,13 +2,19 @@
    calculate the autocorrelation of a *sorted* bed file with a set
    of *distance* lags.
 """
+from __future__ import print_function
 import argparse
 from array import array
 import sys
 import numpy as np
 import scipy.stats as ss
-from itertools import groupby, izip, chain
-from _common import bediter, pairwise, get_col_num, get_map
+try:
+    from itertools import groupby, izip, chain
+except ImportError:
+    from itertools import groupby, chain
+    izip = zip
+    xrange = range
+from cpv._common import bediter, pairwise, get_col_num, get_map
 
 
 def create_acf_list(lags):
@@ -106,8 +112,8 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=True):
             xs = np.hstack((xs, xys["x"]))
             ys = np.hstack((ys, xys["y"]))
         if len(xs) == 0:
-            print >>sys.stderr, "no values found at lag: %i-%i. skipping" \
-                    % (lmin, lmax)
+            print("no values found at lag: %i-%i. skipping" \
+                    % (lmin, lmax), file=sys.stderr)
             continue
         if mlog:
             xs[xs == 0] = 1e-12
@@ -128,7 +134,7 @@ def run(args):
     general function that takes an args object (from argparse)
     with the necessary options and calls acf()
     """
-    d = map(int, args.d.split(":"))
+    d = list(map(int, args.d.split(":")))
     assert len(d) == 3, ("-d argument must in in the format start:end:step")
     d[1] += 1 # adjust for non-inclusive end-points...
     lags = range(*d)
@@ -142,9 +148,10 @@ def write_acf(acf_vals, out):
     simple_acf = []
     values = [float(v[0]) for k, v in acf_vals]
     xlabels = "|".join("%s-%s" % k for k, v in acf_vals)
-    print >> out, "#lag_min\tlag_max\tcorrelation\tN\tp"
+    print("#lag_min\tlag_max\tcorrelation\tN\tp", file=out)
     for k, v in sorted(acf_vals):
-        print >> out, "%i\t%i\t%.4g\t%i\t%.4g" % (k[0], k[1], v[0], v[1], v[2])
+        print("%i\t%i\t%.4g\t%i\t%.4g" % (k[0], k[1], v[0], v[1], v[2]),
+                file=out)
         simple_acf.append((k, v[0]))
     return simple_acf
 

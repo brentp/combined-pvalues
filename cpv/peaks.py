@@ -8,6 +8,7 @@ for a bedgraph file with pvalues in the 4th column. usage would be:
 where some.regions.bed contains the start and end of the region and (currently)
 the lowest p-value in that region.
 """
+from __future__ import print_function
 from itertools import groupby
 import operator
 from toolshed import reader
@@ -22,7 +23,7 @@ def bediter(fname, col_num):
             yield  {"chrom": l[0], "start": int(l[1]), "end": int(l[2]),
                 "p": float(l[col_num])} # "stuff": l[3:][:]}
         except:
-            print >>sys.stderr, l
+            print(l, file=sys.stderr)
             if i != 0:
                 raise
 
@@ -132,7 +133,7 @@ def main():
     if args.threshold is None:
         args.threshold = args.seed
     for peak in run(args):
-        print peak
+        print(peak)
 
 if __name__ == "__main__":
     import doctest
