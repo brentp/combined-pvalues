@@ -2,6 +2,7 @@
    calculate a p-value of a region using the Stouffer-Liptak method or the
    z-score method.
 """
+from __future__ import print_function
 import argparse
 import sys
 import numpy as np
@@ -45,7 +46,7 @@ def gen_correlated(sigma, n, observed=None):
 
 def sl_sim(sigma, ps, nsims, sample_distribution=None):
     N = 0
-    print >>sys.stderr, "nsims:", nsims
+    print("nsims:", nsims, file=sys.stderr)
     w0 = stouffer_liptak(ps, sigma)["p"]
     # TODO parallelize here.
     for i in range(10):
@@ -63,15 +64,15 @@ def run(args):
             col_num, args.step, z=True):
         #if sim_p != "NA":
         #    sim_p = "%.4g" % (sim_p)
-        print "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak)
+        print( "%s\t%.4g\t%.4g" % (region_line, slk, slk_sidak))
 
 def _gen_acf(region_info, fpvals, col_num, step):
     # calculate the ACF as far out as needed...
     # keys of region_info are (chrom, start, end)
     max_len = max(int(r[2]) - int(r[1]) for r in region_info)
-    print >>sys.stderr, "# calculating ACF out to: %i" % max_len
+    print("# calculating ACF out to: %i" % max_len, file=sys.stderr)
 
-    lags = range(1, max_len, step)
+    lags = list(range(1, max_len, step))
     if lags[-1] < max_len: lags.append(lags[-1] + step)
     if len(lags) > 20:
         repr_lags = "[" + ", ".join(map(str, lags[1:4])) + \
@@ -79,14 +80,14 @@ def _gen_acf(region_info, fpvals, col_num, step):
                     ", ".join(map(str, lags[-5:])) + "]"
     else:
         repr_lags = str(lags)
-    print >>sys.stderr, "#           with %-2i lags: %s" \
-            % (len(lags), repr_lags)
+    print("#           with %-2i lags: %s" \
+            % (len(lags), repr_lags), file=sys.stderr)
 
     if len(lags) > 100:
-        print >>sys.stderr, "# !! this could take a looong time"
-        print >>sys.stderr, "# !!!! consider using a larger step size (-s)"
+        print("# !! this could take a looong time", file=sys.stderr)
+        print("# !!!! consider using a larger step size (-s)", file=sys.stderr)
     acfs = acf(fpvals, lags, col_num, simple=True)
-    print >>sys.stderr, "# Done with one-time ACF calculation"
+    print("# Done with one-time ACF calculation", file=sys.stderr)
     return acfs
 
 def get_total_coverage(fpvals, col_num, step, out_val):
@@ -176,24 +177,24 @@ def region_p(fpvals, fregions, col_num, step, z=True):
     total_coverage = total_coverage_sync.value
 
     # regions first and then create ACF for the longest one.
-    print >>sys.stderr, "%i bases used as coverage for sidak correction" % \
-                                (total_coverage)
+    print("%i bases used as coverage for sidak correction" % \
+                                (total_coverage), file=sys.stderr)
     sample_distribution = np.array([b["p"] for b in bediter(fpvals,
                                                                 col_num)])
 
     combine = z_score_combine if z else stouffer_liptak
-    for region, prows in region_info.iteritems():
+    for region, prows in region_info.items():
         # gen_sigma expects a list of bed dicts.
         sigma = gen_sigma_matrix(prows, acfs)
         ps = np.array([prow["p"] for prow in prows])
         if ps.shape[0] == 0:
-            print >>sys.stderr,("bad region", region)
+            print("bad region", region, file=sys.stderr)
             continue
 
         # calculate the SLK for the region.
         region_slk = combine(ps, sigma)
         if not region_slk["OK"]:
-            print >>sys.stderr, "problem with:", region_slk, ps
+            print("problem with:", region_slk, ps, file=sys.stderr)
 
         slk_p = region_slk["p"]
 
@@ -221,7 +222,7 @@ def main():
         sys.exit(not p.print_help())
     header = ts.nopen(args.regions).next()
     if header.startswith("#") or (not header.split("\t")[2].isdigit()):
-        print "%s\tslk_p\tslk_sidak_p" % (header.rstrip("\r\n"),)
+        print("%s\tslk_p\tslk_sidak_p" % (header.rstrip("\r\n"),))
 
     header = ts.header(args.pvals)
     if args.c in header:

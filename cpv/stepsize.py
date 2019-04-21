@@ -30,7 +30,7 @@ def stepsize(bed_files, col):
 
 def run(args):
     col = get_col_num(args.c)
-    print stepsize((args.bed_file,), col)
+    print(stepsize((args.bed_file,), col))
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,

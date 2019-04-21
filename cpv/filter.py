@@ -9,6 +9,10 @@ import argparse
 from operator import itemgetter
 from itertools import groupby
 from tempfile import mktemp
+try:
+    long
+except NameError:
+    long = int
 from math import exp
 import atexit
 import os
@@ -59,7 +63,7 @@ def main():
             region_p=args.region_p,
             p_col_name=args.p,
             coef_col_name=args.coef):
-        print "\t".join(row)
+        print("\t".join(row))
 
 def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
                     coef_col_name="logFC"):
@@ -103,7 +107,7 @@ def filter(p_bed, region_bed, max_p=None, region_p=None, p_col_name="P.Value",
         try:
             plist = [x for x in plist if (int(x['start']) <= int(x['pstart']) <= int(x['pend'])) and ((int(x['start']) <= int(x['pend']) <= int(x['end'])))]
         except:
-            print plist
+            print(plist)
             raise
         tscores = [float(row['pt']) for row in plist if 'pt' in row]
 

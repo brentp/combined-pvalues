@@ -10,6 +10,7 @@ and q-value.
 if input.bed has a header, it is retained.
 TODO: handle null via --null [column_number]
 """
+from __future__ import print_function
 import tempfile
 import subprocess as sp
 import sys
@@ -35,7 +36,7 @@ def qvality(pvals, null=None, **kwargs):
     if null:
         cmd.append(fnull.name)
 
-    print >>sys.stderr, cmd
+    print(cmd, file=sys.stderr)
 
     p = sp.Popen(cmd, stderr=sp.PIPE,
                          stdout=sp.PIPE)
@@ -49,9 +50,9 @@ def qvality(pvals, null=None, **kwargs):
     for i, pset in enumerate((ps, qs)):
         assert all(a >= b for a, b in zip(pset[1:], pset[:-1])), (i, pset[:10], pset[-10:], len(pset))
     p.wait()
-    print >>sys.stderr, p.stderr.read()
+    print(p.stderr.read(), file=sys.stderr)
     if p.returncode != 255: # ?
-        print >>sys.stderr, p.stderr.read(), p.returncode
+        print(p.stderr.read(), p.returncode, file=sys.stderr)
 
     for p in pvals:
         # find the index in the ps
@@ -81,12 +82,12 @@ def main(f_pvals, column_no):
 
     fh = open(f_pvals)
     if has_header:
-        print "%s\tPEP\tq-value" % (fh.readline().rstrip("\r\n"), )
+        print( "%s\tPEP\tq-value" % (fh.readline().rstrip("\r\n"), ))
 
     for (p, pep, q), line in  izip(qvality(pvals), fh):
         toks = line.rstrip("\r\n").split("\t")
         assert float(toks[col]) == p, (line, p)
-        print "%s\t%.6g\t%.6g" % (line.rstrip("\r\n"), pep, q)
+        print("%s\t%.6g\t%.6g" % (line.rstrip("\r\n"), pep, q))
 
 
 

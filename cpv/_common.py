@@ -1,5 +1,13 @@
+from __future__ import print_function
 import toolshed as ts
-from itertools import tee, izip
+try:
+    from itertools import tee, izip
+except ImportError:
+    from itertools import tee
+    izip = zip
+    basestring = str
+    long = int
+
 import signal
 import sys
 
@@ -108,7 +116,8 @@ def genome_control_adjust_bed(bedfiles, colnum, outfh):
 
     diff = 0
     if len(bedfiles) > 1:
-        print >>sys.stderr, "can't do genomic control adjustment with more than 1 bed file"
+        print("can't do genomic control adjustment with more than 1 bed file",
+                file=sys.stderr)
         sys.exit(4)
     for j, bedfile in enumerate(bedfiles):
         for i, toks in enumerate(line.rstrip("\r\n").split("\t") \
@@ -117,7 +126,7 @@ def genome_control_adjust_bed(bedfiles, colnum, outfh):
                 float(toks[c])
             except ValueError: # headder
                 if i == 0 == j:
-                    print >>outfh, "\t".join(toks)
+                    print("\t".join(toks), file=outfh)
                     diff = 1
                     continue
                 elif i == 0:
@@ -125,7 +134,7 @@ def genome_control_adjust_bed(bedfiles, colnum, outfh):
                 else:
                     raise
             toks[c] = "%.5g" % adj[i - diff]
-            print >>outfh, "\t".join(toks)
+            print("\t".join(toks), file=outfh)
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."

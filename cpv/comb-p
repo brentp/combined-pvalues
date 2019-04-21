@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 __actions = ("acf", "slk", "fdr", "peaks", "region_p", "hist", "splot",
              "manhattan", "pipeline", "filter")
@@ -6,7 +7,7 @@ def main():
     if len(sys.argv) == 1 \
             or sys.argv[1] in ("-h", "--help") \
             or sys.argv[1] not in __actions:
-        print >>sys.stderr,"""
+        print("""
 Tools for viewing and adjusting p-values in BED files.
 
    Contact: Brent Pedersen - bpederse@gmail.com
@@ -26,7 +27,7 @@ To run, indicate one of:
 
 NOTE: most of these assume *sorted* BED files.
 SEE: https://github.com/brentp/combined-pvalues for documentation
-    """
+    """, file=sys.stderr)
         sys.exit()
 
     # the action is the first argument.

@@ -3,6 +3,7 @@
 
 plot a manhattan plot of the input file(s).
 """
+from __future__ import print_function
 
 import argparse
 import sys
@@ -135,10 +136,10 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     plt.xticks([c[1] for c in chrom_centers],
                [c[0].replace('chr', '') for c in chrom_centers], rotation=-90, size=8.5)
     #plt.show()
-    print >>sys.stderr, "Bonferonni-corrected p-value for %i rows: %.3g" \
-            % (nrows, 0.05 / nrows)
-    print >>sys.stderr, "values less than Bonferonni-corrected p-value: %i " \
-            % (ys > -np.log10(bonferonni_p)).sum()
+    print("Bonferonni-corrected p-value for %i rows: %.3g" \
+            % (nrows, 0.05 / nrows), file=sys.stderr)
+    print("values less than Bonferonni-corrected p-value: %i " \
+            % (ys > -np.log10(bonferonni_p)).sum(), file=sys.stderr)
 
     if subplots:
         pys = np.sort(10**-ys) # convert back to actual p-values
@@ -150,7 +151,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
         ax_hist = f.add_axes((0.12, 0.12, 0.22, 0.22), frameon=True, alpha=0.6)
         hist(pys, ax_hist)
 
-    print >>sys.stderr, "saving to: %s" % image_path
+    print("saving to: %s" % image_path, file=sys.stderr)
     f.tight_layout()
     plt.savefig(image_path)
 
