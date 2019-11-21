@@ -38,6 +38,12 @@ def chr_cmp(a, b):
         # X Y
         return cmp(achr, bchr)
 
+def chr_norm(a):
+    a = a[0]
+    a = a.lower().replace("_", "");
+    achr = a[3:] if a.startswith("chr") else a
+    return achr
+
 def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
              bonferonni=False, regions=None, subplots=False):
     """
@@ -57,12 +63,12 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     region_xs, region_ys = [], []
     new_bounds = []
     rcolors = cycle(('#AE2117', '#EA352B'))
-    for seqid, rlist in sorted(giter, cmp=chr_cmp):
-        color = colors.next()
+    for seqid, rlist in sorted(giter, key=chr_norm):
+        color = next(colors)
         nrows += len(rlist)
         # since chroms are on the same plot. add this chrom to the end of the
         # last chrom
-        rcolor = rcolors.next()
+        rcolor = next(rcolors)
 
         region_xs = [last_x + r['start'] for r in rlist]
         xs.extend(region_xs)
