@@ -191,7 +191,7 @@ def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
                 #    if min(vals) > region_filter_t: continue
 
                 N += 1
-            print("\t".join(toks), file=sys.stderr)
+            print("\t".join(toks), file=fh)
         print(("wrote: %s, (regions with region-p "
                             "< %.3f and n-probes >= %i: %i)") \
                 % (fh.name, region_filter_p, region_filter_n, N),
