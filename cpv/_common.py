@@ -165,8 +165,8 @@ IMapIterator.next = wrapper(IMapIterator.next)
 
 def get_map():
     try:
-        from multiprocessing import Pool
-        p = Pool(None, pool_sig)
+        from multiprocessing import Pool, cpu_count
+        p = Pool(min(4, cpu_count()), pool_sig)
         imap = p.imap
     except ImportError:
         from itertools import imap
