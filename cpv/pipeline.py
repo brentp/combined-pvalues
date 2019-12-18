@@ -6,7 +6,7 @@ import toolshed as ts
 
 def main():
     import argparse
-    from _common import get_col_num
+    from ._common import get_col_num
 
     p = argparse.ArgumentParser(description=__doc__,
                    formatter_class=argparse.RawDescriptionHelpFormatter)
