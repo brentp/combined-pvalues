@@ -1,5 +1,6 @@
 from __future__ import print_function
 import toolshed as ts
+import threading
 try:
     from itertools import tee, izip
 except ImportError:
@@ -157,8 +158,8 @@ def pool_sig():
 # from aljunberg:  https://gist.github.com/aljungberg/626518 
 from multiprocessing.pool import IMapIterator
 def wrapper(func):
-    def wrap(self, timeout=None):
-        return func(self, timeout=timeout or 1e100)
+    def wrap(self, timeout=threading.TIMEOUT_MAX):
+        return func(self, timeout=timeout)
     return wrap
 IMapIterator.next = wrapper(IMapIterator.next)
 
