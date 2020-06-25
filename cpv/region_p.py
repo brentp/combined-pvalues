@@ -73,6 +73,9 @@ def _gen_acf(region_info, fpvals, col_num, step):
     print("# calculating ACF out to: %i" % max_len, file=sys.stderr)
 
     lags = list(range(1, max_len, step))
+    if len(lags) == 0:
+        lags.append(max_len)
+
     if lags[-1] < max_len: lags.append(lags[-1] + step)
     if len(lags) > 20:
         repr_lags = "[" + ", ".join(map(str, lags[1:4])) + \

@@ -19,6 +19,8 @@ from cpv._common import bediter, pairwise, get_col_num, get_map
 
 def create_acf_list(lags):
     acfs = []
+    if len(lags) == 1:
+        lags.append(lags[0])
     for lag_min, lag_max in pairwise(lags):
         acfs.append((lag_min, lag_max,
             # array uses less memory than list.
