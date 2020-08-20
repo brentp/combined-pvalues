@@ -46,8 +46,10 @@ def main():
                  "for a region to be reported in final output. "
                  " this requires the input bed file to have chrom, start, "
                  "end, 't' columns", type=int, default=None)
-    p.add_argument("--annotate", help="annotate with refGen from this db" \
+    p.add_argument("--annotate", help="annotate with a gene table from this db " \
             "in UCSC (e.g. hg19) requires cruzdb", default=None)
+    p.add_argument("--table", help="annotate with this gene table from a db " \
+            "in UCSC (default is refGene) requires cruzdb", default='refGene')
 
     p.add_argument('bed_files', nargs='+', help='sorted bed file to process')
 
@@ -68,7 +70,7 @@ def main():
     col_num = get_col_num(args.c, args.bed_files[0])
     return pipeline(col_num, args.step,
             args.dist, args.acf_dist, args.prefix,
-            args.threshold, args.seed,
+            args.threshold, args.seed, args.table,
             args.bed_files,
             region_filter_p=args.region_filter_p,
             region_filter_n=args.region_filter_n,
@@ -76,7 +78,7 @@ def main():
             db=args.annotate,
             use_fdr=not args.no_fdr)
 
-def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
+def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed, table,
         bed_files, mlog=True, region_filter_p=1, region_filter_n=None,
         genome_control=False, db=None, use_fdr=True):
     sys.path.insert(0, op.join(op.dirname(__file__), ".."))
@@ -214,6 +216,7 @@ def pipeline(col_num, step, dist, acf_dist, prefix, threshold, seed,
         lastf = fh.name
         with open(prefix + ".anno.%s.bed" % db, "w") as fh:
             fh.write('#')
-            g.annotate(lastf, ("refGene", "cpgIslandExt"), out=fh,
+            g.annotate(lastf, (table, "cpgIslandExt"), out=fh,
                     feature_strand=True, parallel=len(spvals) > 500)
-        print("wrote: %s annotated with %s" % (fh.name, db), file=sys.stderr)
+        print("wrote: %s annotated with %s %s" % (fh.name, db, table), file=sys.stderr)
+
