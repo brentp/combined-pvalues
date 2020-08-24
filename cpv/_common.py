@@ -158,7 +158,11 @@ def pool_sig():
 # from aljunberg:  https://gist.github.com/aljungberg/626518 
 from multiprocessing.pool import IMapIterator
 def wrapper(func):
-    def wrap(self, timeout=threading.TIMEOUT_MAX):
+    def wrap(self, timeout=None):
+        try:
+            timeout = threading.TIMEOUT_MAX
+        except AttributeError:
+            timeout = 1e100
         return func(self, timeout=timeout)
     return wrap
 IMapIterator.next = wrapper(IMapIterator.next)
