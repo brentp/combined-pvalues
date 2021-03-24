@@ -5,7 +5,7 @@ and check for uniformity with the chisq test.
 import argparse
 import numpy as np
 import toolshed as ts
-from _common import pairwise, get_col_num
+from ._common import pairwise, get_col_num
 
 def run(args):
     col_num = get_col_num(args.c)

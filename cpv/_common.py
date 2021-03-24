@@ -165,7 +165,13 @@ def wrapper(func):
             timeout = 1e100
         return func(self, timeout=timeout)
     return wrap
-IMapIterator.next = wrapper(IMapIterator.next)
+
+try:
+    IMapIterator.next = wrapper(IMapIterator.next)
+except AttributeError:
+    IMapIterator.__next__ = wrapper(IMapIterator.__next__)
+
+
 
 def get_map():
     try:

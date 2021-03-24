@@ -15,7 +15,10 @@ import tempfile
 import subprocess as sp
 import sys
 import bisect
-from itertools import izip
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip
 from array import array
 
 def qvality(pvals, null=None, **kwargs):

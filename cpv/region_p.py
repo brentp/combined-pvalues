@@ -223,7 +223,7 @@ def main():
     if not (args.regions and args.pvals):
         import sys
         sys.exit(not p.print_help())
-    header = ts.nopen(args.regions).next()
+    header = next(ts.nopen(args.regions))
     if header.startswith("#") or (not header.split("\t")[2].isdigit()):
         print("%s\tslk_p\tslk_sidak_p" % (header.rstrip("\r\n"),))
 
