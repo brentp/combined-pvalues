@@ -43,6 +43,12 @@ except ImportError:
                 return mycmp(self.obj, other.obj) != 0
         return K
 
+try:
+    cmp
+except NameError:
+    def cmp(a, b):
+        return (a > b) - (a < b)
+
 
 import numpy as np
 from cpv._common import bediter, get_col_num, genomic_control
