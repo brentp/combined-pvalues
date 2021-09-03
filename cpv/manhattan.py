@@ -21,6 +21,29 @@ try:
     sns.set_style("dark", {'axes.linewidth': 1})
 except ImportError:
     pass
+try:
+    from functools import cmp_to_key
+except ImportError:
+    def cmp_to_key(mycmp):
+        'Convert a cmp= function into a key= function'
+        class K:
+            def __init__(self, obj, *args):
+                self.obj = obj
+            def __lt__(self, other):
+                return mycmp(self.obj, other.obj) < 0
+            def __gt__(self, other):
+                return mycmp(self.obj, other.obj) > 0
+            def __eq__(self, other):
+                return mycmp(self.obj, other.obj) == 0
+            def __le__(self, other):
+                return mycmp(self.obj, other.obj) <= 0
+            def __ge__(self, other):
+                return mycmp(self.obj, other.obj) >= 0
+            def __ne__(self, other):
+                return mycmp(self.obj, other.obj) != 0
+        return K
+
+
 import numpy as np
 from cpv._common import bediter, get_col_num, genomic_control
 
@@ -63,7 +86,7 @@ def manhattan(fname, col_num, image_path, no_log, colors, title, lines, ymax,
     region_xs, region_ys = [], []
     new_bounds = []
     rcolors = cycle(('#AE2117', '#EA352B'))
-    for seqid, rlist in sorted(giter, key=chr_norm):
+    for seqid, rlist in sorted(giter, key=cmp_to_key(chr_cmp)):
         color = next(colors)
         nrows += len(rlist)
         # since chroms are on the same plot. add this chrom to the end of the
