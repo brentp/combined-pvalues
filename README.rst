@@ -53,6 +53,14 @@ Commands below give finer control over each step.
 Installation
 ============
 
+### conda
+
+This is available via bioconda as::
+
+  conda install -yc bioconda combined-pvalues
+
+### self installation.
+
 `comb-p` requires python2.7 or python3.7+
 
 If you do not have `numpy` and `scipy` installed. Please use anaconda
