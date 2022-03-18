@@ -70,8 +70,8 @@ def slk_chrom(chromlist, lag_max, acfs, z=True):
     arr = np.empty((len(chromlist),),  dtype=np.dtype([
         ('start', np.uint32),
         ('end', np.uint32),
-        ('p', np.float32),
-        ('slk_p', np.float32)]))
+        ('p', np.float64),
+        ('slk_p', np.float64)]))
 
     for i, (xbed, xneighbors) in enumerate(walk(chromlist, lag_max)):
 
