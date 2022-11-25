@@ -87,6 +87,8 @@ def acf(fnames, lags, col_num0, partial=True, simple=False, mlog=True):
     implementation.
     """
     # reversing allows optimization below.
+    from multiprocessing import set_start_method
+    set_start_method("fork", force=True)
     imap = get_map()
 
     arg_list = [] # chaining
