@@ -5,7 +5,7 @@ import numpy as np
 from scipy.stats import norm
 import scipy.stats as ss
 from numpy.linalg import cholesky as chol
-from numpy.linalg.linalg import LinAlgError
+from numpy.linalg import LinAlgError
 qnorm = norm.ppf
 pnorm = norm.cdf
 
